@@ -11,6 +11,7 @@ RUN apt-get -y install \
     curl \
     wget \
     less \
+    git \
     jq
 
 # BOSH
