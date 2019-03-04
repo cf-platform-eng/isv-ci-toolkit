@@ -2,12 +2,19 @@
 
 usage() {
     echo "Usage: "
-    echo -e "\n\trun <target.json>"
+    echo -e "\n\trun <tile.pivotal> <target.json>"
     echo -e "\n"
+    echo -e "\t   <tile.pivotal> path to tile .pivotal file"
     echo -e "\t   <target.json> poolsmiths provided target definition"
 }
 
-target_file=${1:-""}
+tile=${1:-""}
+target_file=${2:-""}
+
+if [[ -z "${tile}" ]]; then
+    usage
+    exit 1
+fi
 
 if [[ -z "${target_file}" ]]; then
     usage
@@ -23,5 +30,3 @@ docker run -it \
     -e OM_TARGET=$(echo ${ops_mgr} | jq -r ".url") \
     -e OM_SKIP_SSL_VALIDATION=1 \
     cfplatformeng/test-tile-test:local
-#    \
-#    /bin/bash
