@@ -1,5 +1,7 @@
 module github.com/cf-platform-eng/isv-ci-toolkit/tileinspect
 
+go 1.12
+
 require (
 	github.com/MakeNowJust/heredoc v0.0.0-20171113091838-e9091a26100e
 	github.com/ghodss/yaml v1.0.0
