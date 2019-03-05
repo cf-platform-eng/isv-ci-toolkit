@@ -15,6 +15,7 @@ if [[ -z "${tile}" ]]; then
     usage
     exit 1
 fi
+tile_filename=`basename ${tile}`
 
 if [[ -z "${target_file}" ]]; then
     usage
@@ -29,4 +30,5 @@ docker run -it \
     -e OM_PASSWORD=$(echo ${ops_mgr} | jq -r ".password") \
     -e OM_TARGET=$(echo ${ops_mgr} | jq -r ".url") \
     -e OM_SKIP_SSL_VALIDATION=1 \
-    cfplatformeng/test-tile-test:local
+    -v ${tile}:/tile/${tile_filename} \
+    cfplatformeng/test-tile-test:latest
