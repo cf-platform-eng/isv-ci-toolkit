@@ -35,3 +35,6 @@ build/tileinspect: $(SRC) deps
 	go build -o build/tileinspect ./cmd/tileinspect/main.go
 
 build: build/tileinspect
+
+test: deps
+	ginkgo -r .

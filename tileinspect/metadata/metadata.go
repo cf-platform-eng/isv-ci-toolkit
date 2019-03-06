@@ -15,7 +15,6 @@ import (
 
 type Config struct {
 	Tile   string `long:"tile" short:"t" description:"path to product file" required:"true"`
-	Out    string `long:"output" short:"o" description:"output file for metadata, defaults to stdout"`
 	Format string `long:"format" short:"f" description:"output file type" choice:"yaml" choice:"json" default:"yaml"`
 }
 
@@ -76,20 +75,5 @@ func (cmd *Config) WriteMetadata(out io.Writer) error {
 }
 
 func (cmd *Config) Execute(args []string) error {
-	var err error
-	out := os.Stdout
-
-	if cmd.Out != "" {
-		out, err = os.OpenFile(cmd.Out, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			return Wrapf(err, "could not open %s for write", cmd.Out)
-		}
-	}
-
-	err = cmd.WriteMetadata(out)
-	if err != nil {
-		return Wrapf(err, "failed to write metadata file")
-	}
-
-	return nil
+	return cmd.WriteMetadata(os.Stdout)
 }

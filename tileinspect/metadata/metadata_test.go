@@ -1,11 +1,14 @@
 package metadata_test
 
 import (
+	"archive/zip"
 	"errors"
+	"fmt"
+	"github.com/MakeNowJust/heredoc"
 	"github.com/cf-platform-eng/isv-ci-toolkit/tileinspect/metadata"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"io"
+	. "github.com/onsi/gomega/gbytes"
 	"io/ioutil"
 	"os"
 )
@@ -16,25 +19,68 @@ func (w *BadWriter) Write(p []byte) (int, error) {
 	return 0, errors.New("I am a bad writer")
 }
 
+func CreateTestTileWithMetadata(metadata string) (*os.File, error) {
+	file, err := ioutil.TempFile(".", "test-tile-*.pivotal")
+	if err != nil {
+		return nil, err
+	}
+
+	writer := zip.NewWriter(file)
+	if metadata != "" {
+		fileWriter, err := writer.Create("metadata/test-tile-metadata.yml")
+		if err != nil {
+			return nil, err
+		}
+
+		_, err = fileWriter.Write([]byte(metadata))
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	err = writer.Close()
+	return file, err
+}
+
 var _ = Describe("WriteMetadata", func() {
+	var (
+		buffer *Buffer
+		tile   *os.File
+	)
+
+	BeforeEach(func() {
+		buffer = NewBuffer()
+	})
+
+	AfterEach(func() {
+		err := buffer.Close()
+		Expect(err).ToNot(HaveOccurred())
+
+		if tile != nil {
+			err = os.Remove(tile.Name())
+			Expect(err).ToNot(HaveOccurred())
+			tile = nil
+		}
+	})
+
 	Context("Valid tile", func() {
 		var config metadata.Config
 		BeforeEach(func() {
+			var err error
+			tile, err = CreateTestTileWithMetadata(heredoc.Doc(`
+			---
+			metadata: content`))
+			Expect(err).ToNot(HaveOccurred())
+
 			config = metadata.Config{
-				Tile: "artifacts/test-pas-tile-0.2.4.pivotal",
+				Tile: tile.Name(),
 			}
 		})
 
 		It("extracts the metadata file from the tile", func() {
-			r, w := io.Pipe()
-			go func() {
-				err := config.WriteMetadata(w)
-				Expect(err).ToNot(HaveOccurred())
-				_ = w.Close()
-			}()
-
-			stdout, _ := ioutil.ReadAll(r)
-			Expect(stdout).To(ContainSubstring("description: Smoke test tile for tile-dashboard to prove acceptance is in good shape"))
+			err := config.WriteMetadata(buffer)
+			Expect(err).ToNot(HaveOccurred())
+			Eventually(buffer).Should(Say(""))
 		})
 
 		Context("JSON format", func() {
@@ -42,15 +88,9 @@ var _ = Describe("WriteMetadata", func() {
 				config.Format = "json"
 			})
 			It("extracts the metadata file from the tile and outputs it in JSON", func() {
-				r, w := io.Pipe()
-				go func() {
-					err := config.WriteMetadata(w)
-					Expect(err).ToNot(HaveOccurred())
-					_ = w.Close()
-				}()
-
-				stdout, _ := ioutil.ReadAll(r)
-				Expect(stdout).To(ContainSubstring("\"description\":\"Smoke test tile for tile-dashboard to prove acceptance is in good shape\""))
+				err := config.WriteMetadata(buffer)
+				Expect(err).ToNot(HaveOccurred())
+				Eventually(buffer).Should(Say(`{"metadata":"content"}`))
 			})
 		})
 
@@ -59,7 +99,7 @@ var _ = Describe("WriteMetadata", func() {
 				out := &BadWriter{}
 				err := config.WriteMetadata(out)
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("could not read from metadata/test-pas-tile.yml (found inside artifacts/test-pas-tile-0.2.4.pivotal): I am a bad writer"))
+				Expect(err.Error()).To(Equal(fmt.Sprintf("could not read from metadata/test-tile-metadata.yml (found inside %s): I am a bad writer", tile.Name())))
 			})
 		})
 	})
@@ -85,20 +125,31 @@ var _ = Describe("WriteMetadata", func() {
 	})
 
 	Context("Invalid tile file", func() {
+		BeforeEach(func() {
+			var err error
+			tile, err = ioutil.TempFile(".", "not-a-zip-file-*.pivotal")
+			Expect(err).ToNot(HaveOccurred())
+		})
+
 		It("returns an error", func() {
 			config := metadata.Config{
-				Tile: "artifacts/not-a-zip-file",
+				Tile: tile.Name(),
 			}
 			err := config.WriteMetadata(nil)
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal("could not unzip artifacts/not-a-zip-file: zip: not a valid zip file"))
+			Expect(err.Error()).To(Equal(fmt.Sprintf("could not unzip %s: zip: not a valid zip file", tile.Name())))
 		})
 	})
 
 	Context("No metadata file inside tile", func() {
+		BeforeEach(func() {
+			var err error
+			tile, err = CreateTestTileWithMetadata("")
+			Expect(err).ToNot(HaveOccurred())
+		})
 		It("returns an error", func() {
 			config := metadata.Config{
-				Tile: "artifacts/missing-metadata.pivotal",
+				Tile: tile.Name(),
 			}
 			err := config.WriteMetadata(nil)
 			Expect(err).To(HaveOccurred())
@@ -109,21 +160,19 @@ var _ = Describe("WriteMetadata", func() {
 	Context("Invalid metadata file inside tile", func() {
 		var config metadata.Config
 		BeforeEach(func() {
+			var err error
+			tile, err = CreateTestTileWithMetadata(": - this is not valid yaml")
+			Expect(err).ToNot(HaveOccurred())
+
 			config = metadata.Config{
-				Tile: "artifacts/invalid-metadata-yaml.pivotal",
+				Tile: tile.Name(),
 			}
 		})
 		Context("Default format (yaml)", func() {
 			It("returns the invalid yaml", func() {
-				r, w := io.Pipe()
-				go func() {
-					err := config.WriteMetadata(w)
-					Expect(err).ToNot(HaveOccurred())
-					_ = w.Close()
-				}()
-
-				stdout, _ := ioutil.ReadAll(r)
-				Expect(string(stdout)).To(Equal(": - this is not valid yaml\n"))
+				err := config.WriteMetadata(buffer)
+				Expect(err).ToNot(HaveOccurred())
+				Eventually(buffer).Should(Say(": - this is not valid yaml"))
 			})
 		})
 
@@ -132,77 +181,8 @@ var _ = Describe("WriteMetadata", func() {
 				config.Format = "json"
 				err := config.WriteMetadata(nil)
 				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("could not read from metadata/invalid.yml (found inside artifacts/invalid-metadata-yaml.pivotal): yaml: did not find expected key"))
+				Expect(err.Error()).To(Equal(fmt.Sprintf("could not read from metadata/test-tile-metadata.yml (found inside %s): yaml: did not find expected key", tile.Name())))
 			})
-		})
-	})
-})
-
-var _ = Describe("Execute", func() {
-	Context("Valid tile", func() {
-		var config metadata.Config
-		var tmpFile *os.File
-
-		BeforeEach(func() {
-			config = metadata.Config{
-				Tile: "artifacts/test-pas-tile-0.2.4.pivotal",
-			}
-
-			var err error
-			tmpFile, err = ioutil.TempFile(".", "metadata-*.yml")
-			Expect(err).ToNot(HaveOccurred())
-		})
-		AfterEach(func() {
-			err := os.Remove(tmpFile.Name())
-			Expect(err).ToNot(HaveOccurred())
-		})
-		Context("No output file defined", func() {
-			var savedStdout *os.File
-			BeforeEach(func() {
-				savedStdout = os.Stdout
-				os.Stdout = tmpFile
-			})
-			AfterEach(func() {
-				os.Stdout = savedStdout
-			})
-			It("prints the metadata to stdout", func() {
-				err := config.Execute(nil)
-				Expect(err).ToNot(HaveOccurred())
-
-				metadataFile, err := ioutil.ReadFile(tmpFile.Name())
-				Expect(err).ToNot(HaveOccurred())
-				Expect(metadataFile).To(ContainSubstring("description: Smoke test tile for tile-dashboard to prove acceptance is in good shape"))
-			})
-		})
-
-		Context("Output file defined", func() {
-			It("writes the metadata to the file", func() {
-				config.Out = tmpFile.Name()
-				err := config.Execute(nil)
-				Expect(err).ToNot(HaveOccurred())
-
-				metadataFile, err := ioutil.ReadFile(tmpFile.Name())
-				Expect(err).ToNot(HaveOccurred())
-				Expect(metadataFile).To(ContainSubstring("description: Smoke test tile for tile-dashboard to prove acceptance is in good shape"))
-			})
-		})
-
-		Context("Invalid output file", func() {
-			It("returns an error", func() {
-				config.Out = "."
-				err := config.Execute(nil)
-				Expect(err).To(HaveOccurred())
-				Expect(err.Error()).To(Equal("could not open . for write: open .: is a directory"))
-			})
-		})
-	})
-
-	Context("WriteMetadata returns an error", func() {
-		It("returns an error", func() {
-			config := metadata.Config{}
-			err := config.Execute(nil)
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(Equal("failed to write metadata file: could not unzip : open : no such file or directory"))
 		})
 	})
 })
