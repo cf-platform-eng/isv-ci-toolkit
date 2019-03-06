@@ -29,7 +29,7 @@ func findInZip(term string, zip *zip.ReadCloser) *zip.File {
 	return nil
 }
 
-func (cmd *Config) dumpFile(zipFile *zip.File, outFile *os.File) error {
+func (cmd *Config) dumpFile(zipFile *zip.File, out io.Writer) error {
 	inFile, err := zipFile.Open()
 	if err != nil {
 		return err
@@ -47,15 +47,15 @@ func (cmd *Config) dumpFile(zipFile *zip.File, outFile *os.File) error {
 			return err
 		}
 
-		_, err = outFile.Write(j)
+		_, err = out.Write(j)
 		return err
 	} else {
-		_, err = io.Copy(outFile, inFile)
+		_, err = io.Copy(out, inFile)
 		return err
 	}
 }
 
-func (cmd *Config) Execute(args []string) error {
+func (cmd *Config) WriteMetadata(out io.Writer) error {
 	tile, err := zip.OpenReader(cmd.Tile)
 	if err != nil {
 		return Wrap(err, fmt.Sprintf("could not unzip %s", cmd.Tile))
@@ -67,7 +67,17 @@ func (cmd *Config) Execute(args []string) error {
 		return errors.New("metadata file not found")
 	}
 
-	var out = os.Stdout
+	err = cmd.dumpFile(metadataFile, out)
+	if err != nil {
+		return Wrapf(err, "could not read from %s (found inside %s)", metadataFile.Name, cmd.Tile)
+	}
+
+	return nil
+}
+
+func (cmd *Config) Execute(args []string) error {
+	var err error
+	out := os.Stdout
 
 	if cmd.Out != "" {
 		out, err = os.OpenFile(cmd.Out, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -76,9 +86,9 @@ func (cmd *Config) Execute(args []string) error {
 		}
 	}
 
-	err = cmd.dumpFile(metadataFile, out)
+	err = cmd.WriteMetadata(out)
 	if err != nil {
-		return Wrapf(err, "could not read from %s (found inside %s)", metadataFile.Name, cmd.Tile)
+		return Wrapf(err, "failed to write metadata file")
 	}
 
 	return nil

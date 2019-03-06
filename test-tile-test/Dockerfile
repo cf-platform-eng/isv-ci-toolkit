@@ -11,7 +11,8 @@ CMD [ \
     "-c", \
     " \
     om staged-products && \
-    tileinspect metadata -f json -t /tile/*.pivotal | jq "." && \
+    tileinspect metadata -f json -t /tile/*.pivotal | jq \".\" && \
+    tileinspect metadata -f json -t /tile/*.pivotal | jq \".stemcell_criteria\" && \
     bash \
     " \
     ]
