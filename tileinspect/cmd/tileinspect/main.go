@@ -38,14 +38,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	//cmds := parser.Commands()
-	//for _, command := range cmds {
-	//	fmt.Println(command.Name)
-	//}
-	
 	_, err = parser.Parse()
 	if err != nil {
-		//fmt.Print(err)
 		os.Exit(1)
 	}
 }
