@@ -2,6 +2,7 @@ FROM ubuntu:xenial
 
 ARG BOSH_CLI_VER=5.4.0
 ARG CREDHUB_CLI_VER=2.2.1
+ARG PIVNET_CLI_VER=0.0.55
 
 RUN apt-get -y update
 
@@ -31,6 +32,11 @@ RUN wget -q -O - https://raw.githubusercontent.com/starkandwayne/homebrew-cf/mas
 RUN echo "deb http://apt.starkandwayne.com stable main" | tee /etc/apt/sources.list.d/starkandwayne.list
 RUN apt-get update
 RUN apt-get install om
+
+# PivNet CLI
+RUN wget "https://github.com/pivotal-cf/pivnet-cli/releases/download/v${PIVNET_CLI_VER}/pivnet-linux-amd64-${PIVNET_CLI_VER}"
+RUN mv pivnet-linux-amd64-${PIVNET_CLI_VER} /usr/local/bin/pivnet
+RUN chmod +x /usr/local/bin/pivnet
 
 # Credhub CLI
 RUN wget "https://github.com/cloudfoundry-incubator/credhub-cli/releases/download/${CREDHUB_CLI_VER}/credhub-linux-${CREDHUB_CLI_VER}.tgz"
