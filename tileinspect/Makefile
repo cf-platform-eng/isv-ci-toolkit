@@ -36,5 +36,8 @@ build/tileinspect: $(SRC) deps
 
 build: build/tileinspect
 
-test: deps
+test: deps lint
 	ginkgo -r .
+
+lint: deps-goimports
+	git ls-files | grep '.go$$' | xargs goimports -l -w
