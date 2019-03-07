@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/cf-platform-eng/isv-ci-toolkit/tileinspect"
-	"github.com/cf-platform-eng/isv-ci-toolkit/tileinspect/downloadstemcell"
+	"github.com/cf-platform-eng/isv-ci-toolkit/marman"
+	"github.com/cf-platform-eng/isv-ci-toolkit/marman/downloadstemcell"
 	"os"
 
 	"github.com/jessevdk/go-flags"
