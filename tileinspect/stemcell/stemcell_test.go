@@ -2,6 +2,8 @@ package stemcell_test
 
 import (
 	"encoding/json"
+	"io"
+
 	"github.com/MakeNowJust/heredoc"
 	"github.com/cf-platform-eng/isv-ci-toolkit/tileinspect/stemcell"
 	"github.com/cf-platform-eng/isv-ci-toolkit/tileinspect/stemcell/stemcellfakes"
@@ -9,7 +11,6 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	"github.com/pkg/errors"
-	"io"
 )
 
 var _ = Describe("WriteStemcell", func() {

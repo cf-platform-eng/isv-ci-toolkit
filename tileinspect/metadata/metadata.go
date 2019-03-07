@@ -9,12 +9,13 @@ import (
 	"os"
 	"regexp"
 
+	"github.com/cf-platform-eng/isv-ci-toolkit/tileinspect"
 	"github.com/ghodss/yaml"
 	. "github.com/pkg/errors"
 )
 
 type Config struct {
-	Tile   string `long:"tile" short:"t" description:"path to product file" required:"true"`
+	tileinspect.TileConfig
 	Format string `long:"format" short:"f" description:"output file type" choice:"yaml" choice:"json" default:"yaml"`
 }
 

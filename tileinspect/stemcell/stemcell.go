@@ -3,11 +3,13 @@ package stemcell
 import (
 	"encoding/json"
 	"errors"
-	"github.com/cf-platform-eng/isv-ci-toolkit/tileinspect/metadata"
-	. "github.com/pkg/errors"
 	"io"
 	"os"
 	"strings"
+
+	"github.com/cf-platform-eng/isv-ci-toolkit/tileinspect"
+	"github.com/cf-platform-eng/isv-ci-toolkit/tileinspect/metadata"
+	. "github.com/pkg/errors"
 )
 
 //go:generate counterfeiter MetadataCmd
@@ -16,7 +18,7 @@ type MetadataCmd interface {
 }
 
 type Config struct {
-	Tile        string `long:"tile" short:"t" description:"path to product file" required:"true"`
+	tileinspect.TileConfig
 	MetadataCmd MetadataCmd
 }
 
@@ -36,7 +38,7 @@ func (cmd *Config) WriteStemcell(out io.Writer) error {
 
 	err := cmd.MetadataCmd.WriteMetadata(pw)
 	if err != nil {
-		return Wrap(err,"failed to read tile metadata")
+		return Wrap(err, "failed to read tile metadata")
 	}
 
 	err = <-errorChan
@@ -61,7 +63,9 @@ func (cmd *Config) WriteStemcell(out io.Writer) error {
 
 func (cmd *Config) Execute(args []string) error {
 	cmd.MetadataCmd = &metadata.Config{
-		Tile:   cmd.Tile,
+		TileConfig: tileinspect.TileConfig{
+			Tile: cmd.Tile,
+		},
 		Format: "json",
 	}
 	return cmd.WriteStemcell(os.Stdout)

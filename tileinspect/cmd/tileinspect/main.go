@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/cf-platform-eng/isv-ci-toolkit/tileinspect/stemcell"
 	"os"
+
+	"github.com/cf-platform-eng/isv-ci-toolkit/tileinspect/stemcell"
+	flags "github.com/jessevdk/go-flags"
 
 	"github.com/cf-platform-eng/isv-ci-toolkit/tileinspect"
 	"github.com/cf-platform-eng/isv-ci-toolkit/tileinspect/metadata"
-	"github.com/jessevdk/go-flags"
 )
 
 var metadataOpts metadata.Config
@@ -43,5 +44,3 @@ func main() {
 		os.Exit(1)
 	}
 }
-
-

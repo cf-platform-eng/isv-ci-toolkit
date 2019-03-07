@@ -4,13 +4,15 @@ import (
 	"archive/zip"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
+
 	"github.com/MakeNowJust/heredoc"
+	"github.com/cf-platform-eng/isv-ci-toolkit/tileinspect"
 	"github.com/cf-platform-eng/isv-ci-toolkit/tileinspect/metadata"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
-	"io/ioutil"
-	"os"
 )
 
 type BadWriter struct{}
@@ -73,7 +75,9 @@ var _ = Describe("WriteMetadata", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			config = metadata.Config{
-				Tile: tile.Name(),
+				TileConfig: tileinspect.TileConfig{
+					Tile: tile.Name(),
+				},
 			}
 		})
 
@@ -116,7 +120,9 @@ var _ = Describe("WriteMetadata", func() {
 	Context("Invalid tile path", func() {
 		It("returns an error", func() {
 			config := metadata.Config{
-				Tile: "this/path/does/not/exist",
+				TileConfig: tileinspect.TileConfig{
+					Tile: "this/path/does/not/exist",
+				},
 			}
 			err := config.WriteMetadata(nil)
 			Expect(err).To(HaveOccurred())
@@ -133,7 +139,9 @@ var _ = Describe("WriteMetadata", func() {
 
 		It("returns an error", func() {
 			config := metadata.Config{
-				Tile: tile.Name(),
+				TileConfig: tileinspect.TileConfig{
+					Tile: tile.Name(),
+				},
 			}
 			err := config.WriteMetadata(nil)
 			Expect(err).To(HaveOccurred())
@@ -149,7 +157,9 @@ var _ = Describe("WriteMetadata", func() {
 		})
 		It("returns an error", func() {
 			config := metadata.Config{
-				Tile: tile.Name(),
+				TileConfig: tileinspect.TileConfig{
+					Tile: tile.Name(),
+				},
 			}
 			err := config.WriteMetadata(nil)
 			Expect(err).To(HaveOccurred())
@@ -165,7 +175,9 @@ var _ = Describe("WriteMetadata", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			config = metadata.Config{
-				Tile: tile.Name(),
+				TileConfig: tileinspect.TileConfig{
+					Tile: tile.Name(),
+				},
 			}
 		})
 		Context("Default format (yaml)", func() {
