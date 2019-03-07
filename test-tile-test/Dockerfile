@@ -5,6 +5,7 @@ FROM cfplatformeng/toolkit-pas
 # * JSON file from Toolsmiths (json file from toolsmiths)
 
 COPY artifacts/tileinspect /usr/local/bin
+COPY artifacts/marman /usr/local/bin
 
 CMD [ \
     "/bin/bash", \

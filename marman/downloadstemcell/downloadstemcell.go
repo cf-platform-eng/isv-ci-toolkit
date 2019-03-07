@@ -2,7 +2,11 @@ package downloadstemcell
 
 import (
 	"fmt"
+	"log"
+	"os"
+
 	"github.com/pivotal-cf/go-pivnet"
+	"github.com/pivotal-cf/go-pivnet/logshim"
 )
 
 type Config struct {
@@ -26,11 +30,16 @@ func StemcellOSToSlug(os string) string {
 
 func (cmd *Config) Execute(args []string) error {
 	// TODO: logger can't be nil
-	
+
+	stdoutLogger := log.New(os.Stdout, "", log.LstdFlags)
+	stderrLogger := log.New(os.Stderr, "", log.LstdFlags)
+
+	logger := logshim.NewLogShim(stdoutLogger, stderrLogger, true)
+
 	client := pivnet.NewClient(pivnet.ClientConfig{
 		Host: pivnet.DefaultHost,
 		Token: cmd.PivnetToken,
-	}, nil)
+	}, logger)
 
 	releases, err := client.Releases.List(StemcellOSToSlug(cmd.OS))
 	if err != nil {
