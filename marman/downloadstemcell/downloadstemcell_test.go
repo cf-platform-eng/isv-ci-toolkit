@@ -26,16 +26,20 @@ var _ = Describe("Download Stemcell", func() {
 
 	Context("Fixed stemcell version", func() {
 		BeforeEach(func() {
-			cmd.Version = "170.12345"
+			cmd.Version = "170.12"
 			cmd.Floating = false
 			pivnetClient.ListReleasesReturns([]pivnet.Release{
 				{
-					ID:      11111,
-					Version: "170.11111",
+					ID:      11,
+					Version: "170.11",
 				},
 				{
-					ID:      123456,
-					Version: "170.12345",
+					ID:      12,
+					Version: "170.12",
+				},
+				{
+					ID:      123,
+					Version: "170.123",
 				},
 			}, nil)
 
@@ -68,7 +72,7 @@ var _ = Describe("Download Stemcell", func() {
 				Expect(pivnetClient.ListFilesForReleaseCallCount()).To(Equal(1))
 				slug, releaseID := pivnetClient.ListFilesForReleaseArgsForCall(0)
 				Expect(slug).To(Equal("stemcells-ubuntu-xenial"))
-				Expect(releaseID).To(Equal(123456))
+				Expect(releaseID).To(Equal(12))
 			})
 		})
 

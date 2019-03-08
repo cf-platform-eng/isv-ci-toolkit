@@ -45,10 +45,12 @@ func (cmd *Config) DownloadStemcell() error {
 
 	var stemcellRelease pivnet.Release
 	for _, release := range releases {
-		if strings.HasPrefix(release.Version, cmd.Version) {
-			if IsNewerRelease(release, stemcellRelease) {
+		if cmd.Floating {
+			if strings.HasPrefix(release.Version, cmd.Version) && IsNewerRelease(release, stemcellRelease) {
 				stemcellRelease = release
 			}
+		} else if cmd.Version == release.Version {
+			stemcellRelease = release
 		}
 	}
 
