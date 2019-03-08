@@ -1,10 +1,13 @@
 package downloadstemcell
 
 import (
-	"fmt"
-	pivnetClient "github.com/cf-platform-eng/isv-ci-toolkit/marman/pivnet"
+	"errors"
 	"log"
 	"os"
+	"strings"
+
+	pivnetClient "github.com/cf-platform-eng/isv-ci-toolkit/marman/pivnet"
+	. "github.com/pkg/errors"
 
 	"github.com/pivotal-cf/go-pivnet"
 	"github.com/pivotal-cf/go-pivnet/logshim"
@@ -28,24 +31,35 @@ func stemcellOSToSlug(os string) string {
 	return ""
 }
 
-func (cmd *Config) DownloadStemcell() error {
-	// get releases for a given slug
-	// If floating,
-	//    Pick latest version
-	//    set version
-	// else set version
-	// For slug and release id, get files
-	// Find the file to download
-	// output file to stdout
+func IsNewerRelease(releaseA, releaseB pivnet.Release) bool {
+	return strings.Compare(releaseA.Version, releaseB.Version) > 0
+}
 
+func (cmd *Config) DownloadStemcell() error {
 	slug := stemcellOSToSlug(cmd.OS)
 
 	releases, err := cmd.PivnetClient.ListReleases(slug)
 	if err != nil {
-		fmt.Print(err.Error())
-		return err
+		return Wrapf(err, "failed to list releases for slug %s", slug)
 	}
-	fmt.Printf("found %d releases\n", len(releases))
+
+	var stemcellRelease pivnet.Release
+	for _, release := range releases {
+		if strings.HasPrefix(release.Version, cmd.Version) {
+			if IsNewerRelease(release, stemcellRelease) {
+				stemcellRelease = release
+			}
+		}
+	}
+
+	if stemcellRelease.ID == 0 {
+		return errors.New("no releases found for the required stemcell version")
+	}
+
+	_, err = cmd.PivnetClient.ListFilesForRelease(slug, stemcellRelease.ID)
+	if err != nil {
+		return Wrapf(err, "failed to list release files for %s:%s (%d)", slug, stemcellRelease.Version, stemcellRelease.ID)
+	}
 
 	return nil
 }

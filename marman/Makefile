@@ -36,5 +36,8 @@ build/marman: $(SRC) deps
 
 build: build/marman
 
-test: deps
+test: deps lint
 	ginkgo -r .
+
+lint: deps-goimports
+	git ls-files | grep '.go$$' | xargs goimports -l -w

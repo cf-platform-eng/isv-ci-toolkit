@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/cf-platform-eng/isv-ci-toolkit/marman"
 	"github.com/cf-platform-eng/isv-ci-toolkit/marman/downloadstemcell"
-	"os"
 
 	"github.com/jessevdk/go-flags"
 )
