@@ -12,6 +12,7 @@ CMD [ \
     export TCP_ROUTER_POOL=$( cat config-input-files/metadata.json | jq -r '.tcp_router_pool' ) && \
     sed -i -e s/ELB_NAME/$TCP_ROUTER_POOL/g config.yml && \
     om configure-product --config config.yml && \
+    om apply-changes && \
     export CF_API=https://api.$( cat config-input-files/metadata.json | jq -r '.sys_domain' ) && \
     export CF_USERNAME=$( om credentials -p cf -c .uaa.admin_credentials -f identity ) && \
     export CF_PASSWORD=$( om credentials -p cf -c .uaa.admin_credentials -f password ) && \
