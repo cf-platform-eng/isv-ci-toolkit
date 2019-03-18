@@ -137,14 +137,15 @@ var _ = Describe("Download Stemcell", func() {
 				{
 					ID:      1,
 					Version: "170.1",
-				},
-				{
+				}, {
 					ID:      3,
 					Version: "170.3",
-				},
-				{
+				}, {
 					ID:      2,
 					Version: "170.2",
+				}, {
+					ID:      4,
+					Version: "1700.2",
 				},
 			}, nil)
 		})
@@ -164,6 +165,33 @@ var _ = Describe("Download Stemcell", func() {
 				Expect(slug).To(Equal("stemcells-ubuntu-xenial"))
 				Expect(releaseID).To(Equal(3))
 			})
+		})
+	})
+
+	Context("No stemcell os provided", func() {
+		It("returns an error", func() {
+			cmd.OS = ""
+			err := cmd.DownloadStemcell()
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("missing stemcell os"))
+		})
+	})
+
+	Context("Invalid stemcell os provided", func() {
+		It("returns an error", func() {
+			cmd.OS = "pete"
+			err := cmd.DownloadStemcell()
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("invalid stemcell os"))
+		})
+	})
+
+	Context("No stemcell version provided", func() {
+		It("returns an error", func() {
+			cmd.Version = ""
+			err := cmd.DownloadStemcell()
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(Equal("missing stemcell version"))
 		})
 	})
 })

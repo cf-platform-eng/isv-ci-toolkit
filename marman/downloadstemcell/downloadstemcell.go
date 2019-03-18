@@ -16,19 +16,19 @@ import (
 type Config struct {
 	OS           string `short:"o" long:"os" description:"Stemcell OS name"`
 	Version      string `short:"v" long:"version" description:"Stemcell version"`
-	Floating     bool
+	Floating     bool   `short:"f" long:"floating" description:"Pick the latest stemcell version for this version"`
 	PivnetClient pivnetClient.Client
 	PivnetToken  string `long:"pivnet-token" description:"Authentication token for PivNet" env:"PIVNET_TOKEN"`
 }
 
-func stemcellOSToSlug(os string) string {
+func stemcellOSToSlug(os string) (string, error) {
 	switch os {
 	case "ubuntu-trusty":
-		return "stemcells-ubuntu"
+		return "stemcells-ubuntu", nil
 	case "ubuntu-xenial":
-		return "stemcells-ubuntu-xenial"
+		return "stemcells-ubuntu-xenial", nil
 	}
-	return ""
+	return "", errors.New("invalid stemcell os")
 }
 
 func IsNewerRelease(releaseA, releaseB pivnet.Release) bool {
@@ -36,7 +36,18 @@ func IsNewerRelease(releaseA, releaseB pivnet.Release) bool {
 }
 
 func (cmd *Config) DownloadStemcell() error {
-	slug := stemcellOSToSlug(cmd.OS)
+	if cmd.OS == "" {
+		return errors.New("missing stemcell os")
+	}
+
+	slug, err := stemcellOSToSlug(cmd.OS)
+	if err != nil {
+		return err
+	}
+
+	if cmd.Version == "" {
+		return errors.New("missing stemcell version")
+	}
 
 	releases, err := cmd.PivnetClient.ListReleases(slug)
 	if err != nil {
@@ -46,7 +57,7 @@ func (cmd *Config) DownloadStemcell() error {
 	var stemcellRelease pivnet.Release
 	for _, release := range releases {
 		if cmd.Floating {
-			if strings.HasPrefix(release.Version, cmd.Version) && IsNewerRelease(release, stemcellRelease) {
+			if strings.HasPrefix(release.Version, cmd.Version + ".") && IsNewerRelease(release, stemcellRelease) {
 				stemcellRelease = release
 			}
 		} else if cmd.Version == release.Version {
