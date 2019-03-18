@@ -1,0 +1,40 @@
+FROM ubuntu:xenial
+
+ARG HELM_VER=2.13.0
+
+RUN apt-get -y update --fix-missing
+
+# Default Tools
+RUN apt-get -y install \
+    build-essential \
+    apt-transport-https \
+    curl \
+    wget \
+    less \
+    git \
+    jq
+
+# kubectl
+RUN curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+RUN echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list
+RUN apt-get -y update
+RUN apt-get install -y kubectl
+
+# helm cli
+RUN wget https://storage.googleapis.com/kubernetes-helm/helm-v${HELM_VER}-linux-amd64.tar.gz
+RUN tar xvzf helm-v${HELM_VER}-linux-amd64.tar.gz
+RUN mv linux-amd64/helm /usr/local/bin
+RUN mv linux-amd64/tiller /usr/local/bin
+RUN rm -rf linux-amd64
+RUN rm helm-v${HELM_VER}-linux-amd64.tar.gz
+
+# pks cli
+# TODO deal with licensing
+COPY temp/pks /usr/local/bin/pks
+RUN chmod +x /usr/local/bin/pks
+
+# bazaar
+# TODO deal with licensing
+COPY temp/bazaar /usr/local/bin/bazaar
+RUN chmod +x /usr/local/bin/bazaar
+
