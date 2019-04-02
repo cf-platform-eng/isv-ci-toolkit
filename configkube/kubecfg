@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+CONTEXT=$(kubectl config current-context)
+
+USER_NAME=$(kubectl config view -o json | jq -r '.contexts[] | select(.name == "'"${CONTEXT}"'").context.user')
+export K8S_USER_TOKEN=$(kubectl config view -o json | jq -r '.users[] | select(.name == "'"${USER_NAME}"'").user.token')
+
+export K8S_CLUSTER=$(kubectl config view -o json | jq -r '.contexts[] | select(.name == "'"${CONTEXT}"'").context.cluster')
+export K8S_SERVER=$(kubectl config view -o json | jq -r '.clusters[] | select(.name == "'"${K8S_CLUSTER}"'").cluster.server')
+export K8S_SERVER_CA=$(kubectl config view -o json --raw=true | jq -r '.clusters[] | select(.name == "'"${K8S_CLUSTER}"'").cluster."certificate-authority-data"')

@@ -1,6 +1,6 @@
 FROM ubuntu:xenial
 
-ARG HELM_VER=2.13.0
+ARG HELM_VER=2.12.1
 
 RUN apt-get -y update --fix-missing
 
@@ -33,6 +33,15 @@ RUN mv linux-amd64/tiller /usr/local/bin
 WORKDIR /test/
 RUN rm -rf /install
 
-COPY temp/configkube /test/
+# pks cli
+# TODO deal with licensing
+COPY temp/pks /usr/local/bin/pks
+RUN chmod +x /usr/local/bin/pks
+
+# bazaar
+# TODO deal with licensing
+COPY temp/bazaar /usr/local/bin/bazaar
+RUN chmod +x /usr/local/bin/bazaar
+
 COPY test/* /test/
 CMD ["/bin/bash", "-c", "cd /test && source commands.sh && run"]
