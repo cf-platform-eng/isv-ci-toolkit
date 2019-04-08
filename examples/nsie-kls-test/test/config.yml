@@ -1,0 +1,3 @@
+workload-validator:
+  path: /test/validator.sh
+  args: [ nsie-under-test ]
