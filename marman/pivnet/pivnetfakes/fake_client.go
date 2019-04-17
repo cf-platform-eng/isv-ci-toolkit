@@ -2,25 +2,54 @@
 package pivnetfakes
 
 import (
+	io "io"
 	sync "sync"
 
 	pivnet "github.com/cf-platform-eng/isv-ci-toolkit/marman/pivnet"
 	pivneta "github.com/pivotal-cf/go-pivnet"
+	download "github.com/pivotal-cf/go-pivnet/download"
 )
 
 type FakeClient struct {
-	ListFilesForReleaseStub        func(string, int) ([]pivneta.FileGroup, error)
+	AcceptEULAStub        func(string, int) error
+	acceptEULAMutex       sync.RWMutex
+	acceptEULAArgsForCall []struct {
+		arg1 string
+		arg2 int
+	}
+	acceptEULAReturns struct {
+		result1 error
+	}
+	acceptEULAReturnsOnCall map[int]struct {
+		result1 error
+	}
+	DownloadProductFileStub        func(*download.FileInfo, string, int, int, io.Writer) error
+	downloadProductFileMutex       sync.RWMutex
+	downloadProductFileArgsForCall []struct {
+		arg1 *download.FileInfo
+		arg2 string
+		arg3 int
+		arg4 int
+		arg5 io.Writer
+	}
+	downloadProductFileReturns struct {
+		result1 error
+	}
+	downloadProductFileReturnsOnCall map[int]struct {
+		result1 error
+	}
+	ListFilesForReleaseStub        func(string, int) ([]pivneta.ProductFile, error)
 	listFilesForReleaseMutex       sync.RWMutex
 	listFilesForReleaseArgsForCall []struct {
 		arg1 string
 		arg2 int
 	}
 	listFilesForReleaseReturns struct {
-		result1 []pivneta.FileGroup
+		result1 []pivneta.ProductFile
 		result2 error
 	}
 	listFilesForReleaseReturnsOnCall map[int]struct {
-		result1 []pivneta.FileGroup
+		result1 []pivneta.ProductFile
 		result2 error
 	}
 	ListReleasesStub        func(string) ([]pivneta.Release, error)
@@ -40,7 +69,132 @@ type FakeClient struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeClient) ListFilesForRelease(arg1 string, arg2 int) ([]pivneta.FileGroup, error) {
+func (fake *FakeClient) AcceptEULA(arg1 string, arg2 int) error {
+	fake.acceptEULAMutex.Lock()
+	ret, specificReturn := fake.acceptEULAReturnsOnCall[len(fake.acceptEULAArgsForCall)]
+	fake.acceptEULAArgsForCall = append(fake.acceptEULAArgsForCall, struct {
+		arg1 string
+		arg2 int
+	}{arg1, arg2})
+	fake.recordInvocation("AcceptEULA", []interface{}{arg1, arg2})
+	fake.acceptEULAMutex.Unlock()
+	if fake.AcceptEULAStub != nil {
+		return fake.AcceptEULAStub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.acceptEULAReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeClient) AcceptEULACallCount() int {
+	fake.acceptEULAMutex.RLock()
+	defer fake.acceptEULAMutex.RUnlock()
+	return len(fake.acceptEULAArgsForCall)
+}
+
+func (fake *FakeClient) AcceptEULACalls(stub func(string, int) error) {
+	fake.acceptEULAMutex.Lock()
+	defer fake.acceptEULAMutex.Unlock()
+	fake.AcceptEULAStub = stub
+}
+
+func (fake *FakeClient) AcceptEULAArgsForCall(i int) (string, int) {
+	fake.acceptEULAMutex.RLock()
+	defer fake.acceptEULAMutex.RUnlock()
+	argsForCall := fake.acceptEULAArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *FakeClient) AcceptEULAReturns(result1 error) {
+	fake.acceptEULAMutex.Lock()
+	defer fake.acceptEULAMutex.Unlock()
+	fake.AcceptEULAStub = nil
+	fake.acceptEULAReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeClient) AcceptEULAReturnsOnCall(i int, result1 error) {
+	fake.acceptEULAMutex.Lock()
+	defer fake.acceptEULAMutex.Unlock()
+	fake.AcceptEULAStub = nil
+	if fake.acceptEULAReturnsOnCall == nil {
+		fake.acceptEULAReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.acceptEULAReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeClient) DownloadProductFile(arg1 *download.FileInfo, arg2 string, arg3 int, arg4 int, arg5 io.Writer) error {
+	fake.downloadProductFileMutex.Lock()
+	ret, specificReturn := fake.downloadProductFileReturnsOnCall[len(fake.downloadProductFileArgsForCall)]
+	fake.downloadProductFileArgsForCall = append(fake.downloadProductFileArgsForCall, struct {
+		arg1 *download.FileInfo
+		arg2 string
+		arg3 int
+		arg4 int
+		arg5 io.Writer
+	}{arg1, arg2, arg3, arg4, arg5})
+	fake.recordInvocation("DownloadProductFile", []interface{}{arg1, arg2, arg3, arg4, arg5})
+	fake.downloadProductFileMutex.Unlock()
+	if fake.DownloadProductFileStub != nil {
+		return fake.DownloadProductFileStub(arg1, arg2, arg3, arg4, arg5)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	fakeReturns := fake.downloadProductFileReturns
+	return fakeReturns.result1
+}
+
+func (fake *FakeClient) DownloadProductFileCallCount() int {
+	fake.downloadProductFileMutex.RLock()
+	defer fake.downloadProductFileMutex.RUnlock()
+	return len(fake.downloadProductFileArgsForCall)
+}
+
+func (fake *FakeClient) DownloadProductFileCalls(stub func(*download.FileInfo, string, int, int, io.Writer) error) {
+	fake.downloadProductFileMutex.Lock()
+	defer fake.downloadProductFileMutex.Unlock()
+	fake.DownloadProductFileStub = stub
+}
+
+func (fake *FakeClient) DownloadProductFileArgsForCall(i int) (*download.FileInfo, string, int, int, io.Writer) {
+	fake.downloadProductFileMutex.RLock()
+	defer fake.downloadProductFileMutex.RUnlock()
+	argsForCall := fake.downloadProductFileArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4, argsForCall.arg5
+}
+
+func (fake *FakeClient) DownloadProductFileReturns(result1 error) {
+	fake.downloadProductFileMutex.Lock()
+	defer fake.downloadProductFileMutex.Unlock()
+	fake.DownloadProductFileStub = nil
+	fake.downloadProductFileReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeClient) DownloadProductFileReturnsOnCall(i int, result1 error) {
+	fake.downloadProductFileMutex.Lock()
+	defer fake.downloadProductFileMutex.Unlock()
+	fake.DownloadProductFileStub = nil
+	if fake.downloadProductFileReturnsOnCall == nil {
+		fake.downloadProductFileReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.downloadProductFileReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeClient) ListFilesForRelease(arg1 string, arg2 int) ([]pivneta.ProductFile, error) {
 	fake.listFilesForReleaseMutex.Lock()
 	ret, specificReturn := fake.listFilesForReleaseReturnsOnCall[len(fake.listFilesForReleaseArgsForCall)]
 	fake.listFilesForReleaseArgsForCall = append(fake.listFilesForReleaseArgsForCall, struct {
@@ -65,7 +219,7 @@ func (fake *FakeClient) ListFilesForReleaseCallCount() int {
 	return len(fake.listFilesForReleaseArgsForCall)
 }
 
-func (fake *FakeClient) ListFilesForReleaseCalls(stub func(string, int) ([]pivneta.FileGroup, error)) {
+func (fake *FakeClient) ListFilesForReleaseCalls(stub func(string, int) ([]pivneta.ProductFile, error)) {
 	fake.listFilesForReleaseMutex.Lock()
 	defer fake.listFilesForReleaseMutex.Unlock()
 	fake.ListFilesForReleaseStub = stub
@@ -78,28 +232,28 @@ func (fake *FakeClient) ListFilesForReleaseArgsForCall(i int) (string, int) {
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeClient) ListFilesForReleaseReturns(result1 []pivneta.FileGroup, result2 error) {
+func (fake *FakeClient) ListFilesForReleaseReturns(result1 []pivneta.ProductFile, result2 error) {
 	fake.listFilesForReleaseMutex.Lock()
 	defer fake.listFilesForReleaseMutex.Unlock()
 	fake.ListFilesForReleaseStub = nil
 	fake.listFilesForReleaseReturns = struct {
-		result1 []pivneta.FileGroup
+		result1 []pivneta.ProductFile
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeClient) ListFilesForReleaseReturnsOnCall(i int, result1 []pivneta.FileGroup, result2 error) {
+func (fake *FakeClient) ListFilesForReleaseReturnsOnCall(i int, result1 []pivneta.ProductFile, result2 error) {
 	fake.listFilesForReleaseMutex.Lock()
 	defer fake.listFilesForReleaseMutex.Unlock()
 	fake.ListFilesForReleaseStub = nil
 	if fake.listFilesForReleaseReturnsOnCall == nil {
 		fake.listFilesForReleaseReturnsOnCall = make(map[int]struct {
-			result1 []pivneta.FileGroup
+			result1 []pivneta.ProductFile
 			result2 error
 		})
 	}
 	fake.listFilesForReleaseReturnsOnCall[i] = struct {
-		result1 []pivneta.FileGroup
+		result1 []pivneta.ProductFile
 		result2 error
 	}{result1, result2}
 }
@@ -170,6 +324,10 @@ func (fake *FakeClient) ListReleasesReturnsOnCall(i int, result1 []pivneta.Relea
 func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.acceptEULAMutex.RLock()
+	defer fake.acceptEULAMutex.RUnlock()
+	fake.downloadProductFileMutex.RLock()
+	defer fake.downloadProductFileMutex.RUnlock()
 	fake.listFilesForReleaseMutex.RLock()
 	defer fake.listFilesForReleaseMutex.RUnlock()
 	fake.listReleasesMutex.RLock()

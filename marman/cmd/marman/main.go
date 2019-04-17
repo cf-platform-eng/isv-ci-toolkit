@@ -39,6 +39,7 @@ func main() {
 
 	_, err = parser.Parse()
 	if err != nil {
+		// TODO: look into printing a usage on bad commands
 		os.Exit(1)
 	}
 }
