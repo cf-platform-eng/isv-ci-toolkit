@@ -46,7 +46,6 @@ chart-present:
 	if [ `ls -1 input/chart | wc -l` -ne 1 ] ; then echo "There must be a single chart (<filename>.tgz) inside input/chart"; exit 1; fi
 
 run: build clustername pks-password chart-present
- 	# Not sure if using '-v' is the ultimate solution for automated builds
 	docker run -it \
 		-v `pwd`/input:/input \
 		-e CHART_DIRECTORY="/input/chart" \
@@ -78,3 +77,11 @@ shell: build clustername pks-password chart-present
 
 lint: test/commands.sh
 	echo $? | xargs shellcheck
+
+
+input/chart/mysql-0.15.0.tgz:
+	svn export https://github.com/helm/charts.git/trunk/stable/mysql
+	helm package mysql
+	rm -rf mysql
+	mkdir -p ./input/chart
+	mv mysql-*.tgz ./input/chart

@@ -2,38 +2,32 @@
 
 export RELEASE_NAME="nsie-under-test"
 
-echo "exporting: setup"
 function setup {
-    echo "fn:setup"
     pks login -a "${PKS_API_ENDPOINT}" -u "${PKS_USERNAME}" -p "${PKS_PASSWORD}" -k
 }
 
 function uninstall_chart {
-    echo "fn:uninstall_chart"
+    echo "Uninstalling ${RELEASE_NAME}..."
     helm delete --purge "${RELEASE_NAME}" --tiller-namespace kibosh || true
     kubectl delete namespace "${RELEASE_NAME}" || true
 }
 
 function cleanup_helm {
-    echo "fn:cleanup_helm"
     helm reset --force --tiller-namespace kibosh
 
     # this is because bazaar uses older helm (afaik)
     # this issue: https://github.com/helm/helm/issues/4825
-    # fix in helm: https://github.com/helm/helm/pull/5161
+    # fix in helm: https://github.com/helm/helm/pull/5161 (2.13.0)
     # pending this fix in bazaar: https://www.pivotaltracker.com/story/show/164841753
-    kubectl delete rs/tiller-deploy-88458558f -n kibosh
+    kubectl delete rs/tiller-deploy-7b5577cfd7 -n kibosh
 }
 
-echo "exporting: cleanup"
 function cleanup {
     uninstall_chart
     cleanup_helm
 }
 
-echo "exporting: install_chart_bazaar"
 function install_chart {
-    echo "fn:install_chart"
     echo "Installing ${RELEASE_NAME} with bazaar..."
 
     bazaar chart install --verbose --cluster-name "${CLUSTER_NAME}" --name "${RELEASE_NAME}" --source-directory "${CHART_DIRECTORY}"
@@ -57,14 +51,11 @@ function install_chart {
     trap cleanup EXIT
 }
 
-echo "exporting: test_chart"
 function test_chart {
-    echo "fn:test_chart"
-    echo "Running test..."
+    echo "Testing ${RELEASE_NAME}..."
     helm test "${RELEASE_NAME}" --debug --cleanup --tiller-namespace kibosh
 }
 
-echo "exporting: run"
 function run {
     setup
     install_chart

@@ -8,12 +8,11 @@ Used to establish the 'Test µplatform'
 
 
 ## Setup
-
 * install bin dependencies (due to licensing issues)
     * download bazaar
-        * copy it to `./tmp/bazaar`
+        * copy it to `./temp/bazaar`
     * download pks
-        * copy it to `./tmp/pks`
+        * copy it to `./temp/pks`
 
 * login to pks
 
@@ -28,9 +27,22 @@ mkdir -p ./input/chart
 cp your/chart/chart.tgz ./input/chart
 ``` 
 
+
+## Run locally
+This will run the Docker image on your local machine.
+```bash
+make run
+```
+
+
+## Run on GCB
+This will run the Docker image on Google Cloud Build.
+```bash
+make gcb
+```
+
+
 ## Debug process
-
-
 Executing the shell target let's you interact directly with the test scripts.
 Local editing works as the ./test dir is mapped 
 ```
