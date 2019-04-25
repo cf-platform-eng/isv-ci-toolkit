@@ -1,9 +1,10 @@
 package pivnet
 
 import (
+	"io"
+
 	"github.com/pivotal-cf/go-pivnet"
 	"github.com/pivotal-cf/go-pivnet/download"
-	"io"
 )
 
 //go:generate counterfeiter Client

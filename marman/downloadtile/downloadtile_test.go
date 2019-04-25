@@ -1,0 +1,149 @@
+package downloadtile_test
+
+import (
+	"errors"
+
+	"github.com/cf-platform-eng/isv-ci-toolkit/marman/downloadtile"
+	"github.com/cf-platform-eng/isv-ci-toolkit/marman/pivnet/pivnetfakes"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"github.com/pivotal-cf/go-pivnet"
+)
+
+var _ = Describe("Download Stemcell", func() {
+	var (
+		pivnetClient *pivnetfakes.FakeClient
+		cmd          *downloadtile.Config
+	)
+
+	BeforeEach(func() {
+		pivnetClient = &pivnetfakes.FakeClient{}
+		cmd = &downloadtile.Config{
+			Name:         "srt",
+			PivnetClient: pivnetClient,
+		}
+
+		cmd.Version = "2.4.1"
+
+		pivnetClient.ListReleasesReturns([]pivnet.Release{
+			{
+				ID:      99,
+				Version: "2.4.0",
+			},
+			{
+				ID:      100,
+				Version: "2.4.1",
+			},
+			{
+				ID:      101,
+				Version: "2.4.2",
+			},
+		}, nil)
+
+		pivnetClient.ListFilesForReleaseReturns([]pivnet.ProductFile{
+			{
+				Name: "Small Footprint PAS",
+				Links: &pivnet.Links{
+					Download: map[string]string{
+						"href": "srt-download-link",
+					},
+				},
+			},
+			{
+				Name: "Pivotal Application Service",
+				Links: &pivnet.Links{
+					Download: map[string]string{
+						"href": "pas-download-link",
+					},
+				},
+			},
+		}, nil)
+	})
+
+	Context("Fixed tile version", func() {
+		It("attempts to download the tile", func() {
+			err := cmd.DownloadTile()
+			Expect(err).ToNot(HaveOccurred())
+
+			By("getting the list of product files from PivNet", func() {
+				Expect(pivnetClient.ListFilesForReleaseCallCount()).To(Equal(1))
+				slug, releaseID := pivnetClient.ListFilesForReleaseArgsForCall(0)
+				Expect(slug).To(Equal("cf"))
+				Expect(releaseID).To(Equal(100))
+			})
+		})
+	})
+
+	Context("Allows slug to override name", func() {
+		It("attempts to download the tile using the slug override", func() {
+			cmd = &downloadtile.Config{
+				Name:         "srt",
+				Slug:         "alternate-cf",
+				Version:      "2.4.1",
+				PivnetClient: pivnetClient,
+			}
+
+			err := cmd.DownloadTile()
+			Expect(err).ToNot(HaveOccurred())
+
+			By("getting the list of product files from PivNet", func() {
+				Expect(pivnetClient.ListFilesForReleaseCallCount()).To(Equal(1))
+				slug, releaseID := pivnetClient.ListFilesForReleaseArgsForCall(0)
+				Expect(slug).To(Equal("alternate-cf"))
+				Expect(releaseID).To(Equal(100))
+			})
+		})
+	})
+
+	Context("PivNet fails to list releases", func() {
+		BeforeEach(func() {
+			pivnetClient.ListReleasesReturns([]pivnet.Release{}, errors.New("list releases error"))
+		})
+
+		It("returns an error", func() {
+			err := cmd.DownloadTile()
+			Expect(err).To(HaveOccurred())
+
+			Expect(err.Error()).To(ContainSubstring("list releases error"))
+		})
+	})
+
+	Context("PivNet returns no releases", func() {
+		BeforeEach(func() {
+			pivnetClient.ListReleasesReturns([]pivnet.Release{}, nil)
+		})
+
+		It("returns an error", func() {
+			err := cmd.DownloadTile()
+			Expect(err).To(HaveOccurred())
+		})
+	})
+
+	Context("PivNet returns no releases with matching versions", func() {
+		BeforeEach(func() {
+			pivnetClient.ListReleasesReturns([]pivnet.Release{
+				{
+					ID:      11111,
+					Version: "9001.1",
+				},
+			}, nil)
+		})
+
+		It("returns an error", func() {
+			err := cmd.DownloadTile()
+			Expect(err).To(HaveOccurred())
+		})
+	})
+
+	Context("PivNet fails to list product files", func() {
+		BeforeEach(func() {
+			pivnetClient.ListFilesForReleaseReturns([]pivnet.ProductFile{}, errors.New("list files error"))
+		})
+
+		It("returns an error", func() {
+			err := cmd.DownloadTile()
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("list files error"))
+		})
+	})
+})

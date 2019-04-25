@@ -3,24 +3,27 @@ package downloadstemcell
 import (
 	"errors"
 	"fmt"
-	"github.com/Masterminds/semver"
-	pivnetClient "github.com/cf-platform-eng/isv-ci-toolkit/marman/pivnet"
-	"github.com/pivotal-cf/go-pivnet/download"
-	. "github.com/pkg/errors"
 	"log"
 	"net/url"
 	"os"
 	"path"
 	"strings"
 
-	"code.cloudfoundry.org/lager"
+	. "github.com/pkg/errors"
+
+	"github.com/Masterminds/semver"
+	pivnetClient "github.com/cf-platform-eng/isv-ci-toolkit/marman/pivnet"
 	"github.com/pivotal-cf/go-pivnet"
+	"github.com/pivotal-cf/go-pivnet/download"
+
+	"code.cloudfoundry.org/lager"
+
 	"github.com/pivotal-cf/go-pivnet/logshim"
 )
 
 type Config struct {
 	OS       string `short:"o" long:"os" description:"Stemcell OS name"`
-	Slug	 string
+	Slug     string
 	Version  string `short:"v" long:"version" description:"Stemcell version"`
 	Floating bool   `short:"f" long:"floating" description:"Pick the latest stemcell version for this version"`
 	IAAS     string `short:"i" long:"iaas" description:"Specific stemcell IaaS to download"`

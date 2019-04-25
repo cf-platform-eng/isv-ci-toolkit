@@ -1,8 +1,10 @@
 package downloadstemcell_test
 
 import (
-	"code.cloudfoundry.org/lager"
 	"errors"
+	"os"
+
+	"code.cloudfoundry.org/lager"
 	"github.com/Masterminds/semver"
 	"github.com/cf-platform-eng/isv-ci-toolkit/marman/downloadstemcell"
 	"github.com/cf-platform-eng/isv-ci-toolkit/marman/pivnet/pivnetfakes"
@@ -10,7 +12,6 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	"github.com/pivotal-cf/go-pivnet"
-	"os"
 )
 
 var _ = Describe("FindStemcellRelease", func() {

@@ -2,12 +2,12 @@
 package pivnetfakes
 
 import (
-	io "io"
-	sync "sync"
+	"io"
+	"sync"
 
-	pivnet "github.com/cf-platform-eng/isv-ci-toolkit/marman/pivnet"
+	"github.com/cf-platform-eng/isv-ci-toolkit/marman/pivnet"
 	pivneta "github.com/pivotal-cf/go-pivnet"
-	download "github.com/pivotal-cf/go-pivnet/download"
+	"github.com/pivotal-cf/go-pivnet/download"
 )
 
 type FakeClient struct {
