@@ -3,6 +3,7 @@ package pivnetfakes
 
 import (
 	io "io"
+	os "os"
 	sync "sync"
 
 	pivnet "github.com/cf-platform-eng/isv-ci-toolkit/marman/pivnet"
@@ -63,6 +64,19 @@ type FakeWrapper struct {
 	}
 	listReleasesReturnsOnCall map[int]struct {
 		result1 []pivneta.Release
+		result2 error
+	}
+	NewFileInfoStub        func(*os.File) (*download.FileInfo, error)
+	newFileInfoMutex       sync.RWMutex
+	newFileInfoArgsForCall []struct {
+		arg1 *os.File
+	}
+	newFileInfoReturns struct {
+		result1 *download.FileInfo
+		result2 error
+	}
+	newFileInfoReturnsOnCall map[int]struct {
+		result1 *download.FileInfo
 		result2 error
 	}
 	invocations      map[string][][]interface{}
@@ -321,6 +335,69 @@ func (fake *FakeWrapper) ListReleasesReturnsOnCall(i int, result1 []pivneta.Rele
 	}{result1, result2}
 }
 
+func (fake *FakeWrapper) NewFileInfo(arg1 *os.File) (*download.FileInfo, error) {
+	fake.newFileInfoMutex.Lock()
+	ret, specificReturn := fake.newFileInfoReturnsOnCall[len(fake.newFileInfoArgsForCall)]
+	fake.newFileInfoArgsForCall = append(fake.newFileInfoArgsForCall, struct {
+		arg1 *os.File
+	}{arg1})
+	fake.recordInvocation("NewFileInfo", []interface{}{arg1})
+	fake.newFileInfoMutex.Unlock()
+	if fake.NewFileInfoStub != nil {
+		return fake.NewFileInfoStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.newFileInfoReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeWrapper) NewFileInfoCallCount() int {
+	fake.newFileInfoMutex.RLock()
+	defer fake.newFileInfoMutex.RUnlock()
+	return len(fake.newFileInfoArgsForCall)
+}
+
+func (fake *FakeWrapper) NewFileInfoCalls(stub func(*os.File) (*download.FileInfo, error)) {
+	fake.newFileInfoMutex.Lock()
+	defer fake.newFileInfoMutex.Unlock()
+	fake.NewFileInfoStub = stub
+}
+
+func (fake *FakeWrapper) NewFileInfoArgsForCall(i int) *os.File {
+	fake.newFileInfoMutex.RLock()
+	defer fake.newFileInfoMutex.RUnlock()
+	argsForCall := fake.newFileInfoArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeWrapper) NewFileInfoReturns(result1 *download.FileInfo, result2 error) {
+	fake.newFileInfoMutex.Lock()
+	defer fake.newFileInfoMutex.Unlock()
+	fake.NewFileInfoStub = nil
+	fake.newFileInfoReturns = struct {
+		result1 *download.FileInfo
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeWrapper) NewFileInfoReturnsOnCall(i int, result1 *download.FileInfo, result2 error) {
+	fake.newFileInfoMutex.Lock()
+	defer fake.newFileInfoMutex.Unlock()
+	fake.NewFileInfoStub = nil
+	if fake.newFileInfoReturnsOnCall == nil {
+		fake.newFileInfoReturnsOnCall = make(map[int]struct {
+			result1 *download.FileInfo
+			result2 error
+		})
+	}
+	fake.newFileInfoReturnsOnCall[i] = struct {
+		result1 *download.FileInfo
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeWrapper) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -332,6 +409,8 @@ func (fake *FakeWrapper) Invocations() map[string][][]interface{} {
 	defer fake.listFilesForReleaseMutex.RUnlock()
 	fake.listReleasesMutex.RLock()
 	defer fake.listReleasesMutex.RUnlock()
+	fake.newFileInfoMutex.RLock()
+	defer fake.newFileInfoMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

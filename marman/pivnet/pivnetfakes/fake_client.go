@@ -2,13 +2,11 @@
 package pivnetfakes
 
 import (
-	io "io"
 	sync "sync"
 
 	semver "github.com/Masterminds/semver"
 	pivnet "github.com/cf-platform-eng/isv-ci-toolkit/marman/pivnet"
 	pivneta "github.com/pivotal-cf/go-pivnet"
-	download "github.com/pivotal-cf/go-pivnet/download"
 )
 
 type FakeClient struct {
@@ -24,19 +22,17 @@ type FakeClient struct {
 	acceptEULAReturnsOnCall map[int]struct {
 		result1 error
 	}
-	DownloadProductFileStub        func(*download.FileInfo, string, int, int, io.Writer) error
-	downloadProductFileMutex       sync.RWMutex
-	downloadProductFileArgsForCall []struct {
-		arg1 *download.FileInfo
-		arg2 string
-		arg3 int
-		arg4 int
-		arg5 io.Writer
+	DownloadFileStub        func(string, int, *pivneta.ProductFile) error
+	downloadFileMutex       sync.RWMutex
+	downloadFileArgsForCall []struct {
+		arg1 string
+		arg2 int
+		arg3 *pivneta.ProductFile
 	}
-	downloadProductFileReturns struct {
+	downloadFileReturns struct {
 		result1 error
 	}
-	downloadProductFileReturnsOnCall map[int]struct {
+	downloadFileReturnsOnCall map[int]struct {
 		result1 error
 	}
 	FindReleaseByVersionConstraintStub        func(string, *semver.Constraints) (*pivneta.Release, error)
@@ -132,66 +128,64 @@ func (fake *FakeClient) AcceptEULAReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeClient) DownloadProductFile(arg1 *download.FileInfo, arg2 string, arg3 int, arg4 int, arg5 io.Writer) error {
-	fake.downloadProductFileMutex.Lock()
-	ret, specificReturn := fake.downloadProductFileReturnsOnCall[len(fake.downloadProductFileArgsForCall)]
-	fake.downloadProductFileArgsForCall = append(fake.downloadProductFileArgsForCall, struct {
-		arg1 *download.FileInfo
-		arg2 string
-		arg3 int
-		arg4 int
-		arg5 io.Writer
-	}{arg1, arg2, arg3, arg4, arg5})
-	fake.recordInvocation("DownloadProductFile", []interface{}{arg1, arg2, arg3, arg4, arg5})
-	fake.downloadProductFileMutex.Unlock()
-	if fake.DownloadProductFileStub != nil {
-		return fake.DownloadProductFileStub(arg1, arg2, arg3, arg4, arg5)
+func (fake *FakeClient) DownloadFile(arg1 string, arg2 int, arg3 *pivneta.ProductFile) error {
+	fake.downloadFileMutex.Lock()
+	ret, specificReturn := fake.downloadFileReturnsOnCall[len(fake.downloadFileArgsForCall)]
+	fake.downloadFileArgsForCall = append(fake.downloadFileArgsForCall, struct {
+		arg1 string
+		arg2 int
+		arg3 *pivneta.ProductFile
+	}{arg1, arg2, arg3})
+	fake.recordInvocation("DownloadFile", []interface{}{arg1, arg2, arg3})
+	fake.downloadFileMutex.Unlock()
+	if fake.DownloadFileStub != nil {
+		return fake.DownloadFileStub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1
 	}
-	fakeReturns := fake.downloadProductFileReturns
+	fakeReturns := fake.downloadFileReturns
 	return fakeReturns.result1
 }
 
-func (fake *FakeClient) DownloadProductFileCallCount() int {
-	fake.downloadProductFileMutex.RLock()
-	defer fake.downloadProductFileMutex.RUnlock()
-	return len(fake.downloadProductFileArgsForCall)
+func (fake *FakeClient) DownloadFileCallCount() int {
+	fake.downloadFileMutex.RLock()
+	defer fake.downloadFileMutex.RUnlock()
+	return len(fake.downloadFileArgsForCall)
 }
 
-func (fake *FakeClient) DownloadProductFileCalls(stub func(*download.FileInfo, string, int, int, io.Writer) error) {
-	fake.downloadProductFileMutex.Lock()
-	defer fake.downloadProductFileMutex.Unlock()
-	fake.DownloadProductFileStub = stub
+func (fake *FakeClient) DownloadFileCalls(stub func(string, int, *pivneta.ProductFile) error) {
+	fake.downloadFileMutex.Lock()
+	defer fake.downloadFileMutex.Unlock()
+	fake.DownloadFileStub = stub
 }
 
-func (fake *FakeClient) DownloadProductFileArgsForCall(i int) (*download.FileInfo, string, int, int, io.Writer) {
-	fake.downloadProductFileMutex.RLock()
-	defer fake.downloadProductFileMutex.RUnlock()
-	argsForCall := fake.downloadProductFileArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4, argsForCall.arg5
+func (fake *FakeClient) DownloadFileArgsForCall(i int) (string, int, *pivneta.ProductFile) {
+	fake.downloadFileMutex.RLock()
+	defer fake.downloadFileMutex.RUnlock()
+	argsForCall := fake.downloadFileArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeClient) DownloadProductFileReturns(result1 error) {
-	fake.downloadProductFileMutex.Lock()
-	defer fake.downloadProductFileMutex.Unlock()
-	fake.DownloadProductFileStub = nil
-	fake.downloadProductFileReturns = struct {
+func (fake *FakeClient) DownloadFileReturns(result1 error) {
+	fake.downloadFileMutex.Lock()
+	defer fake.downloadFileMutex.Unlock()
+	fake.DownloadFileStub = nil
+	fake.downloadFileReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeClient) DownloadProductFileReturnsOnCall(i int, result1 error) {
-	fake.downloadProductFileMutex.Lock()
-	defer fake.downloadProductFileMutex.Unlock()
-	fake.DownloadProductFileStub = nil
-	if fake.downloadProductFileReturnsOnCall == nil {
-		fake.downloadProductFileReturnsOnCall = make(map[int]struct {
+func (fake *FakeClient) DownloadFileReturnsOnCall(i int, result1 error) {
+	fake.downloadFileMutex.Lock()
+	defer fake.downloadFileMutex.Unlock()
+	fake.DownloadFileStub = nil
+	if fake.downloadFileReturnsOnCall == nil {
+		fake.downloadFileReturnsOnCall = make(map[int]struct {
 			result1 error
 		})
 	}
-	fake.downloadProductFileReturnsOnCall[i] = struct {
+	fake.downloadFileReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
@@ -329,8 +323,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.acceptEULAMutex.RLock()
 	defer fake.acceptEULAMutex.RUnlock()
-	fake.downloadProductFileMutex.RLock()
-	defer fake.downloadProductFileMutex.RUnlock()
+	fake.downloadFileMutex.RLock()
+	defer fake.downloadFileMutex.RUnlock()
 	fake.findReleaseByVersionConstraintMutex.RLock()
 	defer fake.findReleaseByVersionConstraintMutex.RUnlock()
 	fake.listFilesForReleaseMutex.RLock()

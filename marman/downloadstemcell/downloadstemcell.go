@@ -10,12 +10,10 @@ import (
 
 	. "github.com/pkg/errors"
 
+	"code.cloudfoundry.org/lager"
 	"github.com/Masterminds/semver"
 	pivnetClient "github.com/cf-platform-eng/isv-ci-toolkit/marman/pivnet"
 	"github.com/pivotal-cf/go-pivnet"
-	"github.com/pivotal-cf/go-pivnet/download"
-
-	"code.cloudfoundry.org/lager"
 
 	"github.com/pivotal-cf/go-pivnet/logshim"
 )
@@ -108,20 +106,9 @@ func (cmd *Config) DownloadStemcell() error {
 		return Wrapf(err, "failed to find the stemcell file for release: %d", release.ID)
 	}
 
-	filename := path.Base(file.AWSObjectKey)
-	stemcellFile, err := os.Create(filename)
+	err = cmd.PivnetClient.DownloadFile(cmd.Slug, release.ID, file)
 	if err != nil {
-		return Wrapf(err, "failed to create stemcell file: %s", filename)
-	}
-
-	fileInfo, err := download.NewFileInfo(stemcellFile)
-	if err != nil {
-		return Wrapf(err, "failed to load file info: %s", filename)
-	}
-
-	err = cmd.PivnetClient.DownloadProductFile(fileInfo, cmd.Slug, release.ID, file.ID, os.Stdout)
-	if err != nil {
-		return Wrapf(err, "failed to download stemcell to file: %s", filename)
+		return Wrapf(err, "failed to download file")
 	}
 
 	return nil

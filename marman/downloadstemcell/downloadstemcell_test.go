@@ -2,7 +2,6 @@ package downloadstemcell_test
 
 import (
 	"errors"
-	"os"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/cf-platform-eng/isv-ci-toolkit/marman/downloadstemcell"
@@ -246,30 +245,6 @@ var _ = Describe("Download Stemcell", func() {
 		})
 	})
 
-	Context("Failed to create stemcell file", func() {
-		BeforeEach(func() {
-			cmd.IAAS = ""
-			pivnetClient.ListFilesForReleaseReturns([]pivnet.ProductFile{
-				{
-					ID:           456,
-					AWSObjectKey: "product-files/.",
-					Links: &pivnet.Links{
-						Download: map[string]string{
-							"href": "http://my-download-link/.",
-						},
-					},
-				},
-			}, nil)
-			pivnetClient.DownloadProductFileReturns(errors.New("download-error"))
-		})
-
-		It("returns an error", func() {
-			err := cmd.DownloadStemcell()
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("failed to create stemcell file: ."))
-		})
-	})
-
 	Context("Failed to download stemcell", func() {
 		BeforeEach(func() {
 			pivnetClient.ListFilesForReleaseReturns([]pivnet.ProductFile{
@@ -283,13 +258,13 @@ var _ = Describe("Download Stemcell", func() {
 					},
 				},
 			}, nil)
-			pivnetClient.DownloadProductFileReturns(errors.New("download-error"))
+			pivnetClient.DownloadFileReturns(errors.New("download-error"))
 		})
 
 		It("returns an error", func() {
 			err := cmd.DownloadStemcell()
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("failed to download stemcell to file: ubuntu-xenial-azure.txt"))
+			Expect(err.Error()).To(ContainSubstring("download-error"))
 		})
 	})
 
@@ -309,11 +284,6 @@ var _ = Describe("Download Stemcell", func() {
 					AWSObjectKey: "ubuntu-xenial-gcp",
 				},
 			}, nil)
-		})
-
-		AfterEach(func() {
-			err := os.Remove("ubuntu-xenial-azure.txt")
-			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("downloads the file", func() {
@@ -336,13 +306,11 @@ var _ = Describe("Download Stemcell", func() {
 			})
 
 			By("downloading the file", func() {
-				Expect(pivnetClient.DownloadProductFileCallCount()).To(Equal(1))
-				fileInfo, slug, releaseId, fileId, _ := pivnetClient.DownloadProductFileArgsForCall(0)
-				Expect(fileInfo.Name).To(Equal("ubuntu-xenial-azure.txt"))
-				Expect(fileInfo.Mode).To(Equal(os.FileMode(0644)))
+				Expect(pivnetClient.DownloadFileCallCount()).To(Equal(1))
+				slug, releaseId, file := pivnetClient.DownloadFileArgsForCall(0)
 				Expect(slug).To(Equal("stemcells-ubuntu-xenial"))
 				Expect(releaseId).To(Equal(123))
-				Expect(fileId).To(Equal(456))
+				Expect(file.ID).To(Equal(456))
 			})
 		})
 	})

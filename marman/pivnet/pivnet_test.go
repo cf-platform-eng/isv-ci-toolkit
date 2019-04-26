@@ -2,6 +2,7 @@ package pivnet_test
 
 import (
 	"errors"
+	"os"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/Masterminds/semver"
@@ -11,6 +12,7 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	actualpivnet "github.com/pivotal-cf/go-pivnet"
+	"github.com/pivotal-cf/go-pivnet/download"
 )
 
 var _ = Describe("FindReleaseByVersionConstraint", func() {
@@ -164,6 +166,123 @@ var _ = Describe("FindReleaseByVersionConstraint", func() {
 			_, err = client.FindReleaseByVersionConstraint("my-slug", constraint)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("no releases found"))
+		})
+	})
+})
+
+var _ = Describe("DownloadFile", func() {
+	var (
+		pivnetWrapper *pivnetfakes.FakeWrapper
+		client        *pivnet.PivNetClient
+		logOutput     *Buffer
+	)
+
+	BeforeEach(func() {
+		pivnetWrapper = &pivnetfakes.FakeWrapper{}
+
+		logger := lager.NewLogger("pivnet-test")
+		logOutput = NewBuffer()
+		logger.RegisterSink(lager.NewWriterSink(logOutput, lager.DEBUG))
+
+		client = &pivnet.PivNetClient{
+			Wrapper: pivnetWrapper,
+			Logger:  logger,
+		}
+
+		pivnetWrapper.ListReleasesReturns([]actualpivnet.Release{
+			{
+				ID:      100,
+				Version: "1.0.0",
+			}, {
+				ID:      101,
+				Version: "1.0.1",
+			}, {
+				ID:      200,
+				Version: "2.0",
+			},
+		}, nil)
+	})
+
+	Context("can't create file", func() {
+		It("throws an error", func() {
+			fakefile := actualpivnet.ProductFile{
+				ID:           1,
+				AWSObjectKey: "tile-for-rash/.",
+			}
+			err := client.DownloadFile("pivnet-test", 100, &fakefile)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("failed to create file: ."))
+		})
+	})
+
+	Context("can't get info for file", func() {
+		BeforeEach(func() {
+			pivnetWrapper.NewFileInfoReturns(nil, errors.New("new-file-info-error"))
+		})
+
+		It("throws an error", func() {
+			fakefile := actualpivnet.ProductFile{
+				ID:           1,
+				AWSObjectKey: "tile-for-todd/example.pivotal",
+			}
+			err := client.DownloadFile("pivnet-test", 100, &fakefile)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("failed to load file info: example.pivotal"))
+		})
+	})
+
+	Context("can't download file", func() {
+		BeforeEach(func() {
+			pivnetWrapper.DownloadProductFileReturns(errors.New("unable to download"))
+		})
+
+		It("throws an error", func() {
+			fakefile := actualpivnet.ProductFile{
+				ID:           1,
+				AWSObjectKey: "tile-for-todd/example.pivotal",
+			}
+			err := client.DownloadFile("pivnet-test", 100, &fakefile)
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("failed to download file: example.pivotal"))
+		})
+	})
+
+	Context("no errors", func() {
+		var (
+			fakeFileInfo *download.FileInfo
+			fakeFile     actualpivnet.ProductFile
+		)
+
+		BeforeEach(func() {
+			fakeFile = actualpivnet.ProductFile{
+				ID:           1,
+				AWSObjectKey: "tile-for-todd/example.pivotal",
+			}
+			fakeFileInfo = &download.FileInfo{}
+
+			pivnetWrapper.NewFileInfoReturns(fakeFileInfo, nil)
+		})
+
+		AfterEach(func() {
+			err := os.Remove("example.pivotal")
+			Expect(err).NotTo(HaveOccurred())
+		})
+
+		It("downloads the file", func() {
+			err := client.DownloadFile("pivnet-test", 100, &fakeFile)
+			Expect(err).NotTo(HaveOccurred())
+
+			Expect(pivnetWrapper.NewFileInfoCallCount()).To(Equal(1))
+			file := pivnetWrapper.NewFileInfoArgsForCall(0)
+			Expect(file.Name()).To(Equal("example.pivotal"))
+
+			Expect(pivnetWrapper.DownloadProductFileCallCount()).To(Equal(1))
+
+			fileInfo, slug, releaseID, fileID, _ := pivnetWrapper.DownloadProductFileArgsForCall(0)
+			Expect(fileInfo).To(Equal(fakeFileInfo))
+			Expect(slug).To(Equal("pivnet-test"))
+			Expect(releaseID).To(Equal(100))
+			Expect(fileID).To(Equal(fakeFile.ID))
 		})
 	})
 })

@@ -2,6 +2,7 @@ package pivnet
 
 import (
 	"io"
+	"os"
 
 	"github.com/pivotal-cf/go-pivnet"
 	"github.com/pivotal-cf/go-pivnet/download"
@@ -18,6 +19,7 @@ type Wrapper interface {
 		releaseID int,
 		productFileID int,
 		progressWriter io.Writer) error
+	NewFileInfo(file *os.File) (*download.FileInfo, error)
 }
 
 type ClientWrapper struct {
@@ -43,4 +45,8 @@ func (c *ClientWrapper) DownloadProductFile(
 	productFileID int,
 	progressWriter io.Writer) error {
 	return c.PivnetClient.ProductFiles.DownloadForRelease(location, productSlug, releaseID, productFileID, progressWriter)
+}
+
+func (c *ClientWrapper) NewFileInfo(file *os.File) (*download.FileInfo, error) {
+	return download.NewFileInfo(file)
 }
