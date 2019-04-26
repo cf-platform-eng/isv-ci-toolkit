@@ -1,16 +1,12 @@
 package downloadtile
 
 import (
-	"code.cloudfoundry.org/lager"
-	"log"
-	"os"
 	"strings"
 
 	"github.com/Masterminds/semver"
 
 	pivnetClient "github.com/cf-platform-eng/isv-ci-toolkit/marman/pivnet"
 	"github.com/pivotal-cf/go-pivnet"
-	"github.com/pivotal-cf/go-pivnet/logshim"
 	"github.com/pkg/errors"
 )
 
@@ -103,18 +99,6 @@ func (cmd *Config) DownloadTile() error {
 }
 
 func (cmd *Config) Execute(args []string) error {
-	stdoutLogger := log.New(os.Stdout, "", log.LstdFlags)
-	stderrLogger := log.New(os.Stderr, "", log.LstdFlags)
-
-	logger := logshim.NewLogShim(stdoutLogger, stderrLogger, true)
-	cmd.PivnetClient = &pivnetClient.PivNetClient{
-		Wrapper: &pivnetClient.ClientWrapper{
-			PivnetClient: pivnet.NewClient(pivnet.ClientConfig{
-				Host:  pivnet.DefaultHost,
-				Token: cmd.PivnetToken,
-			}, logger),
-		},
-		Logger: lager.NewLogger("pivnet"),
-	}
+	cmd.PivnetClient = pivnetClient.NewPivNetClient(cmd.PivnetToken)
 	return cmd.DownloadTile()
 }

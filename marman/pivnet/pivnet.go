@@ -2,6 +2,8 @@ package pivnet
 
 import (
 	"errors"
+	"github.com/pivotal-cf/go-pivnet/logshim"
+	"log"
 	"os"
 	"path"
 
@@ -23,6 +25,23 @@ type Client interface {
 type PivNetClient struct {
 	Logger  lager.Logger
 	Wrapper Wrapper
+}
+
+func NewPivNetClient(token string) *PivNetClient {
+	// Why can't I use lager.NewLogger here?
+	stdoutLogger := log.New(os.Stdout, "", log.LstdFlags)
+	stderrLogger := log.New(os.Stderr, "", log.LstdFlags)
+	pivnetLogger := logshim.NewLogShim(stdoutLogger, stderrLogger, false)
+
+	return &PivNetClient{
+		Wrapper: &ClientWrapper{
+			pivnet.NewClient(pivnet.ClientConfig{
+				Host:  pivnet.DefaultHost,
+				Token: token,
+			}, pivnetLogger),
+		},
+		Logger: lager.NewLogger("pivnet"),
+	}
 }
 
 func (c *PivNetClient) FindReleaseByVersionConstraint(slug string, constraint *semver.Constraints) (*pivnet.Release, error) {

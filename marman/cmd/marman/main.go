@@ -1,25 +1,25 @@
 package main
 
 import (
+	"code.cloudfoundry.org/lager"
 	"fmt"
 	"os"
 
-	"github.com/cf-platform-eng/isv-ci-toolkit/marman/downloadtile"
-
 	"github.com/cf-platform-eng/isv-ci-toolkit/marman"
+
 	"github.com/cf-platform-eng/isv-ci-toolkit/marman/downloadstemcell"
+	"github.com/cf-platform-eng/isv-ci-toolkit/marman/downloadtile"
 
 	"github.com/jessevdk/go-flags"
 )
 
-var downloadStemcellOpts downloadstemcell.Config
-var downloadTileOpts downloadtile.Config
 var config marman.Config
 var parser = flags.NewParser(&config, flags.Default)
 
 func main() {
-	// TODO: Create logger and pivnet client and pass to the command structs
-
+	downloadStemcellOpts := downloadstemcell.Config{
+		Logger: lager.NewLogger("download-stemcell"),
+	}
 	_, err := parser.AddCommand(
 		"download-stemcell",
 		"Download stemcell",
@@ -31,6 +31,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	downloadTileOpts := downloadtile.Config{}
 	_, err = parser.AddCommand(
 		"download-tile",
 		"Download tile",
