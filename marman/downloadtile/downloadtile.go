@@ -1,12 +1,15 @@
 package downloadtile
 
 import (
+	"log"
+	"os"
+
+	"github.com/Masterminds/semver"
+
 	pivnetClient "github.com/cf-platform-eng/isv-ci-toolkit/marman/pivnet"
 	"github.com/pivotal-cf/go-pivnet"
 	"github.com/pivotal-cf/go-pivnet/logshim"
 	"github.com/pkg/errors"
-	"log"
-	"os"
 )
 
 type Config struct {
@@ -37,25 +40,19 @@ func (cmd *Config) DownloadTile() error {
 		cmd.Slug = slug
 	}
 
-	releases, err := cmd.PivnetClient.ListReleases(cmd.Slug)
+	versionConstraint, err := semver.NewConstraint(cmd.Version)
+	if err != nil {
+		return errors.Wrapf(err, "tile version is not valid semver")
+	}
+
+	release, err := cmd.PivnetClient.FindReleaseByVersionConstraint(cmd.Slug, versionConstraint)
 	if err != nil {
 		return errors.Wrapf(err, "could not list releases for slug %s", cmd.Slug)
 	}
 
-	var tileRelease pivnet.Release
-	for _, release := range releases {
-		if cmd.Version == release.Version {
-			tileRelease = release
-		}
-	}
-
-	if tileRelease.ID == 0 {
-		return errors.New("no releases found for the required tile version %s")
-	}
-
-	_, err = cmd.PivnetClient.ListFilesForRelease(cmd.Slug, tileRelease.ID)
+	_, err = cmd.PivnetClient.ListFilesForRelease(cmd.Slug, release.ID)
 	if err != nil {
-		return errors.Wrapf(err, "could not list files for release %d on slug %s", tileRelease.ID, cmd.Slug)
+		return errors.Wrapf(err, "could not list files for release %d on slug %s", release.ID, cmd.Slug)
 	}
 
 	return nil
@@ -66,12 +63,13 @@ func (cmd *Config) Execute(args []string) error {
 	stderrLogger := log.New(os.Stderr, "", log.LstdFlags)
 
 	logger := logshim.NewLogShim(stdoutLogger, stderrLogger, true)
-
 	cmd.PivnetClient = &pivnetClient.PivNetClient{
-		PivnetClient: pivnet.NewClient(pivnet.ClientConfig{
-			Host:  pivnet.DefaultHost,
-			Token: cmd.PivnetToken,
-		}, logger),
+		Wrapper: &pivnetClient.ClientWrapper{
+			PivnetClient: pivnet.NewClient(pivnet.ClientConfig{
+				Host:  pivnet.DefaultHost,
+				Token: cmd.PivnetToken,
+			}, logger),
+		},
 	}
 	return cmd.DownloadTile()
 }

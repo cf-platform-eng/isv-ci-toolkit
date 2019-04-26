@@ -25,19 +25,9 @@ var _ = Describe("Download Stemcell", func() {
 
 		cmd.Version = "2.4.1"
 
-		pivnetClient.ListReleasesReturns([]pivnet.Release{
-			{
-				ID:      99,
-				Version: "2.4.0",
-			},
-			{
-				ID:      100,
-				Version: "2.4.1",
-			},
-			{
-				ID:      101,
-				Version: "2.4.2",
-			},
+		pivnetClient.FindReleaseByVersionConstraintReturns(&pivnet.Release{
+			ID:      100,
+			Version: "2.4.2",
 		}, nil)
 
 		pivnetClient.ListFilesForReleaseReturns([]pivnet.ProductFile{
@@ -95,9 +85,22 @@ var _ = Describe("Download Stemcell", func() {
 		})
 	})
 
-	Context("PivNet fails to list releases", func() {
+	Context("Version is not valid semver", func() {
 		BeforeEach(func() {
-			pivnetClient.ListReleasesReturns([]pivnet.Release{}, errors.New("list releases error"))
+			cmd.Version = "not-a-valid-version"
+		})
+
+		It("returns an error", func() {
+			err := cmd.DownloadTile()
+			Expect(err).To(HaveOccurred())
+
+			Expect(err.Error()).To(ContainSubstring("tile version is not valid semver"))
+		})
+	})
+
+	Context("PivNet fails to find a matching release", func() {
+		BeforeEach(func() {
+			pivnetClient.FindReleaseByVersionConstraintReturns(nil, errors.New("list releases error"))
 		})
 
 		It("returns an error", func() {
@@ -105,33 +108,6 @@ var _ = Describe("Download Stemcell", func() {
 			Expect(err).To(HaveOccurred())
 
 			Expect(err.Error()).To(ContainSubstring("list releases error"))
-		})
-	})
-
-	Context("PivNet returns no releases", func() {
-		BeforeEach(func() {
-			pivnetClient.ListReleasesReturns([]pivnet.Release{}, nil)
-		})
-
-		It("returns an error", func() {
-			err := cmd.DownloadTile()
-			Expect(err).To(HaveOccurred())
-		})
-	})
-
-	Context("PivNet returns no releases with matching versions", func() {
-		BeforeEach(func() {
-			pivnetClient.ListReleasesReturns([]pivnet.Release{
-				{
-					ID:      11111,
-					Version: "9001.1",
-				},
-			}, nil)
-		})
-
-		It("returns an error", func() {
-			err := cmd.DownloadTile()
-			Expect(err).To(HaveOccurred())
 		})
 	})
 

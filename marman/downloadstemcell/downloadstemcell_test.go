@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"code.cloudfoundry.org/lager"
-	"github.com/Masterminds/semver"
 	"github.com/cf-platform-eng/isv-ci-toolkit/marman/downloadstemcell"
 	"github.com/cf-platform-eng/isv-ci-toolkit/marman/pivnet/pivnetfakes"
 	. "github.com/onsi/ginkgo"
@@ -13,156 +12,6 @@ import (
 	. "github.com/onsi/gomega/gbytes"
 	"github.com/pivotal-cf/go-pivnet"
 )
-
-var _ = Describe("FindStemcellRelease", func() {
-	var (
-		pivnetClient *pivnetfakes.FakeClient
-		cmd          *downloadstemcell.Config
-	)
-
-	BeforeEach(func() {
-		pivnetClient = &pivnetfakes.FakeClient{}
-		logger := lager.NewLogger("marman")
-
-		cmd = &downloadstemcell.Config{
-			Slug:         "stemcells-ubuntu-xenial",
-			PivnetClient: pivnetClient,
-			Logger:       logger,
-		}
-	})
-
-	Context("Fixed version finds a single release", func() {
-		BeforeEach(func() {
-			pivnetClient.ListReleasesReturns([]pivnet.Release{
-				{
-					ID:      100,
-					Version: "1.0.0",
-				}, {
-					ID:      101,
-					Version: "1.0.1",
-				}, {
-					ID:      200,
-					Version: "2.0",
-				},
-			}, nil)
-		})
-
-		It("returns an error", func() {
-			constraint, err := semver.NewConstraint("1.0")
-			Expect(err).ToNot(HaveOccurred())
-
-			release, err := cmd.FindStemcellRelease(constraint)
-			Expect(err).ToNot(HaveOccurred())
-
-			By("getting the list of releases from pivnet", func() {
-				slug := pivnetClient.ListReleasesArgsForCall(0)
-				Expect(slug).To(Equal("stemcells-ubuntu-xenial"))
-			})
-
-			Expect(release.ID).To(Equal(100))
-		})
-	})
-
-	Context("Floating version finds the latest release", func() {
-		BeforeEach(func() {
-			pivnetClient.ListReleasesReturns([]pivnet.Release{
-				{
-					ID:      100,
-					Version: "1.0.0",
-				}, {
-					ID:      101,
-					Version: "1.0.1",
-				}, {
-					ID:      200,
-					Version: "2.0",
-				},
-			}, nil)
-		})
-
-		It("returns an error", func() {
-			constraint, err := semver.NewConstraint("~1.0")
-			Expect(err).ToNot(HaveOccurred())
-
-			release, err := cmd.FindStemcellRelease(constraint)
-			Expect(err).ToNot(HaveOccurred())
-
-			By("getting the list of releases from pivnet", func() {
-				slug := pivnetClient.ListReleasesArgsForCall(0)
-				Expect(slug).To(Equal("stemcells-ubuntu-xenial"))
-			})
-
-			Expect(release.ID).To(Equal(101))
-		})
-	})
-
-	Context("Pivnet fails to list releases", func() {
-		BeforeEach(func() {
-			pivnetClient.ListReleasesReturns([]pivnet.Release{}, errors.New("list releases error"))
-		})
-
-		It("returns an error", func() {
-			constraint, err := semver.NewConstraint("*")
-			Expect(err).ToNot(HaveOccurred())
-
-			_, err = cmd.FindStemcellRelease(constraint)
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("list releases error"))
-		})
-	})
-
-	Context("Pivnet returns no releases", func() {
-		BeforeEach(func() {
-			pivnetClient.ListReleasesReturns([]pivnet.Release{}, nil)
-		})
-
-		It("returns an error", func() {
-			constraint, err := semver.NewConstraint("*")
-			Expect(err).ToNot(HaveOccurred())
-
-			_, err = cmd.FindStemcellRelease(constraint)
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("no releases found for the required stemcell version"))
-		})
-	})
-
-	Context("Invalid release version on pivnet", func() {
-		BeforeEach(func() {
-			pivnetClient.ListReleasesReturns([]pivnet.Release{
-				{
-					Version: "not-a-good-version",
-				},
-			}, nil)
-		})
-
-		It("returns an error", func() {
-			constraint, err := semver.NewConstraint("*")
-			Expect(err).ToNot(HaveOccurred())
-
-			_, err = cmd.FindStemcellRelease(constraint)
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("no releases found for the required stemcell version"))
-		})
-	})
-
-	Context("No releases found for version", func() {
-		BeforeEach(func() {
-			pivnetClient.ListReleasesReturns([]pivnet.Release{
-				{
-					Version: "1.0",
-				},
-			}, nil)
-		})
-
-		It("returns an error", func() {
-			constraint, err := semver.NewConstraint("2.0")
-			Expect(err).ToNot(HaveOccurred())
-
-			_, err = cmd.FindStemcellRelease(constraint)
-			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("no releases found for the required stemcell version"))
-		})
-	})
-})
 
 var _ = Describe("FindStemcellFile", func() {
 	var (
@@ -300,6 +149,11 @@ var _ = Describe("Download Stemcell", func() {
 
 	BeforeEach(func() {
 		pivnetClient = &pivnetfakes.FakeClient{}
+		pivnetClient.FindReleaseByVersionConstraintReturns(&pivnet.Release{
+			ID:      123,
+			Version: "1.2.3",
+		}, nil)
+
 		logger := lager.NewLogger("marman")
 
 		buffer = NewBuffer()
@@ -309,7 +163,6 @@ var _ = Describe("Download Stemcell", func() {
 			IAAS:         "azure",
 			OS:           "ubuntu-xenial",
 			Version:      "1.2.3",
-			Floating:     false,
 			PivnetClient: pivnetClient,
 			Logger:       logger,
 		}
@@ -352,30 +205,25 @@ var _ = Describe("Download Stemcell", func() {
 		It("returns an error", func() {
 			err := cmd.DownloadStemcell()
 			Expect(err).To(HaveOccurred())
-			Expect(err.Error()).To(ContainSubstring("invalid stemcell version"))
+			Expect(err.Error()).To(ContainSubstring("stemcell version is not valid semver"))
 		})
 	})
 
 	Context("Failed to find stemcell release", func() {
 		BeforeEach(func() {
-			pivnetClient.ListReleasesReturns([]pivnet.Release{}, errors.New("list-releases-error"))
+			pivnetClient.FindReleaseByVersionConstraintReturns(nil, errors.New("find-release-error"))
 		})
 
 		It("returns an error", func() {
 			err := cmd.DownloadStemcell()
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("failed to find the stemcell release"))
+			Expect(err.Error()).To(ContainSubstring("find-release-error"))
 		})
 	})
 
 	Context("Failed to find stemcell file", func() {
 		BeforeEach(func() {
-			pivnetClient.ListReleasesReturns([]pivnet.Release{
-				{
-					ID:      123,
-					Version: "1.2.3",
-				},
-			}, nil)
 			pivnetClient.ListFilesForReleaseReturns([]pivnet.ProductFile{}, errors.New("list-product-files-error"))
 		})
 
@@ -388,12 +236,6 @@ var _ = Describe("Download Stemcell", func() {
 
 	Context("Failed to accept EULA", func() {
 		BeforeEach(func() {
-			pivnetClient.ListReleasesReturns([]pivnet.Release{
-				{
-					ID:      123,
-					Version: "1.2.3",
-				},
-			}, nil)
 			pivnetClient.AcceptEULAReturns(errors.New("accept-eula-error"))
 		})
 
@@ -407,12 +249,6 @@ var _ = Describe("Download Stemcell", func() {
 	Context("Failed to create stemcell file", func() {
 		BeforeEach(func() {
 			cmd.IAAS = ""
-			pivnetClient.ListReleasesReturns([]pivnet.Release{
-				{
-					ID:      123,
-					Version: "1.2.3",
-				},
-			}, nil)
 			pivnetClient.ListFilesForReleaseReturns([]pivnet.ProductFile{
 				{
 					ID:           456,
@@ -436,12 +272,6 @@ var _ = Describe("Download Stemcell", func() {
 
 	Context("Failed to download stemcell", func() {
 		BeforeEach(func() {
-			pivnetClient.ListReleasesReturns([]pivnet.Release{
-				{
-					ID:      123,
-					Version: "1.2.3",
-				},
-			}, nil)
 			pivnetClient.ListFilesForReleaseReturns([]pivnet.ProductFile{
 				{
 					ID:           456,
@@ -465,12 +295,6 @@ var _ = Describe("Download Stemcell", func() {
 
 	Context("Found the stemcell file", func() {
 		BeforeEach(func() {
-			pivnetClient.ListReleasesReturns([]pivnet.Release{
-				{
-					ID:      123,
-					Version: "1.2.3",
-				},
-			}, nil)
 			pivnetClient.ListFilesForReleaseReturns([]pivnet.ProductFile{
 				{
 					ID:           456,
@@ -487,12 +311,17 @@ var _ = Describe("Download Stemcell", func() {
 			}, nil)
 		})
 
+		AfterEach(func() {
+			err := os.Remove("ubuntu-xenial-azure.txt")
+			Expect(err).ToNot(HaveOccurred())
+		})
+
 		It("downloads the file", func() {
 			err := cmd.DownloadStemcell()
 			Expect(err).ToNot(HaveOccurred())
 
 			By("getting the release from pivnet", func() {
-				Expect(pivnetClient.ListReleasesCallCount()).To(Equal(1))
+				Expect(pivnetClient.FindReleaseByVersionConstraintCallCount()).To(Equal(1))
 			})
 
 			By("getting the file from pivnet", func() {
