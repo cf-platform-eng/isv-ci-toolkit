@@ -126,6 +126,7 @@ func (cmd *Config) Execute(args []string) error {
 				Token: cmd.PivnetToken,
 			}, logger),
 		},
+		Logger: lager.NewLogger("pivnet"),
 	}
 
 	cmd.Logger = lager.NewLogger("marman")

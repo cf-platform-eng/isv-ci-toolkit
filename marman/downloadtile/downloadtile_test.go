@@ -10,7 +10,7 @@ import (
 	"github.com/pivotal-cf/go-pivnet"
 )
 
-var _ = Describe("Download Stemcell", func() {
+var _ = Describe("Download Tile", func() {
 	var (
 		pivnetClient *pivnetfakes.FakeClient
 		cmd          *downloadtile.Config
@@ -32,6 +32,7 @@ var _ = Describe("Download Stemcell", func() {
 
 		pivnetClient.ListFilesForReleaseReturns([]pivnet.ProductFile{
 			{
+				ID:   123,
 				Name: "Small Footprint PAS",
 				Links: &pivnet.Links{
 					Download: map[string]string{
@@ -40,6 +41,7 @@ var _ = Describe("Download Stemcell", func() {
 				},
 			},
 			{
+				ID:   456,
 				Name: "Pivotal Application Service",
 				Links: &pivnet.Links{
 					Download: map[string]string{
@@ -48,6 +50,8 @@ var _ = Describe("Download Stemcell", func() {
 				},
 			},
 		}, nil)
+
+		pivnetClient.AcceptEULAReturns(nil)
 	})
 
 	Context("Fixed tile version", func() {
@@ -60,6 +64,21 @@ var _ = Describe("Download Stemcell", func() {
 				slug, releaseID := pivnetClient.ListFilesForReleaseArgsForCall(0)
 				Expect(slug).To(Equal("cf"))
 				Expect(releaseID).To(Equal(100))
+			})
+
+			By("accepting the EULA", func() {
+				Expect(pivnetClient.AcceptEULACallCount()).To(Equal(1))
+				slug, releaseID := pivnetClient.AcceptEULAArgsForCall(0)
+				Expect(slug).To(Equal("cf"))
+				Expect(releaseID).To(Equal(100))
+			})
+
+			By("downloading the file", func() {
+				Expect(pivnetClient.DownloadFileCallCount()).To(Equal(1))
+				slug, releaseID, file := pivnetClient.DownloadFileArgsForCall(0)
+				Expect(slug).To(Equal("cf"))
+				Expect(releaseID).To(Equal(100))
+				Expect(file.ID).To(Equal(123))
 			})
 		})
 	})
@@ -120,6 +139,30 @@ var _ = Describe("Download Stemcell", func() {
 			err := cmd.DownloadTile()
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("list files error"))
+		})
+	})
+
+	Context("Failed to accept EULA", func() {
+		BeforeEach(func() {
+			pivnetClient.AcceptEULAReturns(errors.New("accept-eula-error"))
+		})
+
+		It("returns an error", func() {
+			err := cmd.DownloadTile()
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("accept-eula-error"))
+		})
+	})
+
+	Context("Failed to download file", func() {
+		BeforeEach(func() {
+			pivnetClient.DownloadFileReturns(errors.New("download-file-error"))
+		})
+
+		It("returns an error", func() {
+			err := cmd.DownloadTile()
+			Expect(err).To(HaveOccurred())
+			Expect(err.Error()).To(ContainSubstring("download-file-error"))
 		})
 	})
 })
