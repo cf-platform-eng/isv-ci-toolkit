@@ -1,6 +1,4 @@
-default: build
-
-.PHONY: build publish
+.PHONY: build publish run
 
 #
 # Depdendency targets
@@ -39,6 +37,10 @@ temp/pks:
 		--download-dir temp
 	mv temp/$(PKS_FILE_NAME) temp/pks
 
+temp/tileinspect:
+	(cd tileinspect && GOOS=linux GOARCH=amd64 make build)
+	cp tileinspect/build/tileinspect temp/tileinspect
+
 #
 # Docker image targets
 #
@@ -46,7 +48,7 @@ temp/phony/cfplatformeng/test-bazaar-ci: Dockerfile.base
 	docker build . --file Dockerfile.base --tag gcr.io/fe-rabbit-mq-tile-ci/base-test-image:latest
 	mkdir -p temp/phony/cfplatformeng && touch temp/phony/cfplatformeng/test-bazaar-ci
 
-build: temp/bazaar-$(BAZAAR_VERSION).linux temp/ops-manifest.gem temp/pks temp/phony/cfplatformeng/test-bazaar-ci
+build: temp/bazaar-$(BAZAAR_VERSION).linux temp/ops-manifest.gem temp/pks temp/tileinspect temp/phony/cfplatformeng/test-bazaar-ci
 
 publish: build
 	echo "WARNING: this image contains files that are not fit for public release.  DO NOT PUBLISH PUBLICLY"

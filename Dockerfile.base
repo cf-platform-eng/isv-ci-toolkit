@@ -46,7 +46,7 @@ RUN rm credhub-linux-${CREDHUB_CLI_VER}.tgz
 # helm
 ARG HELM_CLI_VER=2.13.1
 RUN wget https://storage.googleapis.com/kubernetes-helm/helm-v${HELM_CLI_VER}-linux-amd64.tar.gz
-RUN tar xvzf helm-v${HELM_CLI_VER}-linux-amd64.tar.gz
+RUN tar xvzf helm-v${HELM_CLI_VER}-linux-amd64.tar.gz && rm helm-v${HELM_CLI_VER}-linux-amd64.tar.gz
 RUN mv linux-amd64/helm /usr/local/bin
 RUN mv linux-amd64/tiller /usr/local/bin
 
@@ -75,6 +75,10 @@ RUN chmod +x /usr/local/bin/pivnet
 # TODO deal with licensing
 COPY temp/pks /usr/local/bin/pks
 RUN chmod +x /usr/local/bin/pks
+
+# tileinspect
+COPY temp/tileinspect /usr/local/bin/tileinspect
+RUN chmod +x /usr/local/bin/tileinspect
 
 # uaac
 RUN gem install cf-uaac

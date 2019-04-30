@@ -1,0 +1,16 @@
+---
+steps:
+  - name: 'ubuntu'
+    entrypoint: 'bash'
+    args: ['-c', 'mkdir -p /workspace/input']
+
+  - name: 'gcr.io/cloud-builders/gsutil'
+    args: ['cp', 'gs://isv-ci-staging/input/${_TILE_NAME}', '/workspace/input']
+
+  - name: 'gcr.io/cloud-builders/gsutil'
+    args: ['cp', 'gs://isv-ci-staging/input/${_CONFIG_FILE_NAME}', '/workspace/input']
+
+  - name: 'gcr.io/fe-rabbit-mq-tile-ci/ops-manifest-static-test'
+    env:
+      - 'TILE_PATH=/workspace/input/${_TILE_NAME}'
+      - 'CONFIG_FILE_PATH=/workspace/input${_CONFIG_FILE_NAME}'
