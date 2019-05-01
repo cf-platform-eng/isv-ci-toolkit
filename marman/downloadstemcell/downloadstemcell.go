@@ -19,7 +19,6 @@ type Config struct {
 	Slug    string
 	Version string `short:"v" long:"version" description:"Stemcell version"`
 	IAAS    string `short:"i" long:"iaas" description:"Specific stemcell IaaS to download"`
-
 	Logger       lager.Logger
 	PivnetClient pivnetClient.Client
 	PivnetToken  string `long:"pivnet-token" description:"Authentication token for PivNet" env:"PIVNET_TOKEN"`

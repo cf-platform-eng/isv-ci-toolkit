@@ -1,15 +1,18 @@
 package downloadstemcell_test
 
 import (
+	"code.cloudfoundry.org/lager"
 	"errors"
 
 	"code.cloudfoundry.org/lager"
+
 	"github.com/cf-platform-eng/isv-ci-toolkit/marman/downloadstemcell"
 	"github.com/cf-platform-eng/isv-ci-toolkit/marman/pivnet/pivnetfakes"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/gbytes"
 	"github.com/pivotal-cf/go-pivnet"
+	"os"
 )
 
 var _ = Describe("FindStemcellFile", func() {
@@ -28,7 +31,7 @@ var _ = Describe("FindStemcellFile", func() {
 			Logger:       logger,
 		}
 	})
-
+  
 	Context("Pivnet fails to list files", func() {
 		BeforeEach(func() {
 			pivnetClient.ListFilesForReleaseReturns(nil, errors.New("list-files-error"))
@@ -134,9 +137,7 @@ var _ = Describe("FindStemcellFile", func() {
 			Expect(file.AWSObjectKey).To(Equal("stemcell-file-for-todd"))
 			Expect(file.ID).To(Equal(2))
 		})
-
 	})
-
 })
 
 var _ = Describe("Download Stemcell", func() {
@@ -219,6 +220,7 @@ var _ = Describe("Download Stemcell", func() {
 			Expect(err.Error()).To(ContainSubstring("failed to find the stemcell release"))
 			Expect(err.Error()).To(ContainSubstring("find-release-error"))
 		})
+
 	})
 
 	Context("Failed to find stemcell file", func() {
@@ -297,6 +299,7 @@ var _ = Describe("Download Stemcell", func() {
 			By("getting the file from pivnet", func() {
 				Expect(pivnetClient.ListFilesForReleaseCallCount()).To(Equal(1))
 			})
+
 
 			By("accepting the eula on pivnet", func() {
 				Expect(pivnetClient.AcceptEULACallCount()).To(Equal(1))

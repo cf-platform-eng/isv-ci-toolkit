@@ -2,11 +2,13 @@
 package pivnetfakes
 
 import (
+	io "io"
 	sync "sync"
 
 	semver "github.com/Masterminds/semver"
 	pivnet "github.com/cf-platform-eng/isv-ci-toolkit/marman/pivnet"
 	pivneta "github.com/pivotal-cf/go-pivnet"
+	download "github.com/pivotal-cf/go-pivnet/download"
 )
 
 type FakeClient struct {
@@ -22,6 +24,7 @@ type FakeClient struct {
 	acceptEULAReturnsOnCall map[int]struct {
 		result1 error
 	}
+  
 	DownloadFileStub        func(string, int, *pivneta.ProductFile) error
 	downloadFileMutex       sync.RWMutex
 	downloadFileArgsForCall []struct {
@@ -49,6 +52,7 @@ type FakeClient struct {
 		result1 *pivneta.Release
 		result2 error
 	}
+
 	ListFilesForReleaseStub        func(string, int) ([]pivneta.ProductFile, error)
 	listFilesForReleaseMutex       sync.RWMutex
 	listFilesForReleaseArgsForCall []struct {
@@ -323,10 +327,12 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.acceptEULAMutex.RLock()
 	defer fake.acceptEULAMutex.RUnlock()
+
 	fake.downloadFileMutex.RLock()
 	defer fake.downloadFileMutex.RUnlock()
 	fake.findReleaseByVersionConstraintMutex.RLock()
 	defer fake.findReleaseByVersionConstraintMutex.RUnlock()
+
 	fake.listFilesForReleaseMutex.RLock()
 	defer fake.listFilesForReleaseMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
