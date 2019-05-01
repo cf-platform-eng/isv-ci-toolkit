@@ -3,28 +3,22 @@ package downloadstemcell
 import (
 	"errors"
 	"fmt"
-	"github.com/Masterminds/semver"
-	pivnetClient "github.com/cf-platform-eng/isv-ci-toolkit/marman/pivnet"
-	"github.com/pivotal-cf/go-pivnet/download"
-	. "github.com/pkg/errors"
-	"log"
-	"net/url"
-	"os"
 	"path"
 	"strings"
 
+	. "github.com/pkg/errors"
+
 	"code.cloudfoundry.org/lager"
+	"github.com/Masterminds/semver"
+	pivnetClient "github.com/cf-platform-eng/isv-ci-toolkit/marman/pivnet"
 	"github.com/pivotal-cf/go-pivnet"
-	"github.com/pivotal-cf/go-pivnet/logshim"
 )
 
 type Config struct {
-	OS       string `short:"o" long:"os" description:"Stemcell OS name"`
-	Slug	 string
-	Version  string `short:"v" long:"version" description:"Stemcell version"`
-	Floating bool   `short:"f" long:"floating" description:"Pick the latest stemcell version for this version"`
-	IAAS     string `short:"i" long:"iaas" description:"Specific stemcell IaaS to download"`
-
+	OS           string `short:"o" long:"os" description:"Stemcell OS name"`
+	Slug         string
+	Version      string `short:"v" long:"version" description:"Stemcell version"`
+	IAAS         string `short:"i" long:"iaas" description:"Specific stemcell IaaS to download"`
 	Logger       lager.Logger
 	PivnetClient pivnetClient.Client
 	PivnetToken  string `long:"pivnet-token" description:"Authentication token for PivNet" env:"PIVNET_TOKEN"`
@@ -38,36 +32,6 @@ func stemcellOSToSlug(os string) (string, error) {
 		return "stemcells-ubuntu-xenial", nil
 	}
 	return "", errors.New("invalid stemcell os")
-}
-
-func (cmd *Config) FindStemcellRelease(versionConstraint *semver.Constraints) (*pivnet.Release, error) {
-	releases, err := cmd.PivnetClient.ListReleases(cmd.Slug)
-	if err != nil {
-		return nil, Wrapf(err, "failed to list releases for slug %s", cmd.Slug)
-	}
-
-	var stemcellRelease pivnet.Release
-	stemcellVersion, _ := semver.NewVersion("0")
-	for _, release := range releases {
-		releaseVersion, err := semver.NewVersion(release.Version)
-		if err != nil {
-			cmd.Logger.Debug("invalid release version found", lager.Data{
-				"slug":    cmd.Slug,
-				"version": release.Version,
-			})
-		} else if versionConstraint.Check(releaseVersion) {
-			if releaseVersion.GreaterThan(stemcellVersion) {
-				stemcellRelease = release
-				stemcellVersion = releaseVersion
-			}
-		}
-	}
-
-	if stemcellRelease.ID == 0 {
-		return nil, errors.New("no releases found for the required stemcell version")
-	}
-
-	return &stemcellRelease, nil
 }
 
 func (cmd *Config) FindStemcellFile(releaseId int) (*pivnet.ProductFile, error) {
@@ -102,10 +66,6 @@ func (cmd *Config) FindStemcellFile(releaseId int) (*pivnet.ProductFile, error) 
 	return &stemcellFile, err
 }
 
-func (cmd *Config) DownloadStemcellFile(url url.URL, filepath string) error {
-	return nil
-}
-
 func (cmd *Config) DownloadStemcell() error {
 	if cmd.OS == "" {
 		return errors.New("missing stemcell os")
@@ -121,17 +81,12 @@ func (cmd *Config) DownloadStemcell() error {
 		return errors.New("missing stemcell version")
 	}
 
-	var versionConstraint *semver.Constraints
-	if cmd.Floating {
-		versionConstraint, err = semver.NewConstraint("~" + cmd.Version)
-	} else {
-		versionConstraint, err = semver.NewConstraint(cmd.Version)
-	}
+	versionConstraint, err := semver.NewConstraint(cmd.Version)
 	if err != nil {
-		return Wrapf(err, "invalid stemcell version")
+		return Wrapf(err, "stemcell version is not valid semver")
 	}
 
-	release, err := cmd.FindStemcellRelease(versionConstraint)
+	release, err := cmd.PivnetClient.FindReleaseByVersionConstraint(cmd.Slug, versionConstraint)
 	if err != nil {
 		return Wrapf(err, "failed to find the stemcell release: %s", cmd.Version)
 	}
@@ -146,37 +101,15 @@ func (cmd *Config) DownloadStemcell() error {
 		return Wrapf(err, "failed to find the stemcell file for release: %d", release.ID)
 	}
 
-	filename := path.Base(file.AWSObjectKey)
-	stemcellFile, err := os.Create(filename)
+	err = cmd.PivnetClient.DownloadFile(cmd.Slug, release.ID, file)
 	if err != nil {
-		return Wrapf(err, "failed to create stemcell file: %s", filename)
-	}
-
-	fileInfo, err := download.NewFileInfo(stemcellFile)
-	if err != nil {
-		return Wrapf(err, "failed to load file info: %s", filename)
-	}
-
-	err = cmd.PivnetClient.DownloadProductFile(fileInfo, cmd.Slug, release.ID, file.ID, os.Stdout)
-	if err != nil {
-		return Wrapf(err, "failed to download stemcell to file: %s", filename)
+		return Wrapf(err, "failed to download file")
 	}
 
 	return nil
 }
 
 func (cmd *Config) Execute(args []string) error {
-	stdoutLogger := log.New(os.Stdout, "", log.LstdFlags)
-	stderrLogger := log.New(os.Stderr, "", log.LstdFlags)
-
-	logger := logshim.NewLogShim(stdoutLogger, stderrLogger, true)
-
-	cmd.PivnetClient = &pivnetClient.PivNetClient{
-		PivnetClient: pivnet.NewClient(pivnet.ClientConfig{
-			Host:  pivnet.DefaultHost,
-			Token: cmd.PivnetToken,
-		}, logger),
-	}
-	cmd.Logger = lager.NewLogger("marman")
+	cmd.PivnetClient = pivnetClient.NewPivNetClient(cmd.PivnetToken)
 	return cmd.DownloadStemcell()
 }
