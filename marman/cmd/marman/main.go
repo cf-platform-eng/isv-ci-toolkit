@@ -1,9 +1,10 @@
 package main
 
 import (
-	"code.cloudfoundry.org/lager"
 	"fmt"
 	"os"
+
+	"code.cloudfoundry.org/lager"
 
 	"github.com/cf-platform-eng/isv-ci-toolkit/marman"
 

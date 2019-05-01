@@ -2,10 +2,11 @@ package pivnet
 
 import (
 	"errors"
-	"github.com/pivotal-cf/go-pivnet/logshim"
 	"log"
 	"os"
 	"path"
+
+	"github.com/pivotal-cf/go-pivnet/logshim"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/Masterminds/semver"

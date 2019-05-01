@@ -2,13 +2,11 @@
 package pivnetfakes
 
 import (
-	io "io"
 	sync "sync"
 
 	semver "github.com/Masterminds/semver"
 	pivnet "github.com/cf-platform-eng/isv-ci-toolkit/marman/pivnet"
 	pivneta "github.com/pivotal-cf/go-pivnet"
-	download "github.com/pivotal-cf/go-pivnet/download"
 )
 
 type FakeClient struct {
@@ -24,7 +22,7 @@ type FakeClient struct {
 	acceptEULAReturnsOnCall map[int]struct {
 		result1 error
 	}
-  
+
 	DownloadFileStub        func(string, int, *pivneta.ProductFile) error
 	downloadFileMutex       sync.RWMutex
 	downloadFileArgsForCall []struct {
