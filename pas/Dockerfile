@@ -44,6 +44,10 @@ RUN tar zxf credhub-linux-${CREDHUB_CLI_VER}.tgz --directory /usr/local/bin
 RUN chmod +x /usr/local/bin/credhub
 RUN rm credhub-linux-${CREDHUB_CLI_VER}.tgz
 
+# PksCtl CLI
+COPY temp/pksctl /usr/local/bin
+RUN chmod +x /usr/local/bin/pksctl
+
 # UAAC
 RUN apt-get -y install ruby ruby-dev openssl libssl-dev
 RUN gem install cf-uaac
