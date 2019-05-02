@@ -163,6 +163,7 @@ var _ = Describe("DownloadRelease", func() {
 				makeRelease(1, "1.0",
 					makeAsset(123, "linux-asset1"),
 					makeAsset(456, "linux-asset2"),
+					makeAsset(789, "windows-asset2"),
 				),
 			}, nil)
 		})

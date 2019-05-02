@@ -25,10 +25,13 @@ type Config struct {
 	Downloader   marman.Downloader
 }
 
-func assetsToString(assets []github.ReleaseAsset) string {
+func assetsToString(assets []github.ReleaseAsset, filter string) string {
 	builder := strings.Builder{}
 	for _, asset := range assets {
-		builder.WriteString(fmt.Sprintf("\n    %s", *asset.Name))
+		matched, _ := regexp.MatchString(filter, *asset.Name)
+		if matched {
+			builder.WriteString(fmt.Sprintf("\n    %s", *asset.Name))
+		}
 	}
 	return builder.String()
 }
@@ -75,7 +78,7 @@ func (cmd *Config) DownloadRelease() error {
 
 		if matched {
 			if chosenAsset.ID != nil {
-				return fmt.Errorf("multiple assets found. Please use a filter:%s", assetsToString(chosenRelease.Assets))
+				return fmt.Errorf("multiple assets found. Please use a filter:%s", assetsToString(chosenRelease.Assets, cmd.Filter))
 			}
 			chosenAsset = asset
 		}
