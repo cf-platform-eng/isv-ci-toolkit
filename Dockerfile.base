@@ -80,6 +80,11 @@ RUN chmod +x /usr/local/bin/pks
 COPY temp/tileinspect /usr/local/bin/tileinspect
 RUN chmod +x /usr/local/bin/tileinspect
 
+# pksctl
+ARG PKSCTL_VERSION=0.0.502
+COPY temp/pksctl-${PKSCTL_VERSION}.linux /usr/local/bin/pksctl
+RUN chmod +x /usr/local/bin/pksctl
+
 # uaac
 RUN gem install cf-uaac
 

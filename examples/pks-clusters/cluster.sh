@@ -37,5 +37,5 @@ docker run --rm  -it \
   -e GCP_CREDS="${GCP_CREDS}" \
   -e PKS_USER_NAME="${PKS_USER_NAME}" \
   -e PKS_PASSWORD="${PKS_PASSWORD}" \
-  cfplatformeng/toolkit-pas:latest \
+  gcr.io/fe-rabbit-mq-tile-ci/base-test-image:latest \
   pksctl cluster $@

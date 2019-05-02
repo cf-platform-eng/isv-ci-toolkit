@@ -21,3 +21,6 @@ else
     echo "Setting secrets"
     eval "$("${me}/yml-to-env.py" <(echo "${SECRETS}"))"
 fi
+
+export GITHUB_TOKEN=${CFENG_REPO_KEY}
+unset GITHUB_PRIVATE_KEY

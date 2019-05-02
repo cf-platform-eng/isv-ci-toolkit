@@ -1,4 +1,4 @@
-.PHONY: build publish run
+.PHONY: build publish run clean
 
 #
 # Depdendency targets
@@ -6,9 +6,16 @@
 temp:
 	mkdir -p temp
 
+clean:
+	rm -rf temp
+
 BAZAAR_VERSION ?= 0.4.33
 temp/bazaar-$(BAZAAR_VERSION).linux: temp temp/marman
 	(cd temp && ./marman download-release -o cf-platform-eng -r bazaar -v $(BAZAAR_VERSION) -f "linux$$")
+
+PKSCTL_VERSION ?= 0.0.502
+temp/pksctl-$(PKSCTL_VERSION).linux: temp temp/marman
+	(cd temp && ./marman download-release -o pivotal -r pe-pixie -v $(PKSCTL_VERSION) -f "linux$$")
 
 OPS_MANIFEST_VERSION ?= 2.6.0-internalDev.93
 OPS_MANIFEST_FILE_NAME = $(shell pivnet product-files --product-slug pivotal-ops-manifest --release-version $(OPS_MANIFEST_VERSION) --format=json | jq -r '.[0].aws_object_key' | xargs basename)
@@ -41,7 +48,7 @@ temp/tileinspect: temp
 	cp tileinspect/build/tileinspect temp/tileinspect
 
 temp/marman: temp
-	(cd marman make build)
+	(cd marman && make build)
 	cp marman/build/marman temp/marman
 
 #
@@ -51,7 +58,7 @@ temp/phony/cfplatformeng/test-bazaar-ci: Dockerfile.base
 	docker build . --file Dockerfile.base --tag gcr.io/fe-rabbit-mq-tile-ci/base-test-image:latest
 	mkdir -p temp/phony/cfplatformeng && touch temp/phony/cfplatformeng/test-bazaar-ci
 
-build: temp/bazaar-$(BAZAAR_VERSION).linux temp/ops-manifest.gem temp/pks temp/tileinspect temp/phony/cfplatformeng/test-bazaar-ci
+build: temp/bazaar-$(BAZAAR_VERSION).linux temp/pksctl-$(PKSCTL_VERSION).linux temp/ops-manifest.gem temp/pks temp/tileinspect temp/phony/cfplatformeng/test-bazaar-ci
 
 publish: build
 	echo "WARNING: this image contains files that are not fit for public release.  DO NOT PUBLISH PUBLICLY"
