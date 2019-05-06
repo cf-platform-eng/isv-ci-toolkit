@@ -22,7 +22,8 @@ RUN gem install bundler
 # bazaar
 # TODO deal with licensing
 ARG BAZAAR_CLI_VER=0.4.33
-COPY temp/bazaar-${BAZAAR_CLI_VER}.linux /usr/local/bin/bazaar
+ARG BAZAAR_CLI_PATH=temp/bazaar-${BAZAAR_CLI_VER}.linux
+COPY ${BAZAAR_CLI_PATH_PATH} /usr/local/bin/bazaar
 RUN chmod +x /usr/local/bin/bazaar
 
 # bosh
@@ -62,7 +63,8 @@ RUN apt-get update && apt-get -y install om
 
 # ops-manifest
 # TODO deal with licensing
-COPY temp/ops-manifest.gem ops-manifest.gem
+ARG OPS_MANIFEST_PATH=temp/ops-manifest.gem
+COPY ${OPS_MANIFEST_PATH} ops-manifest.gem
 RUN gem install ops-manifest.gem && rm ops-manifest.gem
 
 # pivnet
@@ -73,7 +75,8 @@ RUN chmod +x /usr/local/bin/pivnet
 
 # pks
 # TODO deal with licensing
-COPY temp/pks /usr/local/bin/pks
+PKS_CLI_PATH=temp/pks
+COPY ${PKS_CLI_PATH} /usr/local/bin/pks
 RUN chmod +x /usr/local/bin/pks
 
 # tileinspect
