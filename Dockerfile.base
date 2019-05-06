@@ -75,7 +75,7 @@ RUN chmod +x /usr/local/bin/pivnet
 
 # pks
 # TODO deal with licensing
-PKS_CLI_PATH=temp/pks
+ARG PKS_CLI_PATH=temp/pks
 COPY ${PKS_CLI_PATH} /usr/local/bin/pks
 RUN chmod +x /usr/local/bin/pks
 
