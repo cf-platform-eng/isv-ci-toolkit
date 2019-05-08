@@ -1,28 +1,30 @@
 .PHONY: build publish run clean
 
-#
-# Depdendency targets
-#
-temp:
-	mkdir -p temp
-
 clean:
 	rm -rf temp
 
+#
+# Depdendency targets
+#
+
 BAZAAR_VERSION ?= 0.4.33
-temp/bazaar: temp temp/marman
+temp/bazaar: temp/marman
+	ls -Al temp
 	(cd temp && ./marman download-release -o cf-platform-eng -r bazaar -v $(BAZAAR_VERSION) -f "linux$$")
+	ls -Al temp
 	mv temp/bazaar-$(BAZAAR_VERSION).linux temp/bazaar
+	ls -Al temp
 
 PKSCTL_VERSION ?= 0.0.502
-temp/pksctl: temp temp/marman
+temp/pksctl: temp/marman
 	(cd temp && ./marman download-release -o pivotal -r pe-pixie -v $(PKSCTL_VERSION) -f "linux$$")
 	mv temp/pksctl-$(PKSCTL_VERSION).linux temp/pksctl
 
 OPS_MANIFEST_VERSION ?= 2.6.0-internalDev.93
 OPS_MANIFEST_FILE_NAME = $(shell pivnet product-files --product-slug pivotal-ops-manifest --release-version $(OPS_MANIFEST_VERSION) --format=json | jq -r '.[0].aws_object_key' | xargs basename)
 OPS_MANIFEST_FILE_ID = $(shell pivnet product-files --product-slug pivotal-ops-manifest --release-version $(OPS_MANIFEST_VERSION) --format=json | jq -r '.[0].id')
-temp/ops-manifest.gem: temp
+temp/ops-manifest.gem:
+	mkdir -p temp
 	touch temp/$(OPS_MANIFEST_FILE_NAME)
 	pivnet download-product-files \
 		--accept-eula \
@@ -35,7 +37,8 @@ temp/ops-manifest.gem: temp
 PKS_VERSION ?= 1.4.0
 PKS_FILE_NAME = $(shell pivnet product-files --product-slug pivotal-container-service --release-version $(PKS_VERSION) --format=json | jq -r '.[] | select(.name=="PKS CLI - Linux") | .aws_object_key' | xargs basename)
 PKS_FILE_ID = $(shell pivnet product-files --product-slug pivotal-container-service --release-version $(PKS_VERSION) --format=json | jq -r '.[] | select(.name=="PKS CLI - Linux") | .id')
-temp/pks: temp
+temp/pks:
+	mkdir -p temp
 	touch temp/$(PKS_FILE_NAME)
 	pivnet download-product-files \
 		--accept-eula \
@@ -45,11 +48,13 @@ temp/pks: temp
 		--download-dir temp
 	mv temp/$(PKS_FILE_NAME) temp/pks
 
-temp/tileinspect: temp
+temp/tileinspect:
+	mkdir -p temp
 	(cd tileinspect && GOOS=linux GOARCH=amd64 make build)
 	cp tileinspect/build/tileinspect temp/tileinspect
 
-temp/marman: temp
+temp/marman:
+	mkdir -p temp
 	(cd marman && make build)
 	cp marman/build/marman temp/marman
 
