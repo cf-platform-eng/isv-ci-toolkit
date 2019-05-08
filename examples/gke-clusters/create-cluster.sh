@@ -19,22 +19,25 @@ fi
 
 CERT_DIR=$(dirname "${GCP_CREDS_FILE}")
 CERT_FILE=$(basename "${GCP_CREDS_FILE}")
-PROJECT=$(cat ${GCP_CREDS_FILE} | jq -r '.project_id')
+PROJECT=$(jq -r '.project_id' < "${GCP_CREDS_FILE}")
 
-DOCKER_OPTS="-e CLOUDSDK_CONFIG=/config/mygcloud -v `pwd`/mygcloud:/config/mygcloud -v ${CERT_DIR}:/tmp/certs -v `pwd`/pci:/pci google/cloud-sdk:latest"
+DOCKER_OPTS="-e CLOUDSDK_CONFIG=/config/mygcloud -v $(pwd)/mygcloud:/config/mygcloud -v ${CERT_DIR}:/tmp/certs -v $(pwd)/pci:/pci google/cloud-sdk:latest"
 
 # if no credentials, create default auth config and authenticate
 if [ ! -f mygcloud/configurations/config_default ]; then
+    mkdir -p pci/k8s
     mkdir -p mygcloud/configurations
 
     echo [auth] > mygcloud/configurations/config_default
-    echo credential_file_override = /tmp/certs/${CERT_FILE} >> mygcloud/configurations/config_default
+    echo credential_file_override = /tmp/certs/"${CERT_FILE}" >> mygcloud/configurations/config_default
 
     # authenticate and set default project
-    docker run -it $DOCKER_OPTS \
+    # shellcheck disable=SC2086
+    docker run -it ${DOCKER_OPTS} \
       gcloud auth activate-service-account --key-file=/tmp/certs/svc_account.json 
-    docker run -it $DOCKER_OPTS \
-      gcloud config set project ${PROJECT}
+    # shellcheck disable=SC2086
+    docker run -it ${DOCKER_OPTS} \
+      gcloud config set project "${PROJECT}"
 fi
 
 ZONE=us-central1
@@ -44,6 +47,7 @@ if [ $# -gt 1 ]; then
 fi
 
 # create cluster
-docker run -it $DOCKER_OPTS \
+# shellcheck disable=SC2086
+docker run -it ${DOCKER_OPTS} \
   /bin/bash -c "gcloud container clusters create $1 --zone ${ZONE} &&kubectl config current-context && kubectl config rename-context gke_${PROJECT}_${ZONE}_$1 $1 && cp /root/.kube/config /pci/k8s/config"
 

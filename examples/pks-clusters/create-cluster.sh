@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 usage() {
     echo "Usage: "
     echo -e "\tcreate-cluster.sh <cluster name> <cluster plan> -n <worker node count>"
@@ -12,9 +14,9 @@ fi
 
 me="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-${me}/cluster.sh create $@
+"${me}"/cluster.sh create "$@"
 
 docker run -it \
-  -v `pwd`/pci:/pci \
+  -v "$(pwd)/pci:/pci" \
   gcr.io/fe-rabbit-mq-tile-ci/base-test-image:latest \
   /bin/bash -c "pks login -a ${PKS_API} -u ${PKS_USER_NAME} -k -p ${PKS_PASSWORD} && KUBECONFIG=/pci/k8s/config pks get-credentials $1"
