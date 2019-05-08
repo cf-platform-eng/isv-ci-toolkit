@@ -32,7 +32,7 @@ if [ $# -lt 2 ]; then
     exit 1
 fi
 
-docker run --rm  -it \
+docker run -it \
   -e PKS_API="${PKS_API}" \
   -e GCP_CREDS="${GCP_CREDS}" \
   -e PKS_USER_NAME="${PKS_USER_NAME}" \
