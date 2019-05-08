@@ -38,4 +38,4 @@ docker run -it \
   -e PKS_USER_NAME="${PKS_USER_NAME}" \
   -e PKS_PASSWORD="${PKS_PASSWORD}" \
   gcr.io/fe-rabbit-mq-tile-ci/base-test-image:latest \
-  pksctl cluster $@
+  pksctl cluster "$@"

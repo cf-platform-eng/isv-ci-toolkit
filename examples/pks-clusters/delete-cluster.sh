@@ -11,4 +11,4 @@ fi
 
 me="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-${me}/cluster.sh delete $@
+"${me}"/cluster.sh delete "$@"
