@@ -20,10 +20,8 @@ RUN apt-get -y install \
 RUN gem install bundler
 
 # bazaar
-# TODO deal with licensing
-ARG BAZAAR_CLI_VER=0.4.33
-ARG BAZAAR_CLI_PATH=temp/bazaar-${BAZAAR_CLI_VER}.linux
-COPY ${BAZAAR_CLI_PATH_PATH} /usr/local/bin/bazaar
+ARG BAZAAR_CLI_PATH
+COPY ${BAZAAR_CLI_PATH} /usr/local/bin/bazaar
 RUN chmod +x /usr/local/bin/bazaar
 
 # bosh
@@ -56,6 +54,12 @@ RUN curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add 
 RUN echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list
 RUN apt-get -y update && apt-get -y install kubectl
 
+# marman
+# TODO deal with licensing
+ARG MARMAN_PATH
+COPY ${MARMAN_PATH} /usr/local/bin/marman
+RUN chmod +x /usr/local/bin/marman
+
 # om
 RUN wget -q -O - https://raw.githubusercontent.com/starkandwayne/homebrew-cf/master/public.key | apt-key add -
 RUN echo "deb http://apt.starkandwayne.com stable main" | tee /etc/apt/sources.list.d/starkandwayne.list
@@ -63,7 +67,7 @@ RUN apt-get update && apt-get -y install om
 
 # ops-manifest
 # TODO deal with licensing
-ARG OPS_MANIFEST_PATH=temp/ops-manifest.gem
+ARG OPS_MANIFEST_PATH
 COPY ${OPS_MANIFEST_PATH} ops-manifest.gem
 RUN gem install ops-manifest.gem && rm ops-manifest.gem
 
@@ -75,18 +79,19 @@ RUN chmod +x /usr/local/bin/pivnet
 
 # pks
 # TODO deal with licensing
-ARG PKS_CLI_PATH=temp/pks
+ARG PKS_CLI_PATH
 COPY ${PKS_CLI_PATH} /usr/local/bin/pks
 RUN chmod +x /usr/local/bin/pks
 
-# tileinspect
-COPY temp/tileinspect /usr/local/bin/tileinspect
-RUN chmod +x /usr/local/bin/tileinspect
-
 # pksctl
-ARG PKSCTL_VERSION=0.0.502
-COPY temp/pksctl-${PKSCTL_VERSION}.linux /usr/local/bin/pksctl
+ARG PKSCTL_PATH
+COPY ${PKSCTL_PATH} /usr/local/bin/pksctl
 RUN chmod +x /usr/local/bin/pksctl
+
+# tileinspect
+#ARG TILE_INSPECT_PATH
+#COPY ${TILE_INSPECT_PATH} /usr/local/bin/tileinspect
+#RUN chmod +x /usr/local/bin/tileinspect
 
 # uaac
 RUN gem install cf-uaac
