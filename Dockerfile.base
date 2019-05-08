@@ -21,6 +21,7 @@ RUN gem install bundler
 
 # bazaar
 ARG BAZAAR_CLI_PATH
+RUN echo "copying bazaar from ${BAZAAR_CLI_PATH}"
 COPY ${BAZAAR_CLI_PATH} /usr/local/bin/bazaar
 RUN chmod +x /usr/local/bin/bazaar
 
@@ -57,6 +58,7 @@ RUN apt-get -y update && apt-get -y install kubectl
 # marman
 # TODO deal with licensing
 ARG MARMAN_PATH
+RUN echo "copying marman from ${MARMAN_PATH}"
 COPY ${MARMAN_PATH} /usr/local/bin/marman
 RUN chmod +x /usr/local/bin/marman
 
@@ -68,6 +70,7 @@ RUN apt-get update && apt-get -y install om
 # ops-manifest
 # TODO deal with licensing
 ARG OPS_MANIFEST_PATH
+RUN echo "copying ops-manifest from ${OPS_MANIFEST_PATH}"
 COPY ${OPS_MANIFEST_PATH} ops-manifest.gem
 RUN gem install ops-manifest.gem && rm ops-manifest.gem
 
@@ -80,11 +83,13 @@ RUN chmod +x /usr/local/bin/pivnet
 # pks
 # TODO deal with licensing
 ARG PKS_CLI_PATH
+RUN echo "copying pks from ${PKS_CLI_PATH}"
 COPY ${PKS_CLI_PATH} /usr/local/bin/pks
 RUN chmod +x /usr/local/bin/pks
 
 # pksctl
 ARG PKSCTL_PATH
+RUN echo "copying pksctl from ${PKSCTL_PATH}"
 COPY ${PKSCTL_PATH} /usr/local/bin/pksctl
 RUN chmod +x /usr/local/bin/pksctl
 
