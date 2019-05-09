@@ -40,4 +40,3 @@ export CREDHUB_ENCRYPTION_PASSWORD="12345678901234567890"
 product_configuration="$(./retrieve_tile_configuration.sh $PRODUCT_FILE $PCF_VERSION $PRODUCT_VERSION | envsubst)"
 echo "$product_configuration"
 exit 0
-
