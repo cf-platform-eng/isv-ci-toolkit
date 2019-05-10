@@ -25,3 +25,4 @@ export KUBECONFIG=/pci/k8s/config
 kubectl config view
 kebectl config use-context <clustername>
 ```
+

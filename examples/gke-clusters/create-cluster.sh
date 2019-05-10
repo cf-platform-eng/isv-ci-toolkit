@@ -49,5 +49,5 @@ fi
 # create cluster
 # shellcheck disable=SC2086
 docker run -it ${DOCKER_OPTS} \
-  /bin/bash -c "gcloud container clusters create $1 --zone ${ZONE} &&kubectl config current-context && kubectl config rename-context gke_${PROJECT}_${ZONE}_$1 $1 && cp /root/.kube/config /pci/k8s/config"
+  /bin/bash -c "gcloud container clusters create $1 --zone ${ZONE} && kubectl config current-context && kubectl config rename-context gke_${PROJECT}_${ZONE}_$1 $1 && cp /root/.kube/config /pci/k8s/config"
 
