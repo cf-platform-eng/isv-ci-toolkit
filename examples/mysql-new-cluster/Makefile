@@ -39,11 +39,7 @@ clustername:
 k8s-cluster-info:
 	if [ -z "${K8S_CLUSTER}" ] ; then echo "K8S_CLUSTER must be specified"; exit 1; fi
 
-temp/gke/get-kubeconfig.sh:	../gke-clusters/get-kubeconfig.sh
-	mkdir -p temp/gke
-	cp ../gke-clusters/get-kubeconfig.sh temp/gke/get-kubeconfig.sh
-
-temp/gke/create-cluster.sh:	../gke-clusters/create-cluster.sh temp/gke/get-kubeconfig.sh
+temp/gke/create-cluster.sh:	../gke-clusters/create-cluster.sh
 	mkdir -p temp/gke
 	cp ../gke-clusters/create-cluster.sh temp/gke/create-cluster.sh
 
@@ -86,7 +82,10 @@ run: build clustername k8s-cluster-info
 	docker run \
 	-e K8S_CLUSTER \
 	-e KUBECONFIG=/pci/k8s/config \
-	-v `pwd`/pci:/pci \
+	-v $(shell pwd)/pci:/pci \
+	-e CLOUDSDK_CONFIG=/config/mygcloud \
+	-v $(shell pwd)/mygcloud:/config/mygcloud \
+	-v $(shell dirname "${GCP_CREDS_FILE}"):/tmp/certs \
 	cfplatformeng/$(IMAGE_NAME):latest
 
 gcb-pks: build clustername publish k8s-cluster-info
@@ -103,6 +102,9 @@ shell: build clustername
 	-e K8S_CLUSTER \
 	-e KUBECONFIG=/pci/k8s/config \
 	-v `pwd`/pci:/pci \
+	-e CLOUDSDK_CONFIG=/config/mygcloud \
+	-v $(pwd)/mygcloud:/config/mygcloud \
+	-v `dirname "${GCP_CREDS_FILE}"`:/tmp/certs \
 	-it cfplatformeng/$(IMAGE_NAME):latest /bin/bash
 
 lint: test/commands.sh
