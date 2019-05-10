@@ -50,13 +50,13 @@ temp/pks:
 
 temp/tileinspect:
 	mkdir -p temp
-	(cd tileinspect && GOOS=linux GOARCH=amd64 make build)
-	cp tileinspect/build/tileinspect temp/tileinspect
+	(cd temp && marman download-release -o cf-platform-eng -r tileinspect -f "tileinspect-linux")
+	mv temp/tileinspect-linux temp/tileinspect
 
 temp/marman:
 	mkdir -p temp
-	(cd marman && make build)
-	cp marman/build/marman temp/marman
+	(cd temp && marman download-release -o cf-platform-eng -r marman -f "marman-linux")
+	mv temp/marman-linux temp/marman
 
 #
 # Docker image targets
@@ -68,7 +68,7 @@ temp/phony/cfplatformeng/test-bazaar-ci: temp/bazaar temp/marman temp/ops-manife
 		--build-arg OPS_MANIFEST_PATH=temp/ops-manifest.gem \
 		--build-arg PKS_CLI_PATH=temp/pks \
 		--build-arg PKSCTL_PATH=temp/pksctl \
-#		--build-arg TILE_INSPECT_PATH=temp/tileinspect
+		--build-arg TILE_INSPECT_PATH=temp/tileinspect
 	mkdir -p temp/phony/cfplatformeng && touch temp/phony/cfplatformeng/test-bazaar-ci
 
 build: temp/phony/cfplatformeng/test-bazaar-ci

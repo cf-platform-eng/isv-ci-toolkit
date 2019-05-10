@@ -89,9 +89,9 @@ COPY ${PKSCTL_PATH} /usr/local/bin/pksctl
 RUN chmod +x /usr/local/bin/pksctl
 
 # tileinspect
-#ARG TILE_INSPECT_PATH
-#COPY ${TILE_INSPECT_PATH} /usr/local/bin/tileinspect
-#RUN chmod +x /usr/local/bin/tileinspect
+ARG TILE_INSPECT_PATH
+COPY ${TILE_INSPECT_PATH} /usr/local/bin/tileinspect
+RUN chmod +x /usr/local/bin/tileinspect
 
 # uaac
 RUN gem install cf-uaac
