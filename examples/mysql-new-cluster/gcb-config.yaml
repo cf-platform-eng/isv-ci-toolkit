@@ -1,0 +1,5 @@
+steps:
+  - name: 'cfplatformeng/test-mysql-standalone:latest'
+    env:
+      - 'K8S_CLUSTER=${_K8S_CLUSTER}'
+

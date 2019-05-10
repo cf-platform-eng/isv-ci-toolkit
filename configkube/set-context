@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+if [[ -z "${K8S_CLUSTER}" ]] ; then
+    >&2 echo "K8S_CLUSTER must be defined"
+    exit 1
+fi
+
+kubectl config use-context "${K8S_CLUSTER}"
