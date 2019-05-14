@@ -42,23 +42,23 @@ k8s-cluster-info:
 gcp-creds:
 	if [ -z "${GCP_CREDS_FILE}" ] ; then echo "GCP_CREDS_FILE must be specified"; exit 1; fi
 
-temp/gke/create-cluster.sh:	../gke-clusters/create-cluster.sh
+temp/gke/create-cluster.sh:	../../k8s-tools/gke-clusters/create-cluster.sh
 	mkdir -p temp/gke
-	cp ../gke-clusters/create-cluster.sh temp/gke/create-cluster.sh
+	cp ../../k8s-tools/gke-clusters/create-cluster.sh temp/gke/create-cluster.sh
 
-temp/gke/delete-cluster.sh:	../gke-clusters/delete-cluster.sh
+temp/gke/delete-cluster.sh:	../../k8s-tools/gke-clusters/delete-cluster.sh
 	mkdir -p temp/gke
-	cp ../gke-clusters/delete-cluster.sh temp/gke/delete-cluster.sh
+	cp ../../k8s-tools/gke-clusters/delete-cluster.sh temp/gke/delete-cluster.sh
 
-temp/pks/cluster.sh: ../pks-clusters/cluster.sh
+temp/pks/cluster.sh: ../../k8s-tools/pks-clusters/cluster.sh
 	mkdir -p temp/pks
-	cp ../pks-clusters/cluster.sh temp/pks/cluster.sh
+	cp ../../k8s-tools/pks-clusters/cluster.sh temp/pks/cluster.sh
 
-temp/pks/create-cluster.sh:	temp/pks/cluster.sh ../pks-clusters/create-cluster.sh
-	cp ../pks-clusters/create-cluster.sh temp/pks/create-cluster.sh
+temp/pks/create-cluster.sh:	temp/pks/cluster.sh ../../k8s-tools/pks-clusters/create-cluster.sh
+	cp ../../k8s-tools/pks-clusters/create-cluster.sh temp/pks/create-cluster.sh
 
-temp/pks/delete-cluster.sh:	temp/pks/cluster.sh ../pks-clusters/delete-cluster.sh
-	cp ../pks-clusters/delete-cluster.sh temp/pks/delete-cluster.sh
+temp/pks/delete-cluster.sh:	temp/pks/cluster.sh ../../k8s-tools/pks-clusters/delete-cluster.sh
+	cp ../../k8s-tools/pks-clusters/delete-cluster.sh temp/pks/delete-cluster.sh
 
 ./pci/k8s/config:
 
@@ -105,10 +105,10 @@ shell: build clustername
 	docker run \
 	-e K8S_CLUSTER \
 	-e KUBECONFIG=/pci/k8s/config \
-	-v `pwd`/pci:/pci \
+	-v $(shell pwd)/pci:/pci \
 	-e CLOUDSDK_CONFIG=/config/mygcloud \
-	-v $(pwd)/mygcloud:/config/mygcloud \
-	-v `dirname "${GCP_CREDS_FILE}"`:/tmp/certs \
+	-v $(shell pwd)/mygcloud:/config/mygcloud \
+	-v $(shell dirname "${GCP_CREDS_FILE}"):/tmp/certs \
 	-it cfplatformeng/$(IMAGE_NAME):latest /bin/bash
 
 lint: test/commands.sh
