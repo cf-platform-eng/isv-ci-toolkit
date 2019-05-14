@@ -1,0 +1,70 @@
+steps:
+  - name: 'ubuntu'
+    entrypoint: 'bash'
+    args: ['-c', 'mkdir -p /pci/k8s/pks']
+    volumes:
+      - name: 'pci'
+        path: '/pci'
+
+  - name: 'gcr.io/cloud-builders/gsutil'
+    volumes:
+      - name: 'pci'
+        path: '/pci'
+    args: ['cp', 'gs://isv-ci-staging/${_GCP_CREDS_FILENAME}', '/pci/k8s/pks']
+    
+  - name: 'gcr.io/fe-rabbit-mq-tile-ci/base-test-image:latest'
+    volumes:
+      - name: 'pci'
+        path: '/pci'
+    env: 
+      - 'PKS_API=${_PKS_API}'
+      - 'GCP_CREDS_FILE=/pci/k8s/pks/${_GCP_CREDS_FILENAME}'
+      - 'PKS_USER_NAME=${_PKS_USER_NAME}'
+      - 'PKS_PASSWORD=${_PKS_PASSWORD}'
+    entrypoint: 'pksctl'
+    args: [ 'cluster', 'create', '${_K8S_CLUSTER}', 'small' ]
+
+  - name: 'gcr.io/fe-rabbit-mq-tile-ci/base-test-image:latest'
+    volumes:
+      - name: 'pci'
+        path: '/pci'
+    env: 
+      - 'PKS_API=${_PKS_API}'
+      - 'GCP_CREDS_FILE=/pci/k8s/pks/${_GCP_CREDS_FILENAME}'
+      - 'PKS_USER_NAME=${_PKS_USER_NAME}'
+      - 'PKS_PASSWORD=${_PKS_PASSWORD}'
+    entrypoint: 'pks'
+    args: [ 'login', '-a', '${_PKS_API}', '-u', '${_PKS_USER_NAME}', '-k', '-p', '${_PKS_PASSWORD}' ]
+
+  - name: 'gcr.io/fe-rabbit-mq-tile-ci/base-test-image:latest'
+    volumes:
+      - name: 'pci'
+        path: '/pci'
+    env: 
+      - 'PKS_API=${_PKS_API}'
+      - 'GCP_CREDS_FILE=/pci/k8s/pks/${_GCP_CREDS_FILENAME}'
+      - 'PKS_USER_NAME=${_PKS_USER_NAME}'
+      - 'PKS_PASSWORD=${_PKS_PASSWORD}'
+      - 'KUBECONFIG=/pci/k8s/config'
+    entrypoint: 'pks'
+    args: [ 'get-credentials', '${_K8S_CLUSTER}' ]
+
+  - name: 'cfplatformeng/test-mysql-new-cluster:latest'
+    volumes:
+      - name: 'pci'
+        path: '/pci'
+    env:
+      - 'K8S_CLUSTER=${_K8S_CLUSTER}'
+      - 'KUBECONFIG=/pci/k8s/config'      
+
+  - name: 'gcr.io/fe-rabbit-mq-tile-ci/base-test-image:latest'
+    volumes:
+      - name: 'pci'
+        path: '/pci'
+    env: 
+      - 'PKS_API=${_PKS_API}'
+      - 'GCP_CREDS_FILE=/pci/k8s/pks/${_GCP_CREDS_FILENAME}'
+      - 'PKS_USER_NAME=${_PKS_USER_NAME}'
+      - 'PKS_PASSWORD=${_PKS_PASSWORD}'
+    entrypoint: 'pksctl'
+    args: [ 'cluster',  'delete', '${_K8S_CLUSTER}' ]

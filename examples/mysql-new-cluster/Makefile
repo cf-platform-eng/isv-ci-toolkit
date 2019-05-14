@@ -39,6 +39,9 @@ clustername:
 k8s-cluster-info:
 	if [ -z "${K8S_CLUSTER}" ] ; then echo "K8S_CLUSTER must be specified"; exit 1; fi
 
+gcp-creds:
+	if [ -z "${GCP_CREDS_FILE}" ] ; then echo "GCP_CREDS_FILE must be specified"; exit 1; fi
+
 temp/gke/create-cluster.sh:	../gke-clusters/create-cluster.sh
 	mkdir -p temp/gke
 	cp ../gke-clusters/create-cluster.sh temp/gke/create-cluster.sh
@@ -88,12 +91,13 @@ run: build clustername k8s-cluster-info
 	-v $(shell dirname "${GCP_CREDS_FILE}"):/tmp/certs \
 	cfplatformeng/$(IMAGE_NAME):latest
 
-gcb-pks: build clustername publish k8s-cluster-info
-	gcloud builds submit --config gcb-config.yaml \
-	--substitutions _K8S_CLUSTER=${K8S_CLUSTER}
+gcb-pks: build clustername publish k8s-cluster-info gcp-creds
+	gsutil cp ${GCP_CREDS_FILE} gs://isv-ci-staging && \
+	gcloud builds submit --config gcb-config-pks.yaml --timeout=1800 \
+	--substitutions _K8S_CLUSTER=${K8S_CLUSTER},_PKS_API=${PKS_API},_PKS_USER_NAME=${PKS_USER_NAME},_PKS_PASSWORD=${PKS_PASSWORD},_GCP_CREDS_FILENAME=$(shell basename "${GCP_CREDS_FILE}")
 
 gcb-gke: build clustername publish k8s-cluster-info
-	gcloud builds submit --config gcb-config.yaml \
+	gcloud builds submit --config gcb-config-gke.yaml \
 	--substitutions _K8S_CLUSTER=${K8S_CLUSTER}
 
 # TODO use volume mounts for live editing
