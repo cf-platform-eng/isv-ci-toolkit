@@ -10,14 +10,14 @@ clean:
 BAZAAR_VERSION ?= 0.4.33
 temp/bazaar: temp/marman
 	ls -Al temp
-	(cd temp && ./marman download-release -o cf-platform-eng -r bazaar -v $(BAZAAR_VERSION) -f "linux$$")
+	(cd temp && marman download-release -o cf-platform-eng -r bazaar -v $(BAZAAR_VERSION) -f "linux$$")
 	ls -Al temp
 	mv temp/bazaar-$(BAZAAR_VERSION).linux temp/bazaar
 	ls -Al temp
 
 PKSCTL_VERSION ?= 0.0.502
 temp/pksctl: temp/marman
-	(cd temp && ./marman download-release -o pivotal -r pe-pixie -v $(PKSCTL_VERSION) -f "linux$$")
+	(cd temp && marman download-release -o pivotal -r pe-pixie -v $(PKSCTL_VERSION) -f "linux$$")
 	mv temp/pksctl-$(PKSCTL_VERSION).linux temp/pksctl
 
 OPS_MANIFEST_VERSION ?= 2.6.0-internalDev.93

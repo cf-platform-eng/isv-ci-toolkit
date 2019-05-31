@@ -15,7 +15,11 @@ RUN apt-get -y install \
     ruby \
     ruby-dev \
     openssl \
-    libssl-dev
+    libssl-dev \
+    python-pip
+
+RUN pip install yq
+
 
 RUN gem install bundler
 
