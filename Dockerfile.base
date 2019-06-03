@@ -23,11 +23,6 @@ RUN pip install yq
 
 RUN gem install bundler
 
-# bazaar
-ARG BAZAAR_CLI_PATH
-COPY ${BAZAAR_CLI_PATH} /usr/local/bin/bazaar
-RUN chmod +x /usr/local/bin/bazaar
-
 # bosh
 ARG BOSH_CLI_VER=5.4.0
 RUN wget "https://github.com/cloudfoundry/bosh-cli/releases/download/v${BOSH_CLI_VER}/bosh-cli-${BOSH_CLI_VER}-linux-amd64"
@@ -52,6 +47,11 @@ RUN wget https://storage.googleapis.com/kubernetes-helm/helm-v${HELM_CLI_VER}-li
 RUN tar xvzf helm-v${HELM_CLI_VER}-linux-amd64.tar.gz && rm helm-v${HELM_CLI_VER}-linux-amd64.tar.gz
 RUN mv linux-amd64/helm /usr/local/bin
 RUN mv linux-amd64/tiller /usr/local/bin
+
+# ksm
+ARG KSM_CLI_PATH
+COPY ${KSM_CLI_PATH} /usr/local/bin/ksm
+RUN chmod +x /usr/local/bin/ksm
 
 # kubectl
 RUN curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
