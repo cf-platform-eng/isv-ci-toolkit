@@ -1,11 +1,14 @@
-.PHONY: build run gcb publish lint
+.PHONY: build clean run gcb publish lint
+
+clean:
+	rm -rf temp
 
 lint: check.sh test.sh
 	shellcheck check.sh test.sh
 
-temp/phony/ops-manifest-static-test: Dockerfile $(TEST_FILES) $(TEMP_FILES)
+temp/phony/ops-manifest-static-test: Dockerfile check.sh test.sh
 	docker build . --tag gcr.io/fe-rabbit-mq-tile-ci/ops-manifest-static-test:latest
-	mkdir -p temp/phony/cfplatformeng && touch temp/phony/ops-manifest-static-test
+	mkdir -p temp/phony && touch temp/phony/ops-manifest-static-test
 
 build: lint temp/phony/ops-manifest-static-test
 
