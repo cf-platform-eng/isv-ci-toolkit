@@ -103,13 +103,13 @@ if [[ "gcp" == "$IAAS" ]]; then
   },
   "resource-configuration": {
     "compilation": {
-      "internet_connected": false,
+      "internet_connected": true,
       "instance_type": {
         "id": "xlarge.disk"
       }
     },
     "director": {
-      "internet_connected": false,
+      "internet_connected": true,
       "persistent_disk": {
         "size_mb": "102400"
       }
@@ -188,13 +188,13 @@ read -d '' iaas_jq_input << EOF
     },
     "resource_configuration": {
       "compilation": {
-        "internet_connected": false,
+        "internet_connected": true,
         "instance_type": {
             "id": "Standard_F8s"
           }
         },
       "director": {
-        "internet_connected": false,
+        "internet_connected": true,
         "persistent_disk": {
           "size_mb": "102400"
         }
