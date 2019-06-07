@@ -160,21 +160,9 @@ read -d '' iaas_jq_input << EOF
         "subnets": [
           {
             "iaas_identifier": "$PKS_IAAS_IDENTIFIER",
-            "cidr": .paver_paving_output.pks_subnet_cidr.value,
+            "cidr": .paver_paving_output.pks_subnet_cidrs.value[0],
             "reserved_ip_ranges": "10.0.10.0-10.0.10.3",
             "dns": "168.63.129.16",
-            "gateway": .paver_paving_output.pks_subnet_gateway.value
-          }
-        ]
-      },
-      {
-        "name": .paver_paving_output.pks_subnet_name.value,
-        "subnets": [
-          {
-            "iaas_identifier": "$PKS_IAAS_IDENTIFIER",
-            "cidr": .paver_paving_output.pks_subnet_cidrs.value[0],
-            "reserved_ip_ranges": "10.0.10.0-10.0.10.4,10.0.10.254",
-            "dns": "169.254.169.254",
             "gateway": .paver_paving_output.pks_subnet_gateway.value
           }
         ]
@@ -185,9 +173,9 @@ read -d '' iaas_jq_input << EOF
         "subnets": [
           {
             "iaas_identifier": "$SERVICES_IAAS_IDENTIFIER",
-            "cidr": .paver_paving_output.pks_services_subnet_cidrs.value[0],
+            "cidr": .paver_paving_output.services_subnet_cidrs.value[0],
             "reserved_ip_ranges": "10.0.11.0-10.0.11.4,10.0.11.254",
-            "dns": "169.254.169.254",
+            "dns": "168.63.129.16",
             "gateway": .paver_iaas_specific_output.services_subnet_gateway
           }
         ]
