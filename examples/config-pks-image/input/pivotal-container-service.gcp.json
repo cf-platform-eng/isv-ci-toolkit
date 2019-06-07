@@ -167,7 +167,7 @@
       },
       "network-properties": {
         "network": {
-          "name": "$OPSMAN_NETWORK_NAME"
+          "name": "$PKS_NETWORK_NAME"
         },
         "other_availability_zones": [{"name": "$AZ_NAME"}],
         "service_network": {
@@ -186,7 +186,8 @@
           "instance_type": {
             "id": "automatic"
           },
-          "internet_connected": true
+          "internet_connected": true,
+	  "elb_names": ["tcp:$PKS_LB_BACKEND_NAME"]
         }
       },
       "errand-config": {

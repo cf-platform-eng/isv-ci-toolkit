@@ -18,14 +18,15 @@ fi
 set -x
 network_name=$(jq -r '.paver_iaas_specific_output.network_name' $ENV_FILE)
 management_subnet_name=$(jq -r '.paver_iaas_specific_output.management_subnet_name' $ENV_FILE)
-pas_subnet_name=$(jq -r '.paver_iaas_specific_output.pas_subnet_name' $ENV_FILE)
+pks_subnet_name=$(jq -r '.paver_paving_output.pks_subnet_name.value' $ENV_FILE)
 services_subnet_name=$(jq -r '.paver_iaas_specific_output.services_subnet_name' $ENV_FILE)
 
 export NETWORK_NAME="$network_name"
 export OPSMAN_NETWORK_NAME="$management_subnet_name"
+export PKS_NETWORK_NAME="$pks_subnet_name"
 export SERVICES_NETWORK_NAME="$services_subnet_name"
 export OPS_MANAGER_IAAS_IDENTIFIER="$network_name/$management_subnet_name"
-export PAS_IAAS_IDENTIFIER="$network_name/$pas_subnet_name"
+export PKS_IAAS_IDENTIFIER="$network_name/$pks_subnet_name"
 export SERVICES_IAAS_IDENTIFIER="$network_name/$services_subnet_name"
 export SYSTEM_DOMAIN=$(jq -r '.paver_paving_output.sys_domain.value' $ENV_FILE)
 export APPS_DOMAIN=$(jq -r '.paver_paving_output.apps_domain.value' $ENV_FILE)
@@ -34,6 +35,7 @@ export ERT_DOMAIN_KEY="${ERT_DOMAIN_KEY:1:${#ERT_DOMAIN_KEY}-2}"
 export ERT_DOMAIN_CERT=$(jq '.paver_paving_output.ssl_cert.value' $ENV_FILE)
 export ERT_DOMAIN_CERT="${ERT_DOMAIN_CERT:1:${#ERT_DOMAIN_CERT}-2}"
 export WEB_LB=$(jq -r '.paver_iaas_specific_output.web_lb_name' $ENV_FILE)
+export PKS_LB_BACKEND_NAME=$(jq -r '.paver_paving_output.pks_lb_backend_name.value' $ENV_FILE)
 export AZ_NAME=$(jq -r '.paver_iaas_specific_output.azs[0]' $ENV_FILE)
 export OTHER_AZS=$(jq -r '.paver_iaas_specific_output.azs | map({name: .})' $ENV_FILE)
 export ERT_NETWORK_NAME=$pas_subnet_name
