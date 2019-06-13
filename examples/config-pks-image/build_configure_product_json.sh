@@ -46,6 +46,12 @@ export WORKER_PRIVATE_KEY_ID=$(jq -r '.paver_paving_output.pks_worker_node_servi
 export PROJECT_ID=$(jq -r '.paver_iaas_specific_output.project' $ENV_FILE)
 export PKS_API_ENDPOINT=$(jq -r '.paver_paving_output.pks_api_endpoint.value' $ENV_FILE)
 
+export IAAS=$(jq -r '.iaas' $ENV_FILE)
+if [[ "$IAAS" == "azure" ]]; then
+	AZ_NAME="zone-1"
+	OTHER_AZS='[{"name": "zone-1"},{"name": "zone-2"},{"name": "zone-3"}]'
+fi
+
 product_configuration="$(./retrieve_tile_configuration.sh $PRODUCT_FILE $PCF_VERSION $PRODUCT_VERSION | envsubst)"
 echo "$product_configuration"
 exit 0

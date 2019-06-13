@@ -152,6 +152,7 @@ read -d '' iaas_jq_input << EOF
             "reserved_ip_ranges": "10.0.0.0-10.0.0.5",
             "dns": "168.63.129.16",
             "gateway": .paver_paving_output.infrastructure_subnet_gateway.value
+            "availability_zone_names": ["zone-1", "zone-2", "zone-3"]
           }
         ]
       },
@@ -161,9 +162,10 @@ read -d '' iaas_jq_input << EOF
           {
             "iaas_identifier": "$PKS_IAAS_IDENTIFIER",
             "cidr": .paver_paving_output.pks_subnet_cidrs.value[0],
-            "reserved_ip_ranges": "10.0.10.0-10.0.10.3",
+            "reserved_ip_ranges": "10.0.12.0-10.0.12.3",
             "dns": "168.63.129.16",
             "gateway": .paver_paving_output.pks_subnet_gateway.value
+            "availability_zone_names": ["zone-1", "zone-2", "zone-3"]
           }
         ]
       },
@@ -174,9 +176,10 @@ read -d '' iaas_jq_input << EOF
           {
             "iaas_identifier": "$SERVICES_IAAS_IDENTIFIER",
             "cidr": .paver_paving_output.services_subnet_cidrs.value[0],
-            "reserved_ip_ranges": "10.0.11.0-10.0.11.4,10.0.11.254",
+            "reserved_ip_ranges": "10.0.16.0-10.0.16.4,10.0.16.254",
             "dns": "168.63.129.16",
             "gateway": .paver_iaas_specific_output.services_subnet_gateway
+            "availability_zone_names": ["zone-1", "zone-2", "zone-3"]
           }
         ]
       }

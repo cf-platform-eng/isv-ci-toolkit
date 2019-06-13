@@ -25,9 +25,10 @@ if [[ "${SKIP_TILE_UPLOAD}" != "true" ]] ; then
 fi
 
 # Configure
-PKS_API_ENDPOINT=$(jq -r '.paver_paving_output.pks_api_endpoint.value' input/environment.json)
+ENV_NAME=$(jq -r '.name' input/environment.json)
+DNS_SUFFIX=$(jq -r '.dns_suffix' input/environment.json)
 ./build_configure_product_json.sh /input/environment.json /input/pivotal-container-service.gcp.json $PCF_VERSION $PRODUCT_VERSION > /tmp/product-config.json
-om -k generate-certificate --domains "*.${PKS_API_ENDPOINT}" > /tmp/api-certificate.json
+om -k generate-certificate --domains "*.api.pks.${ENV_NAME}.${DNS_SUFFIX}" > /tmp/api-certificate.json
 om -k configure-product --config /tmp/product-config.json --vars-file /tmp/api-certificate.json --ops-file /input/add-pks.yml 
 
 ./upload_and_assign_stemcells.sh google
