@@ -53,7 +53,6 @@ run:  pas-config scripts/upload_and_assign_stemcells.sh tile-config
 	-e OM_PASSWORD \
 	-e OM_TARGET \
 	-e PIVNET_TOKEN \
-	-e IAAS_TYPE \
 	-e TILE_NAME=$(shell basename "${TILE_PATH}") \
 	-e TILE_CONFIG=$(shell basename "${TILE_CONFIG_PATH}") \
 	-v $(shell dirname "${TILE_PATH}"):/tile \
@@ -68,7 +67,6 @@ shell:  pas-config scripts/upload_and_assign_stemcells.sh tile-config
 	-e OM_PASSWORD \
 	-e OM_TARGET \
 	-e PIVNET_TOKEN \
-	-e IAAS_TYPE \
 	-e TILE_NAME=$(shell basename "${TILE_PATH}") \
 	-e TILE_CONFIG=$(shell basename "${TILE_CONFIG_PATH}") \
 	-v $(shell dirname "${TILE_PATH}"):/tile \
