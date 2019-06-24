@@ -1,3 +1,5 @@
 FROM gcr.io/fe-rabbit-mq-tile-ci/base-test-image:latest
 
-CMD ["/bin/bash", "-c", "echo 'rash and ernie were ere'"]
+COPY scripts/* /scripts/
+
+CMD ["/bin/bash", "-c", "/scripts/pas-test.sh"]

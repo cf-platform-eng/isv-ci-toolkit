@@ -44,10 +44,11 @@ ifndef PIVNET_TOKEN
 else
 	$(NOOP)
 endif
+
 scripts/upload_and_assign_stemcells.sh: ../config-image/upload_and_assign_stemcells.sh
 	cp ../config-image/upload_and_assign_stemcells.sh scripts/upload_and_assign_stemcells.sh
 
-run:  pas-config scripts/upload_and_assign_stemcells.sh tile-config
+run:  pas-config scripts/upload_and_assign_stemcells.sh tile-config build
 	docker run \
 	-e OM_USERNAME \
 	-e OM_PASSWORD \
@@ -57,11 +58,9 @@ run:  pas-config scripts/upload_and_assign_stemcells.sh tile-config
 	-e TILE_CONFIG=$(shell basename "${TILE_CONFIG_PATH}") \
 	-v $(shell dirname "${TILE_PATH}"):/tile \
 	-v $(shell dirname "${TILE_CONFIG_PATH}"):/tile-config \
-	-v $(shell pwd)/scripts:/scripts \
-	gcr.io/fe-rabbit-mq-tile-ci/base-test-image:latest \
-	/bin/bash -c "/scripts/pas-test.sh"
+	gcr.io/fe-rabbit-mq-tile-ci/install-uninstall-test-image:latest
 
-shell:  pas-config scripts/upload_and_assign_stemcells.sh tile-config
+shell:  pas-config scripts/upload_and_assign_stemcells.sh tile-config build
 	docker run -it \
 	-e OM_USERNAME \
 	-e OM_PASSWORD \
@@ -71,6 +70,11 @@ shell:  pas-config scripts/upload_and_assign_stemcells.sh tile-config
 	-e TILE_CONFIG=$(shell basename "${TILE_CONFIG_PATH}") \
 	-v $(shell dirname "${TILE_PATH}"):/tile \
 	-v $(shell dirname "${TILE_CONFIG_PATH}"):/tile-config \
-	-v $(shell pwd)/scripts:/scripts \
-	gcr.io/fe-rabbit-mq-tile-ci/base-test-image:latest \
+	gcr.io/fe-rabbit-mq-tile-ci/install-uninstall-test-image:latest \
 	/bin/bash
+
+build:	scripts/upload_and_assign_stemcells.sh
+	docker build . --tag gcr.io/fe-rabbit-mq-tile-ci/install-uninstall-test-image:latest
+
+lint:
+	shellcheck scripts/*.sh
