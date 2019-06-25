@@ -46,7 +46,7 @@ else
 endif
 
 clean:
-    docker
+	docker image rm install-uninstall-test-image
 
 build:
 	docker build . --tag install-uninstall-test-image
