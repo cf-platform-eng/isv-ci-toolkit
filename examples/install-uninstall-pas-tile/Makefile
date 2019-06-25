@@ -49,7 +49,7 @@ clean:
 	docker image rm install-uninstall-test-image
 
 build:
-	docker build . --tag install-uninstall-test-image
+	docker build . --tag install-uninstall-test-image --no-cache
 
 run-deps: pas-config tile-config build pivnet-token
 
