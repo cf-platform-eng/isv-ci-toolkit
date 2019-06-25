@@ -26,7 +26,7 @@ endif
 
 tile-path:
 ifndef TILE_PATH
-	$(error TILE_PATH not defined)
+	$(error TILE_PATH not defined. Set this with the full path to your .pivotal tile)
 else
 	$(NOOP)
 endif
@@ -40,15 +40,20 @@ endif
 
 pivnet-token:
 ifndef PIVNET_TOKEN
-	$(error PIVNET_TOKEN not defined)
+	$(error PIVNET_TOKEN not defined, please obtain an api token from your Pivotal Network profile)
 else
 	$(NOOP)
 endif
 
-scripts/upload_and_assign_stemcells.sh: ../config-image/upload_and_assign_stemcells.sh
-	cp ../config-image/upload_and_assign_stemcells.sh scripts/upload_and_assign_stemcells.sh
+clean:
+    docker
 
-run:  pas-config scripts/upload_and_assign_stemcells.sh tile-config build
+build:
+	docker build . --tag install-uninstall-test-image
+
+run-deps: pas-config tile-config build pivnet-token
+
+run: run-deps
 	docker run \
 	-e OM_USERNAME \
 	-e OM_PASSWORD \
@@ -58,9 +63,9 @@ run:  pas-config scripts/upload_and_assign_stemcells.sh tile-config build
 	-e TILE_CONFIG=$(shell basename "${TILE_CONFIG_PATH}") \
 	-v $(shell dirname "${TILE_PATH}"):/tile \
 	-v $(shell dirname "${TILE_CONFIG_PATH}"):/tile-config \
-	gcr.io/fe-rabbit-mq-tile-ci/install-uninstall-test-image:latest
+	install-uninstall-test-image:latest
 
-shell:  pas-config scripts/upload_and_assign_stemcells.sh tile-config build
+shell: run-deps
 	docker run -it \
 	-e OM_USERNAME \
 	-e OM_PASSWORD \
@@ -70,11 +75,8 @@ shell:  pas-config scripts/upload_and_assign_stemcells.sh tile-config build
 	-e TILE_CONFIG=$(shell basename "${TILE_CONFIG_PATH}") \
 	-v $(shell dirname "${TILE_PATH}"):/tile \
 	-v $(shell dirname "${TILE_CONFIG_PATH}"):/tile-config \
-	gcr.io/fe-rabbit-mq-tile-ci/install-uninstall-test-image:latest \
+	install-uninstall-test-image:latest \
 	/bin/bash
-
-build:	scripts/upload_and_assign_stemcells.sh
-	docker build . --tag gcr.io/fe-rabbit-mq-tile-ci/install-uninstall-test-image:latest
 
 lint:
 	shellcheck scripts/*.sh
