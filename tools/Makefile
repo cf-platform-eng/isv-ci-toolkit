@@ -1,5 +1,5 @@
 lint:
-	shellcheck *.sh
+	shellcheck om-helper.sh
 
 test: lint
 	bats *.bats

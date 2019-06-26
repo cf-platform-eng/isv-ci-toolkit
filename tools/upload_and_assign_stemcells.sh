@@ -10,6 +10,7 @@ if [[ -z $IAAS ]]; then
 fi
 
 STEMCELL_ASSIGNMENTS="$(om -k curl -s -p /api/v0/stemcell_assignments)"
+STEMCELLS="$(echo "${STEMCELL_ASSIGNMENTS}" | jq '.products | map({os: .required_stemcell_os, version: .required_stemcell_version, unmet: (.staged_stemcell_version == null)})')"
 STEMCELL_ASSIGNMENTS=$(echo "$STEMCELL_ASSIGNMENTS" | jq '[.products[] | select(.staged_stemcell_version == null) | {product: .identifier, required_stemcell_os: .required_stemcell_os, required_stemcell_version: .required_stemcell_version}]')
 
 PRODUCTS=($(echo "$STEMCELL_ASSIGNMENTS" | jq .[].required_stemcell_os))
