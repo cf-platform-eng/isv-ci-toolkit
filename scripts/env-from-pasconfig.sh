@@ -8,6 +8,7 @@ run() {
     export OM_PASSWORD=$(cat ${configjson} | jq -r .ops_manager.password)
     export OM_TARGET=$(cat ${configjson} | jq -r .ops_manager.url)
     export OM_USERNAME=$(cat ${configjson} | jq -r .ops_manager.username)
+    export OM_SKIP_SSL_VALIDATION=true
 }
 
 configjson=$1

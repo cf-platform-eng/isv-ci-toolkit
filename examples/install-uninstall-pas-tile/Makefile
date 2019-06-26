@@ -58,6 +58,7 @@ run: run-deps
 	-e OM_USERNAME \
 	-e OM_PASSWORD \
 	-e OM_TARGET \
+	-e OM_SKIP_SSL_VALIDATION \
 	-e PIVNET_TOKEN \
 	-e TILE_NAME=$(shell basename "${TILE_PATH}") \
 	-e TILE_CONFIG=$(shell basename "${TILE_CONFIG_PATH}") \
@@ -70,6 +71,7 @@ shell: run-deps
 	-e OM_USERNAME \
 	-e OM_PASSWORD \
 	-e OM_TARGET \
+	-e OM_SKIP_SSL_VALIDATION \
 	-e PIVNET_TOKEN \
 	-e TILE_NAME=$(shell basename "${TILE_PATH}") \
 	-e TILE_CONFIG=$(shell basename "${TILE_CONFIG_PATH}") \
