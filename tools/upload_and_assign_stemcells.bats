@@ -1,6 +1,7 @@
 #!/usr/bin/env bats
 
 setup() {
+    export BATS_TMPDIR
     mkdir -p "$BATS_TMPDIR/bin"
     echo 'echo ${MOCK_OM_HELPER_OUTPUT}; exit ${MOCK_OM_HELPER_RETURN_CODE:-0}' > "$BATS_TMPDIR/bin/om-helper.sh"
 
