@@ -1,8 +1,8 @@
 FROM ubuntu:xenial
 
-ARG BOSH_CLI_VER=5.4.0
-ARG CREDHUB_CLI_VER=2.2.1
-ARG PIVNET_CLI_VER=0.0.55
+ARG BOSH_CLI_VER=5.5.1
+ARG CREDHUB_CLI_VER=2.5.1
+ARG PIVNET_CLI_VER=0.0.60
 
 RUN apt-get -y update
 
@@ -43,10 +43,6 @@ RUN wget "https://github.com/cloudfoundry-incubator/credhub-cli/releases/downloa
 RUN tar zxf credhub-linux-${CREDHUB_CLI_VER}.tgz --directory /usr/local/bin
 RUN chmod +x /usr/local/bin/credhub
 RUN rm credhub-linux-${CREDHUB_CLI_VER}.tgz
-
-# PksCtl CLI
-COPY temp/pksctl /usr/local/bin
-RUN chmod +x /usr/local/bin/pksctl
 
 # UAAC
 RUN apt-get -y install ruby ruby-dev openssl libssl-dev
