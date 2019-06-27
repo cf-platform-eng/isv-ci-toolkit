@@ -16,7 +16,7 @@ function build_tile_config {
     return 1
   fi
   NETWORK=$(echo "${CLOUD_CONFIG}" | jq -r .cloud_config.networks[].name | grep services)
-  AZS=$(echo "${CLOUD_CONFIG}" | jq '[.cloud_config.azs[] | {name}]' | tr '\n' ' ')
+  AZS=$(echo "${CLOUD_CONFIG}" | jq -c '[.cloud_config.azs[] | {name}]')
   AZ0=$(echo "${AZS}" | jq -r .[0].name)
 
   VMS_COUNT=$(echo "$CLOUD_CONFIG" | jq '[.cloud_config.vm_types[].name] | length' )
@@ -28,7 +28,7 @@ function build_tile_config {
   DISK_INDEX=$((DISK_COUNT/2))
   DISK_NAME=$(echo "${CLOUD_CONFIG}" | jq -r [.cloud_config.disk_types[].name]["${DISK_INDEX}"])
 
-  cat <<EOF > ./config.yml
+  cat <<EOF | sed "s/\"{vm_type}\"/${VM_NAME}/g" | sed "s/{disk_type}/${DISK_NAME}/g" | sed "s/\"{az}\"/${AZ0}/g"
 product-name: ${PRODUCT_NAME}
 network-properties:
   network:
