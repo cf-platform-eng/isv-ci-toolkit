@@ -15,6 +15,15 @@ stemcell-assignments() {
         unmet: (.staged_stemcell_version == null)
     })')"
 
+    if [ "$#" -gt 0 ]; then
+        SUBCOMMAND=$1
+        case ${SUBCOMMAND} in
+            --unmet | -u)
+                STEMCELLS=$(echo "${STEMCELLS}" | jq -c '[.[] | select(.unmet == true)]')
+                ;;
+        esac
+    fi
+
     echo "$STEMCELLS"
 }
 
@@ -30,7 +39,9 @@ case ${COMMAND} in
         usage
         ;;
     stemcell-assignments)
-        stemcell-assignments
+        shift
+        # shellcheck disable=SC2068
+        stemcell-assignments $@
         ;;
     *)
         echo "Unknown command: ${COMMAND}"

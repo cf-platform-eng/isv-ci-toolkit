@@ -46,23 +46,59 @@ teardown() {
     [ "$output" = "[]" ]
 }
 
-@test "returns stemcells of products" {
-    export MOCK_OM_OUTPUT=`cat <<EOF
-    read -d '' MOCK_OM_OUTPUT << EOF
-{
+@test "returns all required stemcells for products" {
+    export MOCK_OM_OUTPUT='{
     "products" : [{
         "guid": "product-1-abcfefg12345",
         "required_stemcell_os": "ubuntu-xenial",
-        "required_stemcell_version": "250.63"
+        "required_stemcell_version": "250.63",
+        "staged_stemcell_version": null
     }, {
         "guid": "product-2-abcfefg12345",
         "required_stemcell_os": "ubuntu-xenial",
-        "required_stemcell_version": "250.63"
+        "required_stemcell_version": "250.63",
+        "staged_stemcell_version": "250.63"
     }]
-}
-EOF
-`
+}'
     run ./om-helper.sh stemcell-assignments
     [ "$status" -eq 0 ]
-    [ "$output" = '{"product":"product-1-abcfefg12345","os":"ubuntu-xenial","version":"250.63"},{"product":"product-2-abcfefg12345","os":"ubuntu-xenial","version":"250.63"}' ]
+    [ "$output" = '[{"product":"product-1-abcfefg12345","os":"ubuntu-xenial","version":"250.63","unmet":true},{"product":"product-2-abcfefg12345","os":"ubuntu-xenial","version":"250.63","unmet":false}]' ]
+}
+
+@test "returns unmet stemcells for products when given --unmet flag" {
+    export MOCK_OM_OUTPUT='{
+    "products" : [{
+        "guid": "product-1-abcfefg12345",
+        "required_stemcell_os": "ubuntu-xenial",
+        "required_stemcell_version": "250.63",
+        "staged_stemcell_version": null
+    }, {
+        "guid": "product-2-abcfefg12345",
+        "required_stemcell_os": "ubuntu-xenial",
+        "required_stemcell_version": "250.63",
+        "staged_stemcell_version": "250.63"
+    }]
+}'
+    run ./om-helper.sh stemcell-assignments --unmet
+    [ "$status" -eq 0 ]
+    [ "$output" = '[{"product":"product-1-abcfefg12345","os":"ubuntu-xenial","version":"250.63","unmet":true}]' ]
+}
+
+@test "returns empty list when there are no unmet stemcells and given --unmet flag" {
+    export MOCK_OM_OUTPUT='{
+    "products" : [{
+        "guid": "product-1-abcfefg12345",
+        "required_stemcell_os": "ubuntu-xenial",
+        "required_stemcell_version": "250.63",
+        "staged_stemcell_version": "250.63"
+    }, {
+        "guid": "product-2-abcfefg12345",
+        "required_stemcell_os": "ubuntu-xenial",
+        "required_stemcell_version": "250.63",
+        "staged_stemcell_version": "250.63"
+    }]
+}'
+    run ./om-helper.sh stemcell-assignments --unmet
+    [ "$status" -eq 0 ]
+    [ "$output" = '[]' ]
 }
