@@ -1,38 +1,43 @@
 #!/usr/bin/env bash
 
-# FIXME needs tests, as this is now a dependency
-
 IAAS=$1
-
-if [[ -z $IAAS ]]; then
+if [[ -z ${IAAS} ]]; then
     echo "no iaas provided"
     exit 1
 fi
 
-STEMCELL_ASSIGNMENTS="$(om -k curl -s -p /api/v0/stemcell_assignments)"
-STEMCELLS="$(echo "${STEMCELL_ASSIGNMENTS}" | jq '.products | map({os: .required_stemcell_os, version: .required_stemcell_version, unmet: (.staged_stemcell_version == null)})')"
-STEMCELL_ASSIGNMENTS=$(echo "$STEMCELL_ASSIGNMENTS" | jq '[.products[] | select(.staged_stemcell_version == null) | {product: .identifier, required_stemcell_os: .required_stemcell_os, required_stemcell_version: .required_stemcell_version}]')
+if ! UNMET_STEMCELLS="$(om-helper.sh stemcell-assignments --unmet)" ; then
+  echo "Failed to get the list of unmet stemcells from OpsManager" >&2
+  exit 1
+fi
 
-PRODUCTS=($(echo "$STEMCELL_ASSIGNMENTS" | jq .[].required_stemcell_os))
-STEMCELL_OSES=($(echo "$STEMCELL_ASSIGNMENTS" | jq .[].required_stemcell_os))
-STEMCELL_VERSIONS=($(echo "$STEMCELL_ASSIGNMENTS" | jq .[].required_stemcell_version))
-
-if [[ ${#PRODUCTS[@]} -eq 0 ]]; then
+COUNT=$(echo "${UNMET_STEMCELLS}" | jq '. | length')
+if [[ "${COUNT}" = "0" ]]; then
   echo "No stemcells need to be uploaded"
   exit 0
 fi
 
+stemcellList=()
+while IFS='' read -r line; do stemcellList+=("$line"); done < <(echo "${UNMET_STEMCELLS}" | jq -c '.[]')
+
 mkdir -p stemcells
-pushd stemcells
-  limit=$(expr ${#PRODUCTS[@]} - 1)
-  for i in $(seq 0 $limit)
-  do
-    marman download-stemcell -o "${STEMCELL_OSES[$i]}" -v "${STEMCELL_VERSIONS[$i]}" -i $IAAS
-  done
-popd
+cd stemcells || exit
+for stemcell in "${stemcellList[@]}"; do
+  os=$(echo "${stemcell}" | jq -r .os)
+  version=$(echo "${stemcell}" | jq -r .version)
+  echo "Downloading stemcell ${os} ${version} for ${IAAS} from pivnet..."
+  if ! marman download-stemcell -o "${os}" -v "${version}" -i "${IAAS}" ; then
+    echo "Failed to download stemcell" >&2
+    exit 1
+  fi
+done
+cd ..
 
 for stemcell in stemcells/*.tgz
 do
-  om -k upload-stemcell -s $stemcell
+  echo "Uploading ${stemcell} to OpsManager..."
+  if ! om upload-stemcell -s "${stemcell}" ; then
+    echo "Failed to upload stemcell" >&2
+    exit 1
+  fi
 done
-

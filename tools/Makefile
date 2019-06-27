@@ -1,7 +1,7 @@
+.PHONY: lint test
+
 lint:
-	shellcheck om-helper.sh
+	shellcheck *.sh
 
 test: lint
 	bats *.bats
-
-	
