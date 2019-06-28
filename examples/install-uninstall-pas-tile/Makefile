@@ -1,4 +1,4 @@
-tile-location:
+.PHONY: pas-config om-username om-password om-target tile-config tile-path tile-config-path clean build run run-deps shell
 
 pas-config:	om-username om-password om-target
 tile-config: tile-path tile-config-path
@@ -48,7 +48,7 @@ endif
 clean:
 	docker image rm install-uninstall-test-image
 
-build:
+build: test
 	docker build . --tag install-uninstall-test-image --no-cache
 
 run-deps: pas-config tile-config build pivnet-token
@@ -82,3 +82,6 @@ shell: run-deps
 
 lint:
 	shellcheck scripts/*.sh
+
+test: lint
+	bats scripts/*.bats
