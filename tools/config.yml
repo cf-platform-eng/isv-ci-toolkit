@@ -1,9 +1,0 @@
-product-name: procuct-name
-network-properties:
-  network:
-    name: m-services-s
-  service_network:
-    name: m-services-s
-  other_availability_zones: [   {     "name": "us-c-f"   },   {     "name": "us-c-c"   } ] 
-  singleton_availability_zone:
-    name: us-c-f
