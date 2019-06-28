@@ -2,6 +2,10 @@ FROM gcr.io/fe-rabbit-mq-tile-ci/base-test-image:latest
 
 
 RUN wget \
+    https://raw.githubusercontent.com/cf-platform-eng/isv-ci-toolkit/166641094-install-pas-ci/tools/build-tile-config.sh \
+    --directory-prefix /usr/local/bin
+RUN chmod +x /usr/local/bin/build-tile-config.sh
+RUN wget \
     https://raw.githubusercontent.com/cf-platform-eng/isv-ci-toolkit/166641094-install-pas-ci/tools/om-helper.sh \
     --directory-prefix /usr/local/bin
 RUN chmod +x /usr/local/bin/om-helper.sh
