@@ -48,9 +48,9 @@ function build_tile_config {
           --argjson azs "${AZS}" \
         '.["product-name"] = $productName | .["network-properties"].network.name = $network | .["network-properties"].service_network.name = $network | .["network-properties"].singleton_availability_zone.name = $az | .["network-properties"].other_availability_zones = $azs' \
         "${CONFIG_FILE}" \
-        | sed "s/\"{vm_type}\"/${VM_NAME}/g" \
+        | sed "s/{vm_type}/${VM_NAME}/g" \
         | sed "s/{disk_type}/${DISK_NAME}/g" \
-        | sed "s/\"{az}\"/${AZ0}/g"
+        | sed "s/{az}/${AZ0}/g"
 }
 
 if [ "$#" -lt 2 ]; then    

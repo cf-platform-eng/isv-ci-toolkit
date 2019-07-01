@@ -20,6 +20,15 @@ product-properties:
   ".properties.space":
     value: test-tile-space
     type: string
+  ".properties.some_availability_zone":
+    value: "{az}"
+    type: string
+  ".properties.some_vm_type":
+    value: "{vm_type}"
+    type: string
+  ".properties.some_disk_type":
+    value: "{disk_type}"
+    type: string
 EOF
     cat <<EOF > "$BATS_TMPDIR/pete-config.json"
 "product-properties": {
@@ -38,8 +47,20 @@ EOF
     ".properties.org": {
         "type": "string",
         "value": "test-tile-org"
+    },
+    ".properties.some_availability_zone": {
+        "type": "string",
+        "value": "{az}"
+    },
+    ".properties.some_vm_type": {
+        "type": "string",
+        "value": "{vm_type}"
+    },
+    ".properties.some_disk_type": {
+        "type": "string",
+        "value": "{disk_type}"
     }
-}    
+}
 EOF
 }
 
@@ -113,7 +134,6 @@ teardown() {
 @test "builds valid config from json" {
     export MOCK_OM_OUTPUT='{"cloud_config":{"azs":[{"name":"us-c-f"},{"name":"us-c-c"}],"networks":[{"name":"m-management-s"},{"name":"m-pas-s"},{"name":"m-services-s"}],"vm_types":[{"name":"micro"},{"name":"micro.cpu"},{"name":"small"},{"name":"small.disk"}],"disk_types":[{"name":"1024"},{"name":"2048"},{"name":"5120"},{"name":"10240"}]}}'
     run ./build-tile-config.sh test-name "$BATS_TMPDIR/pete-config.json"
-    echo $output
     [ "$status" -eq 0 ]
     [ `echo $output | jq -r '.["product-name"]'` = "test-name" ]
     [ `echo $output | jq -r '.["network-properties"].network.name'` = "m-services-s" ]
@@ -125,4 +145,16 @@ teardown() {
 }
 
 @test "replaces placeholders" {
+    export MOCK_OM_OUTPUT='{"cloud_config":{"azs":[{"name":"us-c-f"},{"name":"us-c-c"}],"networks":[{"name":"m-management-s"},{"name":"m-pas-s"},{"name":"m-services-s"}],"vm_types":[{"name":"micro"},{"name":"micro.cpu"},{"name":"small"},{"name":"small.disk"}],"disk_types":[{"name":"1024"},{"name":"2048"},{"name":"5120"},{"name":"10240"}]}}'
+    run ./build-tile-config.sh test-name "$BATS_TMPDIR/pete-config.yml"
+    [ "$status" -eq 0 ]
+    [ `echo $output | jq -r '.["product-properties"][".properties.some_availability_zone"].value'` = "us-c-f" ]
+    [ `echo $output | jq -r '.["product-properties"][".properties.some_vm_type"].value'` = "small" ]
+    [ `echo $output | jq -r '.["product-properties"][".properties.some_disk_type"].value'` = "5120" ]
+
+    run ./build-tile-config.sh test-name "$BATS_TMPDIR/pete-config.json"
+    [ "$status" -eq 0 ]
+    [ `echo $output | jq -r '.["product-properties"][".properties.some_availability_zone"].value'` = "us-c-f" ]
+    [ `echo $output | jq -r '.["product-properties"][".properties.some_vm_type"].value'` = "small" ]
+    [ `echo $output | jq -r '.["product-properties"][".properties.some_disk_type"].value'` = "5120" ]
 }
