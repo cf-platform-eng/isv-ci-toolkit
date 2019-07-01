@@ -25,7 +25,7 @@ install_tile() {
 
     upload_and_assign_stemcells.sh "$(om curl -s -p /api/v0/stemcell_assignments | jq -r .stemcell_library[0].infrastructure)"
 
-    build_tile_config.sh "${PRODUCT_NAME}" "${TILE_CONFIG}" > config.json
+    build-tile-config.sh "${PRODUCT_NAME}" "${TILE_CONFIG}" > config.json
 
     if ! om configure-product --config ./config.json ; then
         echo "Failed to configure product ${PRODUCT_NAME}" >&2

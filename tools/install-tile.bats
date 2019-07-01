@@ -18,7 +18,7 @@ fi
 exit ${MOCK_OM_RETURN_CODE:-0}
 EOF
 
-    echo 'exit 0' > "$BATS_TMPDIR/bin/build_tile_config.sh"
+    echo 'exit 0' > "$BATS_TMPDIR/bin/build-tile-config.sh"
     echo 'exit 0' > "$BATS_TMPDIR/bin/upload_and_assign_stemcells.sh"
 
     echo 'echo ${MOCK_TILEINSPECT_OUTPUT}; exit ${MOCK_TILEINSPECT_RETURN_CODE:-0}' > "$BATS_TMPDIR/bin/tileinspect"
