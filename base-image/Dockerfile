@@ -64,6 +64,11 @@ ARG MARMAN_PATH
 COPY ${MARMAN_PATH} /usr/local/bin/marman
 RUN chmod +x /usr/local/bin/marman
 
+# needs
+ARG NEEDS_PATH
+COPY ${NEEDS_PATH} /usr/local/bin/needs
+RUN chmod +x /usr/local/bin/needs
+
 # om
 RUN wget -q -O - https://raw.githubusercontent.com/starkandwayne/homebrew-cf/master/public.key | apt-key add -
 RUN echo "deb http://apt.starkandwayne.com stable main" | tee /etc/apt/sources.list.d/starkandwayne.list
