@@ -4,6 +4,8 @@ Takes a PAS tile and some config and installs them on a foundation. Uploads the 
 
 ## Setup
 
+Requires docker. The test runner is packaged up in a container.
+
 The following environment variables are necessary to run the process:
 - OM_TARGET - url for opsman (ex: https://pcf.vividlimegreen.cf-app.com)
 - OM_USERNAME - opsman username
@@ -14,8 +16,9 @@ The following environment variables are necessary to run the process:
 
 ## Config
 
-The config yaml file should include only the product-properties section - example:
+Config should include only the product-properties section:
 
+YAML:
 ```
 product-properties:
   ".properties.apply_open_security_group":
@@ -30,4 +33,35 @@ product-properties:
   ".properties.space":
     value: test-tile-space
     type: string
+```
+JSON:
+```
+"product-properties": {
+    ".properties.space": {
+        "type": "string",
+        "value": "test-tile-space"
+    },
+    ".properties.allow_paid_service_plans": {
+        "type": "boolean",
+        "value": false
+    },
+    ".properties.apply_open_security_group": {
+        "type": "boolean",
+        "value": false
+    },
+    ".properties.org": {
+        "type": "string",
+        "value": "test-tile-org"
+    }
+}   
+```
+## Use
+
+To run test after setup and config:
+```
+make run
+```
+To get a shell in the test container:
+```
+make shell
 ```
