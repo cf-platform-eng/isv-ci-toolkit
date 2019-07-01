@@ -21,6 +21,7 @@ RUN wget \
     --directory-prefix /usr/local/bin
 RUN chmod +x /usr/local/bin/uninstall-tile.sh
 
+COPY needs.json /needs.json
 COPY scripts/* /scripts/
 
 CMD ["/bin/bash", "-c", "/scripts/pas-test.sh"]

@@ -1,0 +1,17 @@
+[{
+    "type": "environment_variable",
+    "names": [
+        "OM_USERNAME",
+        "OM_PASSWORD",
+        "OM_TARGET",
+        "PIVNET_TOKEN",
+        "TILE_NAME",
+        "TILE_CONFIG"
+    ]
+}, {
+    "type": "file",
+    "path": "/tile/*.pivotal"
+}, {
+    "type": "file",
+    "path": "/tile-config/*"
+}]

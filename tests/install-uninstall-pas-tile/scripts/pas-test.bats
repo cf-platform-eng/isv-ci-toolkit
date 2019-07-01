@@ -24,15 +24,20 @@ done
 echo -n "$@" > "$BATS_TMPDIR/uninstall-tile-calls/${call}"
 EOF
 
+    echo 'echo ${MOCK_NEEDS_OUTPUT}; exit ${MOCK_NEEDS_RETURN_CODE:-0}' > "$BATS_TMPDIR/bin/needs"
+
     chmod a+x "$BATS_TMPDIR/bin"/*
     export PATH="$BATS_TMPDIR/bin:${PATH}"
 }
 
-# teardown() {
-#     rm -rf "$BATS_TMPDIR/bin"
-#     rm -rf "$BATS_TMPDIR/install-tile-calls"
-#     rm -rf "$BATS_TMPDIR/uninstall-tile-calls"
-# }
+teardown() {
+    rm -rf "$BATS_TMPDIR/bin"
+    rm -rf "$BATS_TMPDIR/install-tile-calls"
+    rm -rf "$BATS_TMPDIR/uninstall-tile-calls"
+
+    unset MOCK_NEEDS_OUTPUT
+    unset MOCK_NEEDS_RETURN_CODE
+}
 
 @test "happy path calls install and uninstall" {
     export TILE_NAME=test-tile.pivotal
@@ -43,4 +48,12 @@ EOF
     [ "$(cat "$BATS_TMPDIR/install-tile-calls/0")" = "/tile/test-tile.pivotal /tile-config/test-tile.yml" ]
     [ -e "$BATS_TMPDIR/uninstall-tile-calls/0" ]
     [ "$(cat "$BATS_TMPDIR/uninstall-tile-calls/0")" = "/tile/test-tile.pivotal" ]
+}
+
+@test "test exits before installing if needs are not met" {
+    export MOCK_NEEDS_RETURN_CODE=1
+    run ${BATS_TEST_DIRNAME}/pas-test.sh
+    [ "$status" -eq 1 ]
+    [ -z "$(ls -A $BATS_TMPDIR/install-tile-calls/0)" ]
+    [ -z "$(ls -A $BATS_TMPDIR/uninstall-tile-calls/0)" ]
 }
