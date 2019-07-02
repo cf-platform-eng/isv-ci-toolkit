@@ -4,4 +4,4 @@ lint:
 	shellcheck *.sh
 
 test: lint
-	bats *.bats
+	bats --tap *.bats

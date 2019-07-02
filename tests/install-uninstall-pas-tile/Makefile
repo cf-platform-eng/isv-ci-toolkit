@@ -84,4 +84,4 @@ lint:
 	shellcheck scripts/*.sh
 
 test: lint
-	bats scripts/*.bats
+	bats --tap scripts/*.bats
