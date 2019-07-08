@@ -4,7 +4,7 @@ This test will upload, install, stage, configure and uninstall a tile on a Pivot
 
 ## Setup
 
-Requires docker. The test runner is packaged up in a container.
+Docker is required to run this test.  The test itself is a docker image that runs the test commands against a pre-configured OpsManager.
 
 The following environment variables are necessary to run the process:
 
@@ -16,9 +16,9 @@ The following environment variables are necessary to run the process:
 - TILE_CONFIG_PATH - path to tile config file
 - PIVNET_TOKEN - token to download any missing stemcells
 
-## Config
+## Config file
 
-Config should include only the product-properties section:
+The configuration file should include the product-properties section:
 
 YAML:
 
@@ -61,7 +61,21 @@ JSON:
 }
 ```
 
-## Use with Makefile
+### Substitution strings
+
+The following substitution strings may be used to reference properties that may vary between test environments
+
+- `{az}` will be replaced with the name of an availability zone in the environment.
+- `{disk_type}` will be replaced with the name of a disk type in the environment.
+- `{vm_type}` will be replaced with the name of a vm type in the environment.
+
+## Running the test
+
+The test can take 1+ hours to run. You can invoke it with the Makefile or directly through Docker:
+
+### Use with Makefile
+
+Running the test with the Makefile will build locally, check for the required variables, and execute.
 
 To run test after setup and config:
 
@@ -69,15 +83,18 @@ To run test after setup and config:
 make run
 ```
 
-To get a shell in the test container:
+### Use the Docker image directly
+
+Running the Docker image directly is useful if you want to run the test inside of a CI system where the image is not built locally.
 
 ```bash
-make shell
-```
-
-## Use the Docker image directly
-
-```bash
+export OM_USERNAME=...
+export OM_PASSWORD=...
+export OM_TARGET=...
+export OM_SKIP_SSL_VALIDATION=true|false
+export PIVNET_TOKEN=...
+export TILE_PATH=/path/to/my-tile.pivotal
+export TILE_CONFIG_PATH=/path/to/tile/config.yml
 docker run \
   -e OM_USERNAME \
   -e OM_PASSWORD \
@@ -90,3 +107,31 @@ docker run \
   -v $(dirname "${TILE_CONFIG_PATH}"):/tile-config \
   install-uninstall-test-image:latest
 ```
+
+### Output
+
+The output of this test is the logs of the `om` cli commands
+
+## Development
+
+The test script is inside of `scripts/pas-test.sh`.  Changes there should be tested and reflected in the `pas-test.bats` test file.
+
+This test also utilizes several of the [tool scripts](https://github.com/cf-platform-eng/isv-ci-toolkit/tree/master/tools).
+
+Run the unit tests with:
+
+```bash
+make test
+```
+
+To extend the test to add new functionality, consider creating a new docker image that inherits from this one, or copy this one and make your modifications in the copy.
+
+## Troubleshooting
+
+If you want to debug the execution, you can get a shell in the test container before the test executes by using:
+
+```bash
+make shell
+```
+
+Any other issues, feel free to reach out to the ISV-CI team.
