@@ -20,7 +20,7 @@ om -k configure-director --config /tmp/director-config.json
 if [[ "${SKIP_TILE_UPLOAD}" != "true" ]] ; then
     marman download-pks -v ${PRODUCT_VERSION}
     om -k upload-product --product ./*.pivotal
-    UPLOADED_VERSION=$(tileinspect metadata -t pivotal-container-service-1.4.0-build.31.pivotal -f json | jq -r ".product_version")
+    UPLOADED_VERSION=$(tileinspect metadata -t ./*.pivotal -f json | jq -r ".product_version")
     om -k stage-product --product-name pivotal-container-service --product-version ${UPLOADED_VERSION}
 fi
 
@@ -28,7 +28,7 @@ fi
 ENV_NAME=$(jq -r '.name' input/environment.json)
 DNS_SUFFIX=$(jq -r '.dns_suffix' input/environment.json)
 ./build_configure_product_json.sh /input/environment.json /input/pivotal-container-service.gcp.json $PCF_VERSION $PRODUCT_VERSION > /tmp/product-config.json
-om -k generate-certificate --domains "*.api.pks.${ENV_NAME}.${DNS_SUFFIX}" > /tmp/api-certificate.json
+om -k generate-certificate --domains "*.pks.${ENV_NAME}.${DNS_SUFFIX}" > /tmp/api-certificate.json
 om -k configure-product --config /tmp/product-config.json --vars-file /tmp/api-certificate.json --ops-file /input/add-pks.yml 
 
 ./upload_and_assign_stemcells.sh google

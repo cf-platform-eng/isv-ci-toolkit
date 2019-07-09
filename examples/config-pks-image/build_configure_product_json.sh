@@ -41,8 +41,8 @@ export OTHER_AZS=$(jq -r '.paver_iaas_specific_output.azs | map({name: .})' $ENV
 export ERT_NETWORK_NAME=$pas_subnet_name
 export JUMPBOX_PRIVATE_IP=""
 export CREDHUB_ENCRYPTION_PASSWORD="12345678901234567890"
-export MASTER_PRIVATE_KEY_ID=$(jq -r '.paver_paving_output.pks_master_node_service_account_key.value | fromjson.private_key_id' $ENV_FILE)
-export WORKER_PRIVATE_KEY_ID=$(jq -r '.paver_paving_output.pks_worker_node_service_account_key.value | fromjson.private_key_id' $ENV_FILE)
+export MASTER_PRIVATE_KEY_ID=$(jq -r '.paver_paving_output.pks_master_node_service_account_key.value | fromjson.client_email' $ENV_FILE)
+export WORKER_PRIVATE_KEY_ID=$(jq -r '.paver_paving_output.pks_worker_node_service_account_key.value | fromjson.client_email' $ENV_FILE)
 export PROJECT_ID=$(jq -r '.paver_iaas_specific_output.project' $ENV_FILE)
 export PKS_API_ENDPOINT=$(jq -r '.paver_paving_output.pks_api_endpoint.value' $ENV_FILE)
 

@@ -14,7 +14,7 @@
           }
         },
         ".properties.pks_api_hostname": {
-          "value": "*.$PKS_API_ENDPOINT"
+          "value": "$PKS_API_ENDPOINT"
         },
         ".properties.cloud_provider": {
           "selected_option": "gcp",
@@ -47,6 +47,9 @@
         },
         ".properties.network_selector.flannel.service_cluster_cidr": {
           "value": "10.100.200.0/24"
+        },
+        ".properties.vm_extensions": {
+          "value": ["public_ip"]
         },
         ".properties.pks-vrli": {
           "selected_option": "disabled",
