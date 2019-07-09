@@ -53,7 +53,10 @@ build: test
 
 run-deps: pas-config tile-config build pivnet-token
 
-run: run-deps
+logs:
+	mkdir -p ./logs
+
+run: run-deps logs
 	docker run \
 	-e OM_USERNAME \
 	-e OM_PASSWORD \
@@ -64,7 +67,7 @@ run: run-deps
 	-e TILE_CONFIG=$(shell basename "${TILE_CONFIG_PATH}") \
 	-v $(shell dirname "${TILE_PATH}"):/tile \
 	-v $(shell dirname "${TILE_CONFIG_PATH}"):/tile-config \
-	install-uninstall-test-image:latest
+	install-uninstall-test-image:latest | tee ./logs/$(shell date "+%Y.%m.%d-%H.%M.%S").log
 
 shell: run-deps
 	docker run -it \
@@ -84,4 +87,7 @@ lint:
 	shellcheck scripts/*.sh
 
 test: lint
-	bats --bats scripts/*.bats
+	bats --tap scripts/*.bats
+
+clean:
+	rm -rf ./logs
