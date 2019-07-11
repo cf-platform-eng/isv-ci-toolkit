@@ -76,7 +76,8 @@
           },
           "instances": 2,
           "elb_names": [
-            "$WEB_LB"
+            "$WEB_LB",
+            "$WS_LB"
           ]
         },
         "compute": {
@@ -194,7 +195,8 @@
           },
           "instances": 2,
           "elb_names": [
-            "$WEB_LB"
+            "$WEB_LB",
+            "$WS_LB"
           ]
         },
         "compute": {

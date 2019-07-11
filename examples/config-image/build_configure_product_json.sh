@@ -48,8 +48,9 @@ if [ "${iaas}" = "gcp" ] ; then
     # export OTHER_AZS=$(jq -r '.paver_iaas_specific_output.azs | map({name: .})' $ENV_FILE)
     export SSH_LB=tcp:$(jq -r '.paver_paving_output.ssh_lb_name.value' $ENV_FILE)
     export WEB_LB=http:$(jq -r '.paver_paving_output.web_lb_name.value' $ENV_FILE)
+    export WS_LB=tcp:$(jq -r '.paver_paving_output.ws_router_pool.value' $ENV_FILE)
 fi
 
 product_configuration="$(./retrieve_tile_configuration.sh $PRODUCT_FILE $PCF_VERSION $PRODUCT_VERSION | envsubst)"
-echo "$product_configuration"
+echo "$product_configuration" | jq .
 exit 0
