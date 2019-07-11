@@ -16,6 +16,7 @@ if [[ -z $PRODUCT_FILE ]]; then
 fi
 
 set -x
+iaas=$(jq -r '.iaas' $ENV_FILE)
 network_name=$(jq -r '.paver_iaas_specific_output.network_name' $ENV_FILE)
 management_subnet_name=$(jq -r '.paver_iaas_specific_output.management_subnet_name' $ENV_FILE)
 pas_subnet_name=$(jq -r '.paver_iaas_specific_output.pas_subnet_name' $ENV_FILE)
@@ -31,11 +32,23 @@ export ERT_DOMAIN_KEY=$(jq '.paver_paving_output.ssl_private_key.value' $ENV_FIL
 export ERT_DOMAIN_KEY="${ERT_DOMAIN_KEY:1:${#ERT_DOMAIN_KEY}-2}"
 export ERT_DOMAIN_CERT=$(jq '.paver_paving_output.ssl_cert.value' $ENV_FILE)
 export ERT_DOMAIN_CERT="${ERT_DOMAIN_CERT:1:${#ERT_DOMAIN_CERT}-2}"
-export WEB_LB=$(jq -r '.paver_iaas_specific_output.web_lb_name' $ENV_FILE)
-export AZ_NAME="zone-1"
 export ERT_NETWORK_NAME=$pas_subnet_name
 export JUMPBOX_PRIVATE_IP=""
 export CREDHUB_ENCRYPTION_PASSWORD="12345678901234567890"
+
+if [ "${iaas}" = "azure" ] ; then
+    export AZ_NAME="zone-1"
+    # export OTHER_AZS="[\"zone-1\"]"
+    export SSH_LB="???"
+    export WEB_LB=$(jq -r '.paver_iaas_specific_output.web_lb_name' $ENV_FILE)
+fi
+
+if [ "${iaas}" = "gcp" ] ; then
+    export AZ_NAME=$(jq -r '.paver_iaas_specific_output.azs[0]' $ENV_FILE)
+    # export OTHER_AZS=$(jq -r '.paver_iaas_specific_output.azs | map({name: .})' $ENV_FILE)
+    export SSH_LB=tcp:$(jq -r '.paver_paving_output.ssh_lb_name.value' $ENV_FILE)
+    export WEB_LB=http:$(jq -r '.paver_paving_output.web_lb_name.value' $ENV_FILE)
+fi
 
 product_configuration="$(./retrieve_tile_configuration.sh $PRODUCT_FILE $PCF_VERSION $PRODUCT_VERSION | envsubst)"
 echo "$product_configuration"
