@@ -199,6 +199,11 @@
         },
         "compute": {
           "instances": 2
+        },
+        "control": {
+          "elb_names": [
+            "$SSH_LB"
+	  ]
         }
       },
       "network": {
