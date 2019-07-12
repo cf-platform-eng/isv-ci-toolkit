@@ -38,8 +38,8 @@ export CREDHUB_ENCRYPTION_PASSWORD="12345678901234567890"
 
 if [ "${iaas}" = "azure" ] ; then
     export AZ_NAME="zone-1"
-    # export OTHER_AZS="[\"zone-1\"]"
-    export SSH_LB="???"
+    export OTHER_AZS="[\"zone-1\"]"
+    export SSH_LB=$(jq -r '.paver_paving_output.diego_ssh_lb_name.value' $ENV_FILE)
     export WEB_LB=$(jq -r '.paver_iaas_specific_output.web_lb_name' $ENV_FILE)
 fi
 
