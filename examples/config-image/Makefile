@@ -32,3 +32,6 @@ shell:
 
 lint:
 	shellcheck *.sh
+
+test:
+	bats --tap *.bats
