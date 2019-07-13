@@ -82,10 +82,19 @@ else
 endif
 	mv temp/needs-linux temp/needs
 
+temp/mrlog:
+	mkdir -p temp
+ifndef MRLOG_VERSION
+	(cd temp && marman download-release --owner cf-platform-eng --repo mrlog --filter "mrlog-linux")
+else
+	(cd temp && marman download-release --owner cf-platform-eng --repo mrlog --version ${NEEDS_VERSION} --filter "mrlog-linux")
+endif
+	mv temp/mrlog-linux temp/mrlog
+
 #
 # Docker image targets
 #
-temp/phony/cfplatformeng/test-ksm-ci: temp/ksm temp/marman temp/ops-manifest.gem temp/pks temp/pksctl temp/tileinspect temp/needs Dockerfile
+temp/phony/cfplatformeng/test-ksm-ci: temp/ksm temp/marman temp/ops-manifest.gem temp/pks temp/pksctl temp/tileinspect temp/needs temp/mrlog Dockerfile
 	docker build . --file Dockerfile --tag gcr.io/fe-rabbit-mq-tile-ci/base-test-image:latest \
 		--build-arg KSM_CLI_PATH=temp/ksm \
 		--build-arg MARMAN_PATH=temp/marman \
@@ -93,6 +102,7 @@ temp/phony/cfplatformeng/test-ksm-ci: temp/ksm temp/marman temp/ops-manifest.gem
 		--build-arg PKS_CLI_PATH=temp/pks \
 		--build-arg PKSCTL_PATH=temp/pksctl \
 		--build-arg NEEDS_PATH=temp/needs \
+		--build-arg MRLOG_PATH=temp/mrlog \
 		--build-arg TILE_INSPECT_PATH=temp/tileinspect
 	mkdir -p temp/phony/cfplatformeng && touch temp/phony/cfplatformeng/test-ksm-ci
 

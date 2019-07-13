@@ -69,6 +69,11 @@ ARG NEEDS_PATH
 COPY ${NEEDS_PATH} /usr/local/bin/needs
 RUN chmod +x /usr/local/bin/needs
 
+# mrlog
+ARG MRLOG_PATH
+COPY ${MRLOG_PATH} /usr/local/bin/mrlog
+RUN chmod +x /usr/local/bin/mrlog
+
 # om
 RUN wget -q -O - https://raw.githubusercontent.com/starkandwayne/homebrew-cf/master/public.key | apt-key add -
 RUN echo "deb http://apt.starkandwayne.com stable main" | tee /etc/apt/sources.list.d/starkandwayne.list
