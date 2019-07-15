@@ -12,12 +12,20 @@ install-marman: /usr/local/bin/marman
 clean:
 	rm -rf temp
 
+# todo: remove this once Marman has a clearer message (and perhaps a way to use the existing shell creds)
+github-token:
+ifndef GITHUB_TOKEN
+	$(error GITHUB_TOKEN not defined, ISV-CI team use: 'credhub get -n /concourse/main/pipeline-secrets -k cfeng-repo-key')
+else
+	$(NOOP)
+endif
+
 #
 # Depdendency targets
 #
 
 KSM_VERSION ?= 0.4.66
-temp/ksm:
+temp/ksm: github-token
 	mkdir -p temp
 ifndef KSM_VERSION
 	(cd temp && marman download-release --owner cf-platform-eng --repo ksm --filter "ksm-.*\.linux$$")
@@ -27,7 +35,7 @@ endif
 	mv temp/ksm-$(KSM_VERSION).linux temp/ksm
 
 PKSCTL_VERSION ?= 0.0.522
-temp/pksctl:
+temp/pksctl: github-token
 	mkdir -p temp
 ifndef PKSCTL_VERSION
 	(cd temp && marman download-release --owner pivotal --repo pe-pixie --filter "linux$$")
@@ -64,7 +72,7 @@ temp/pks:
 		--download-dir temp
 	mv temp/$(PKS_FILE_NAME) temp/pks
 
-temp/tileinspect:
+temp/tileinspect: github-token
 	mkdir -p temp
 ifndef TILEINSPECT_VERSION
 	(cd temp && marman download-release --owner cf-platform-eng --repo tileinspect --filter "tileinspect-linux")
@@ -73,7 +81,7 @@ else
 endif
 	mv temp/tileinspect-linux temp/tileinspect
 
-temp/marman:
+temp/marman: github-token
 	mkdir -p temp
 ifndef MARMAN_VERSION
 	(cd temp && marman download-release --owner cf-platform-eng --repo marman --filter "marman-linux")
@@ -82,7 +90,7 @@ else
 endif
 	mv temp/marman-linux temp/marman
 
-temp/needs:
+temp/needs: github-token
 	mkdir -p temp
 ifndef NEEDS_VERSION
 	(cd temp && marman download-release --owner cf-platform-eng --repo needs --filter "needs-linux")
@@ -91,7 +99,7 @@ else
 endif
 	mv temp/needs-linux temp/needs
 
-temp/mrlog:
+temp/mrlog: github-token
 	mkdir -p temp
 ifndef MRLOG_VERSION
 	(cd temp && marman download-release --owner cf-platform-eng --repo mrlog --filter "mrlog-linux")
