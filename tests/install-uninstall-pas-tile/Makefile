@@ -47,9 +47,10 @@ endif
 
 clean:
 	docker image rm install-uninstall-test-image
+	rm -rf ./logs
 
 build: test
-	docker build . --tag install-uninstall-test-image --no-cache
+	docker build . --tag install-uninstall-test-image --no-cache --pull
 
 run-deps: pas-config tile-config build pivnet-token
 
@@ -89,5 +90,3 @@ lint:
 test: lint
 	bats --tap scripts/*.bats
 
-clean:
-	rm -rf ./logs
