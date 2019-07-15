@@ -1,6 +1,6 @@
 FROM ubuntu:xenial
 
-ARG BASE_IMAGE_DEPENDENCIES_FILE=/base-image-dependencies.log
+ARG BASE_IMAGE_DEPENDENCIES_FILE=/root/base-image-dependencies.log
 
 RUN apt-get -y update --fix-missing
 
@@ -22,6 +22,11 @@ RUN apt-get -y install \
 
 RUN pip install yq
 RUN gem install bundler
+
+RUN wget \
+    https://raw.githubusercontent.com/cf-platform-eng/isv-ci-toolkit/master/tools/log-dependencies.sh \
+    --directory-prefix /usr/local/bin
+RUN chmod +x /usr/local/bin/log-dependencies.sh
 
 # mrlog
 ARG MRLOG_PATH
@@ -145,5 +150,3 @@ RUN eval "$(gcloud version --format json | jq -r 'to_entries[] | "mrlog dependen
 
 # finalize
 RUN rm -rf /var/lib/apt/lists/*
-
-
