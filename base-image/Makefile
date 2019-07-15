@@ -1,4 +1,13 @@
-.PHONY: build publish run clean
+SHELL = /bin/bash
+.PHONY: build publish run clean install-marman
+
+
+/usr/local/bin/marman:
+	wget $$(curl -sL https://api.github.com/repos/cf-platform-eng/marman/releases/latest | jq -r '.assets[] | select(.name | contains("-darwin")) | .browser_download_url')
+	mv marman-darwin /usr/local/bin/marman
+	chmod +x /usr/local/bin/marman
+
+install-marman: /usr/local/bin/marman
 
 clean:
 	rm -rf temp
