@@ -1,13 +1,5 @@
 SHELL = /bin/bash
-.PHONY: build publish run clean install-marman
-
-
-/usr/local/bin/marman:
-	wget $$(curl -sL https://api.github.com/repos/cf-platform-eng/marman/releases/latest | jq -r '.assets[] | select(.name | contains("-darwin")) | .browser_download_url')
-	mv marman-darwin /usr/local/bin/marman
-	chmod +x /usr/local/bin/marman
-
-install-marman: /usr/local/bin/marman
+.PHONY: build publish run clean
 
 clean:
 	rm -rf temp
@@ -23,26 +15,6 @@ endif
 #
 # Depdendency targets
 #
-
-KSM_VERSION ?= 0.4.66
-temp/ksm: github-token
-	mkdir -p temp
-ifndef KSM_VERSION
-	(cd temp && marman download-release --owner cf-platform-eng --repo ksm --filter "ksm-.*\.linux$$")
-else
-	(cd temp && marman download-release --owner cf-platform-eng --repo ksm --version $(KSM_VERSION) --filter "ksm-.*\.linux$$")
-endif
-	mv temp/ksm-$(KSM_VERSION).linux temp/ksm
-
-PKSCTL_VERSION ?= 0.0.522
-temp/pksctl: github-token
-	mkdir -p temp
-ifndef PKSCTL_VERSION
-	(cd temp && marman download-release --owner pivotal --repo pe-pixie --filter "linux$$")
-else
-	(cd temp && marman download-release --owner pivotal --repo pe-pixie --version $(PKSCTL_VERSION) --filter "linux$$")
-endif
-	mv temp/pksctl-$(PKSCTL_VERSION).linux temp/pksctl
 
 OPS_MANIFEST_VERSION ?= 2.7.0-internalDev.39
 OPS_MANIFEST_FILE_NAME = $(shell pivnet product-files --product-slug pivotal-ops-manifest --release-version $(OPS_MANIFEST_VERSION) --format=json | jq -r '.[0].aws_object_key' | xargs basename)
@@ -72,55 +44,14 @@ temp/pks:
 		--download-dir temp
 	mv temp/$(PKS_FILE_NAME) temp/pks
 
-temp/tileinspect: github-token
-	mkdir -p temp
-ifndef TILEINSPECT_VERSION
-	(cd temp && marman download-release --owner cf-platform-eng --repo tileinspect --filter "tileinspect-linux")
-else
-	(cd temp && marman download-release --owner cf-platform-eng --repo tileinspect --version ${TILEINSPECT_VERSION} --filter "tileinspect-linux")
-endif
-	mv temp/tileinspect-linux temp/tileinspect
-
-temp/marman: github-token
-	mkdir -p temp
-ifndef MARMAN_VERSION
-	(cd temp && marman download-release --owner cf-platform-eng --repo marman --filter "marman-linux")
-else
-	(cd temp && marman download-release --owner cf-platform-eng --repo marman --version ${MARMAN_VERSION} --filter "marman-linux")
-endif
-	mv temp/marman-linux temp/marman
-
-temp/needs: github-token
-	mkdir -p temp
-ifndef NEEDS_VERSION
-	(cd temp && marman download-release --owner cf-platform-eng --repo needs --filter "needs-linux")
-else
-	(cd temp && marman download-release --owner cf-platform-eng --repo needs --version ${NEEDS_VERSION} --filter "needs-linux")
-endif
-	mv temp/needs-linux temp/needs
-
-temp/mrlog: github-token
-	mkdir -p temp
-ifndef MRLOG_VERSION
-	(cd temp && marman download-release --owner cf-platform-eng --repo mrlog --filter "mrlog-linux")
-else
-	(cd temp && marman download-release --owner cf-platform-eng --repo mrlog --version ${NEEDS_VERSION} --filter "mrlog-linux")
-endif
-	mv temp/mrlog-linux temp/mrlog
-
 #
 # Docker image targets
 #
-temp/phony/cfplatformeng/test-ksm-ci: temp/ksm temp/marman temp/ops-manifest.gem temp/pks temp/pksctl temp/tileinspect temp/needs temp/mrlog Dockerfile
+temp/phony/cfplatformeng/test-ksm-ci: temp/ops-manifest.gem temp/pks Dockerfile
 	docker build . --file Dockerfile --tag gcr.io/fe-rabbit-mq-tile-ci/base-test-image:latest \
-		--build-arg KSM_CLI_PATH=temp/ksm \
-		--build-arg MARMAN_PATH=temp/marman \
 		--build-arg OPS_MANIFEST_PATH=temp/ops-manifest.gem \
 		--build-arg PKS_CLI_PATH=temp/pks \
-		--build-arg PKSCTL_PATH=temp/pksctl \
-		--build-arg NEEDS_PATH=temp/needs \
-		--build-arg MRLOG_PATH=temp/mrlog \
-		--build-arg TILE_INSPECT_PATH=temp/tileinspect
+		--build-arg GITHUB_TOKEN=${GITHUB_TOKEN}
 	mkdir -p temp/phony/cfplatformeng && touch temp/phony/cfplatformeng/test-ksm-ci
 
 build: temp/phony/cfplatformeng/test-ksm-ci
