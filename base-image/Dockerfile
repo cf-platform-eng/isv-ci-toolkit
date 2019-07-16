@@ -26,6 +26,9 @@ RUN gem install bundler
 ARG GITHUB_TOKEN
 ENV GITHUB_TOKEN=$GITHUB_TOKEN
 
+ARG PIVNET_TOKEN
+ENV PIVNET_TOKEN=$PIVNET_TOKEN
+
 RUN wget \
     https://raw.githubusercontent.com/cf-platform-eng/isv-ci-toolkit/master/tools/log-dependencies.sh \
     --directory-prefix /usr/local/bin
@@ -92,10 +95,9 @@ RUN echo "deb http://apt.starkandwayne.com stable main" | tee /etc/apt/sources.l
 RUN apt-get update && apt-get -y install om
 
 # ops-manifest
+ARG OPS_MANIFEST_VERSION=2.7.0-internalDev.39
 # TODO deal with licensing
-ARG OPS_MANIFEST_PATH
-COPY ${OPS_MANIFEST_PATH} ops-manifest.gem
-RUN gem install ops-manifest.gem && rm ops-manifest.gem
+RUN marman download-tile --slug pivotal-ops-manifest --version ${OPS_MANIFEST_VERSION} && gem install *.gem && rm *.gem
 
 RUN mrlog dependency --name ops-manifest --version $(gem list | grep ops-manifest | cut -d" " -f2) >> ${BASE_IMAGE_DEPENDENCIES_FILE}
 
@@ -109,9 +111,18 @@ RUN mrlog dependency --name pivnet-cli --version ${PIVNET_CLI_VER} >> ${BASE_IMA
 
 # pks
 # TODO deal with licensing
-ARG PKS_CLI_PATH
-COPY ${PKS_CLI_PATH} /usr/local/bin/pks
-RUN chmod +x /usr/local/bin/pks
+ARG PKS_VERSION=1.4.0 
+RUN pivnet login --api-token ${PIVNET_TOKEN} && \
+    PKS_FILE_NAME=`pivnet product-files --product-slug pivotal-container-service --release-version ${PKS_VERSION} --format=json | jq -r '.[] | select(.name=="PKS CLI - Linux") | .aws_object_key' | xargs basename` && \
+    PKS_FILE_ID=`pivnet product-files --product-slug pivotal-container-service --release-version ${PKS_VERSION} --format=json | jq -r '.[] | select(.name=="PKS CLI - Linux") | .id'` && \
+    pivnet download-product-files \
+        --accept-eula \
+        --product-slug pivotal-container-service \
+        --release-version ${PKS_VERSION} \
+        --product-file-id ${PKS_FILE_ID} && \
+    pivnet logout && \
+    mv ${PKS_FILE_NAME} /usr/local/bin/pks && \
+    chmod +x /usr/local/bin/pks
 
 RUN mrlog dependency --name pks-cli --version $(pks --version | grep "PKS CLI" | cut -d" " -f4) >> ${BASE_IMAGE_DEPENDENCIES_FILE}
 
