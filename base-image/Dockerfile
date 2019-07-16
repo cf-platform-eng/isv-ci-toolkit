@@ -23,15 +23,18 @@ RUN apt-get -y install \
 RUN pip install yq
 RUN gem install bundler
 
+ARG GITHUB_TOKEN
+ENV GITHUB_TOKEN=$GITHUB_TOKEN
+
 RUN wget \
     https://raw.githubusercontent.com/cf-platform-eng/isv-ci-toolkit/master/tools/log-dependencies.sh \
     --directory-prefix /usr/local/bin
 RUN chmod +x /usr/local/bin/log-dependencies.sh
 
+RUN wget `curl -sL https://api.github.com/repos/cf-platform-eng/marman/releases/latest | jq -r '.assets[] | select(.name | contains("-linux")) | .browser_download_url'` && mv marman-linux /usr/local/bin/marman && chmod +x /usr/local/bin/marman
+
 # mrlog
-ARG MRLOG_PATH
-COPY ${MRLOG_PATH} /usr/local/bin/mrlog
-RUN chmod +x /usr/local/bin/mrlog
+RUN marman download-release --owner cf-platform-eng --repo mrlog --filter "mrlog-linux" && mv mrlog-linux /usr/local/bin/mrlog && chmod +x /usr/local/bin/mrlog
 
 # bosh
 ARG BOSH_CLI_VER=5.4.0
@@ -65,9 +68,8 @@ RUN mv linux-amd64/tiller /usr/local/bin
 RUN mrlog dependency --name helm-cli --version ${HELM_CLI_VER} >> ${BASE_IMAGE_DEPENDENCIES_FILE}
 
 # ksm
-ARG KSM_CLI_PATH
-COPY ${KSM_CLI_PATH} /usr/local/bin/ksm
-RUN chmod +x /usr/local/bin/ksm
+ARG KSM_VERSION=0.4.66
+RUN marman download-release --owner cf-platform-eng --repo ksm --version ${KSM_VERSION} --filter "ksm-.*\.linux$" && mv ksm-${KSM_VERSION}.linux /usr/local/bin/ksm && chmod +x /usr/local/bin/ksm
 
 RUN mrlog dependency --name ksm-cli --version $(shasum $(which ksm) | cut -f1 -d" ") >> ${BASE_IMAGE_DEPENDENCIES_FILE}
 
@@ -76,18 +78,11 @@ RUN curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add 
 RUN echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list
 RUN apt-get -y update && apt-get -y install kubectl
 
-# marman
-# TODO deal with licensing
-ARG MARMAN_PATH
-COPY ${MARMAN_PATH} /usr/local/bin/marman
-RUN chmod +x /usr/local/bin/marman
-
+# # marman
 RUN mrlog dependency --name marman --version $(marman version | cut -f3 -d" ") >> ${BASE_IMAGE_DEPENDENCIES_FILE}
 
 # needs
-ARG NEEDS_PATH
-COPY ${NEEDS_PATH} /usr/local/bin/needs
-RUN chmod +x /usr/local/bin/needs
+RUN marman download-release --owner cf-platform-eng --repo needs --filter "needs-linux" && cp needs-linux /usr/local/bin/needs && chmod +x /usr/local/bin/needs
 
 RUN mrlog dependency --name needs --version $(needs --version) >> ${BASE_IMAGE_DEPENDENCIES_FILE}
 
@@ -121,16 +116,13 @@ RUN chmod +x /usr/local/bin/pks
 RUN mrlog dependency --name pks-cli --version $(pks --version | grep "PKS CLI" | cut -d" " -f4) >> ${BASE_IMAGE_DEPENDENCIES_FILE}
 
 # pksctl
-ARG PKSCTL_PATH
-COPY ${PKSCTL_PATH} /usr/local/bin/pksctl
-RUN chmod +x /usr/local/bin/pksctl
+ARG PKSCTL_VERSION=0.0.522
+RUN marman download-release --owner pivotal --repo pe-pixie --version ${PKSCTL_VERSION} --filter "linux$" && cp pksctl-${PKSCTL_VERSION}.linux /usr/local/bin/pksctl && chmod +x /usr/local/bin/pksctl
 
 RUN mrlog dependency --name pksctl --version $(pksctl version | grep "PKSCTL" | cut -d" " -f3) >> ${BASE_IMAGE_DEPENDENCIES_FILE}
 
 # tileinspect
-ARG TILE_INSPECT_PATH
-COPY ${TILE_INSPECT_PATH} /usr/local/bin/tileinspect
-RUN chmod +x /usr/local/bin/tileinspect
+RUN marman download-release --owner cf-platform-eng --repo tileinspect --filter "tileinspect-linux" && cp tileinspect-linux /usr/local/bin/tileinspect && chmod +x /usr/local/bin/tileinspect
 
 RUN mrlog dependency --name tileinspect --version $(tileinspect version | cut -d" " -f3) >> ${BASE_IMAGE_DEPENDENCIES_FILE}
 
