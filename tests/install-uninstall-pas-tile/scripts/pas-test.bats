@@ -34,6 +34,7 @@ done
 echo -n "$@" > "$BATS_TMPDIR/log-dependencies-calls/${call}"
 EOF
 
+    echo 'exit 0' > "$BATS_TMPDIR/bin/mrlog"
     echo 'echo ${MOCK_NEEDS_OUTPUT}; exit ${MOCK_NEEDS_RETURN_CODE:-0}' > "$BATS_TMPDIR/bin/needs"
 
     chmod a+x "$BATS_TMPDIR/bin"/*
