@@ -14,6 +14,7 @@ while [ -e "$BATS_TMPDIR/install-tile-calls/${call}" ] ; do
     call=$((call+1))
 done
 echo -n "$@" > "$BATS_TMPDIR/install-tile-calls/${call}"
+exit ${MOCK_INSTALL_TILE_RETURN_CODE:-0}
 EOF
 
     cat > "$BATS_TMPDIR/bin/uninstall-tile.sh" <<'EOF'
@@ -23,6 +24,7 @@ while [ -e "$BATS_TMPDIR/uninstall-tile-calls/${call}" ] ; do
     call=$((call+1))
 done
 echo -n "$@" > "$BATS_TMPDIR/uninstall-tile-calls/${call}"
+exit ${MOCK_UNINSTALL_TILE_RETURN_CODE:-0}
 EOF
 
     cat > "$BATS_TMPDIR/bin/log-dependencies.sh" <<'EOF'
@@ -49,6 +51,8 @@ teardown() {
 
     unset MOCK_NEEDS_OUTPUT
     unset MOCK_NEEDS_RETURN_CODE
+    unset MOCK_INSTALL_TILE_RETURN_CODE
+    unset MOCK_UNINSTALL_TILE_RETURN_CODE
 }
 
 @test "happy path calls all steps" {
@@ -69,4 +73,19 @@ teardown() {
     [ "$status" -eq 1 ]
     [ -z "$(ls -A $BATS_TMPDIR/install-tile-calls/0)" ]
     [ -z "$(ls -A $BATS_TMPDIR/uninstall-tile-calls/0)" ]
+    [ "${lines[0]}" = "needs check failed" ]
+}
+
+@test "returns error code when install tile fails" {
+    export MOCK_INSTALL_TILE_RETURN_CODE=1
+    run ${BATS_TEST_DIRNAME}/pas-test.sh
+    [ "$status" -eq 1 ]
+    [ "${lines[0]}" = "install-tile failed" ]
+}
+
+@test "returns error code when uninstall tile fails" {
+    export MOCK_UNINSTALL_TILE_RETURN_CODE=1
+    run ${BATS_TEST_DIRNAME}/pas-test.sh
+    [ "$status" -eq 1 ]
+    [ "${lines[0]}" = "uninstall-tile failed" ]
 }
