@@ -35,7 +35,9 @@ teardown() {
 @test "displays usage when no parameters provided" {
     run ./uninstall-tile.sh
     [ "$status" -eq 1 ]
-    [ "$output" = "usage: uninstall-tile.sh <tile>" ]
+    [ "${lines[0]}" = "usage: uninstall-tile.sh <tile> [<selective deploy>]" ]
+    [ "${lines[1]}" = "    tile - path to a .pivotal file" ]
+    [ "${lines[2]}" = "    selective deploy - if true, only deploy this tile (default false)" ]
 }
 
 @test "exits if om unstage-product fails" {
@@ -67,3 +69,42 @@ teardown() {
     [ "$output" = "Failed to delete version 1.2.3 of my-tile" ]
 }
 
+@test "happy path calls the right om calls" {
+    export MOCK_TILEINSPECT_OUTPUT='{
+        "name": "my-tile",
+        "product_version": "1.2.3"
+    }'
+
+    run ./uninstall-tile.sh tile.pivotal
+    [ "$status" -eq 0 ]
+    [ -e "$BATS_TMPDIR/om-calls/0" ]
+    [ "$(cat "$BATS_TMPDIR/om-calls/0")" = "unstage-product --product-name my-tile" ]
+    [ -e "$BATS_TMPDIR/om-calls/1" ]
+    [ "$(cat "$BATS_TMPDIR/om-calls/1")" = "apply-changes" ]
+    [ -e "$BATS_TMPDIR/om-calls/2" ]
+    [ "$(cat "$BATS_TMPDIR/om-calls/2")" = "delete-product --product-name my-tile --product-version 1.2.3" ]
+}
+
+@test "setting selective deploy to false runs a full apply-changes" {
+    export MOCK_TILEINSPECT_OUTPUT='{
+        "name": "my-tile",
+        "product_version": "1.2.3"
+    }'
+
+    run ./uninstall-tile.sh tile.pivotal false
+    [ "$status" -eq 0 ]
+    [ -e "$BATS_TMPDIR/om-calls/1" ]
+    [ "$(cat "$BATS_TMPDIR/om-calls/1")" = "apply-changes" ]
+}
+
+@test "setting selective deploy to true runs a full apply-changes" {
+    export MOCK_TILEINSPECT_OUTPUT='{
+        "name": "my-tile",
+        "product_version": "1.2.3"
+    }'
+
+    run ./uninstall-tile.sh tile.pivotal true
+    [ "$status" -eq 0 ]
+    [ -e "$BATS_TMPDIR/om-calls/1" ]
+    [ "$(cat "$BATS_TMPDIR/om-calls/1")" = "apply-changes --product-name my-tile" ]
+}

@@ -3,17 +3,21 @@
 set -ueo pipefail
 
 usage() {
-    echo "usage: install-tile.sh <tile> <config.yml>"
+    echo "usage: install-tile.sh <tile> <config.yml> [<selective deploy>]"
+    echo "    tile - path to a .pivotal file"
+    echo "    config.yml - path to tile configuration"
+    echo "    selective deploy - if true, only deploy this tile (default false)"
 }
 
 install_tile() {
     TILE=$1
     TILE_CONFIG=$2
+    USE_SELECTIVE_DEPLOY=$3
 
     PRODUCT_NAME=$(tileinspect metadata -t "${TILE}" | yq -r .name)
     PRODUCT_VERSION=$(tileinspect metadata -t "${TILE}" | yq -r .product_version)
 
-    if ! om upload-product -p "${TILE}" ; then
+    if ! om upload-product --product "${TILE}" ; then
         echo "Failed to upload product ${TILE}" >&2
         echo "If you see an 'x509' error, try setting OM_SKIP_SSL_VALIDATION=true" >&2
         return 1
@@ -37,7 +41,12 @@ install_tile() {
 
     rm config.json
 
-    if ! om apply-changes ; then 
+    SELECTIVE_DEPLOY_ARG=""
+    if [ "${USE_SELECTIVE_DEPLOY}" == "true" ] ; then
+        SELECTIVE_DEPLOY_ARG=(--product-name "${PRODUCT_NAME}")
+    fi
+
+    if ! om apply-changes ${SELECTIVE_DEPLOY_ARG[*]} ; then
         echo "Failed to apply changes" >&2
         echo "If you see an 'x509' error, try setting OM_SKIP_SSL_VALIDATION=true" >&2
         return 1
@@ -49,4 +58,4 @@ if [ "$#" -lt 2 ]; then
     exit 1
 fi
 
-install_tile "$1" "$2"
+install_tile "$1" "$2" "${3:-false}"

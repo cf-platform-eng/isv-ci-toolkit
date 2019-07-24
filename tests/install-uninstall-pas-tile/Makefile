@@ -66,6 +66,7 @@ run: run-deps logs
 	-e PIVNET_TOKEN \
 	-e TILE_NAME=$(shell basename "${TILE_PATH}") \
 	-e TILE_CONFIG=$(shell basename "${TILE_CONFIG_PATH}") \
+	-e USE_SELECTIVE_DEPLOY \
 	-v $(shell dirname "${TILE_PATH}"):/tile \
 	-v $(shell dirname "${TILE_CONFIG_PATH}"):/tile-config \
 	install-uninstall-test-image:latest | tee ./logs/$(shell date "+%Y.%m.%d-%H.%M.%S").log
@@ -79,6 +80,7 @@ shell: run-deps
 	-e PIVNET_TOKEN \
 	-e TILE_NAME=$(shell basename "${TILE_PATH}") \
 	-e TILE_CONFIG=$(shell basename "${TILE_CONFIG_PATH}") \
+	-e USE_SELECTIVE_DEPLOY \
 	-v $(shell dirname "${TILE_PATH}"):/tile \
 	-v $(shell dirname "${TILE_CONFIG_PATH}"):/tile-config \
 	install-uninstall-test-image:latest \

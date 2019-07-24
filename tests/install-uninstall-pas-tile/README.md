@@ -11,10 +11,16 @@ The following environment variables are necessary to run the process:
 - OM_TARGET - url for opsman (ex: `https://pcf.vividlimegreen.cf-app.com`)
 - OM_USERNAME - opsman username
 - OM_PASSWORD - opsman password
-- OM_SKIP_SSL_VALIDATION - if your opsman is using self-signed certs
 - TILE_PATH - path to tile
 - TILE_CONFIG_PATH - path to tile config file
 - PIVNET_TOKEN - token to download any missing stemcells
+
+The following environment variables are used, but not necessary:
+
+- OM_SKIP_SSL_VALIDATION - if your opsman is using self-signed certs
+- USE_SELECTIVE_DEPLOY - if set to `true`, only deploy the product under test, not all deployed products.
+
+NOTE: Using `USE_SELECTIVE_DEPLOY` will result in a faster test runtime, but may miss some product incompatibilities.
 
 ## Config file
 

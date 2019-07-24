@@ -38,13 +38,19 @@ teardown() {
 @test "displays usage when no parameters provided" {
     run ./install-tile.sh
     [ "$status" -eq 1 ]
-    [ "$output" = "usage: install-tile.sh <tile> <config.yml>" ]
+    [ "${lines[0]}" = "usage: install-tile.sh <tile> <config.yml> [<selective deploy>]" ]
+    [ "${lines[1]}" = "    tile - path to a .pivotal file" ]
+    [ "${lines[2]}" = "    config.yml - path to tile configuration" ]
+    [ "${lines[3]}" = "    selective deploy - if true, only deploy this tile (default false)" ]
 }
 
 @test "displays usage when only one parameter provided" {
     run ./install-tile.sh tile.pivotal
     [ "$status" -eq 1 ]
-    [ "$output" = "usage: install-tile.sh <tile> <config.yml>" ]
+    [ "${lines[0]}" = "usage: install-tile.sh <tile> <config.yml> [<selective deploy>]" ]
+    [ "${lines[1]}" = "    tile - path to a .pivotal file" ]
+    [ "${lines[2]}" = "    config.yml - path to tile configuration" ]
+    [ "${lines[3]}" = "    selective deploy - if true, only deploy this tile (default false)" ]
 }
 
 @test "exits if om upload-product fails" {
@@ -96,7 +102,7 @@ teardown() {
     run ./install-tile.sh ./my-tile.pivotal ./config.json
     [ "$status" -eq 0 ]
     [ -e "$BATS_TMPDIR/om-calls/0" ]
-    [ "$(cat "$BATS_TMPDIR/om-calls/0")" = "upload-product -p ./my-tile.pivotal" ]
+    [ "$(cat "$BATS_TMPDIR/om-calls/0")" = "upload-product --product ./my-tile.pivotal" ]
     [ -e "$BATS_TMPDIR/om-calls/1" ]
     [ "$(cat "$BATS_TMPDIR/om-calls/1")" = "stage-product --product-name my-tile --product-version 1.2.3" ]
     [ -e "$BATS_TMPDIR/om-calls/2" ]
@@ -105,4 +111,28 @@ teardown() {
     [ "$(cat "$BATS_TMPDIR/om-calls/3")" = "configure-product --config ./config.json" ]
     [ -e "$BATS_TMPDIR/om-calls/4" ]
     [ "$(cat "$BATS_TMPDIR/om-calls/4")" = "apply-changes" ]
+}
+
+@test "setting selective deploy to false runs a full apply-changes" {
+    export MOCK_TILEINSPECT_OUTPUT='{
+        "name": "my-tile",
+        "product_version": "1.2.3"
+    }'
+
+    run ./install-tile.sh ./my-tile.pivotal ./config.json false
+    [ "$status" -eq 0 ]
+    [ -e "$BATS_TMPDIR/om-calls/4" ]
+    [ "$(cat "$BATS_TMPDIR/om-calls/4")" = "apply-changes" ]
+}
+
+@test "setting selective deploy to true runs a full apply-changes" {
+    export MOCK_TILEINSPECT_OUTPUT='{
+        "name": "my-tile",
+        "product_version": "1.2.3"
+    }'
+
+    run ./install-tile.sh ./my-tile.pivotal ./config.json true
+    [ "$status" -eq 0 ]
+    [ -e "$BATS_TMPDIR/om-calls/4" ]
+    [ "$(cat "$BATS_TMPDIR/om-calls/4")" = "apply-changes --product-name my-tile" ]
 }
