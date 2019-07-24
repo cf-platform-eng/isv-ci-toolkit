@@ -11,7 +11,7 @@ create a Go based binary for.
         ```bash
         cd isv-ci-toolkit/tools
         ```
-    * install a Python 3.x virtual env
+    * install a Python 2.x virtual env
         ```bash
-        pipenv three
+        pipenv two
         ``` 
