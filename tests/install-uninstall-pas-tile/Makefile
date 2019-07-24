@@ -69,6 +69,7 @@ run: run-deps logs
 	-e USE_SELECTIVE_DEPLOY \
 	-v $(shell dirname "${TILE_PATH}"):/tile \
 	-v $(shell dirname "${TILE_CONFIG_PATH}"):/tile-config \
+	-v ${PWD}/../../tools:/bin/tools \
 	install-uninstall-test-image:latest | tee ./logs/$(shell date "+%Y.%m.%d-%H.%M.%S").log
 
 shell: run-deps
@@ -83,10 +84,11 @@ shell: run-deps
 	-e USE_SELECTIVE_DEPLOY \
 	-v $(shell dirname "${TILE_PATH}"):/tile \
 	-v $(shell dirname "${TILE_CONFIG_PATH}"):/tile-config \
+	-v ${PWD}/../../tools:/bin/tools \
 	install-uninstall-test-image:latest \
 	/bin/bash
 
-lint:
+lint: scripts/*.sh
 	shellcheck scripts/*.sh
 
 test: lint

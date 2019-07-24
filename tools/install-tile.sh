@@ -53,7 +53,7 @@ install_tile() {
     fi
 }
 
-if [ "$#" -lt 2 ]; then    
+if [ "$#" -lt 2 ]; then
     usage
     exit 1
 fi

@@ -58,13 +58,26 @@ teardown() {
 @test "happy path calls all steps" {
     export TILE_NAME=test-tile.pivotal
     export TILE_CONFIG=test-tile.yml
+    unset USE_SELECTIVE_DEPLOY
     run ${BATS_TEST_DIRNAME}/pas-test.sh
     [ "$status" -eq 0 ]
     [ -e "$BATS_TMPDIR/log-dependencies-calls/0" ]
     [ -e "$BATS_TMPDIR/install-tile-calls/0" ]
-    [ "$(cat "$BATS_TMPDIR/install-tile-calls/0")" = "/tile/test-tile.pivotal /tile-config/test-tile.yml" ]
+    [ "$(cat "$BATS_TMPDIR/install-tile-calls/0")" = "/tile/test-tile.pivotal /tile-config/test-tile.yml false" ]
     [ -e "$BATS_TMPDIR/uninstall-tile-calls/0" ]
-    [ "$(cat "$BATS_TMPDIR/uninstall-tile-calls/0")" = "/tile/test-tile.pivotal" ]
+    [ "$(cat "$BATS_TMPDIR/uninstall-tile-calls/0")" = "/tile/test-tile.pivotal false" ]
+}
+
+@test "setting USE_SELECTIVE_DEPLOY passes that along to the script" {
+    export TILE_NAME=test-tile.pivotal
+    export TILE_CONFIG=test-tile.yml
+    export USE_SELECTIVE_DEPLOY=true
+    run ${BATS_TEST_DIRNAME}/pas-test.sh
+    [ "$status" -eq 0 ]
+    [ -e "$BATS_TMPDIR/install-tile-calls/0" ]
+    [ "$(cat "$BATS_TMPDIR/install-tile-calls/0")" = "/tile/test-tile.pivotal /tile-config/test-tile.yml true" ]
+    [ -e "$BATS_TMPDIR/uninstall-tile-calls/0" ]
+    [ "$(cat "$BATS_TMPDIR/uninstall-tile-calls/0")" = "/tile/test-tile.pivotal true" ]
 }
 
 @test "test exits before installing if needs are not met" {

@@ -27,5 +27,6 @@ RUN chmod +x /usr/local/bin/uninstall-tile.sh
 
 COPY needs.json /needs.json
 COPY scripts/* /scripts/
+ENV PATH="/bin/tools:${PATH}"
 
 CMD ["/bin/bash", "-c", "/scripts/pas-test.sh"]
