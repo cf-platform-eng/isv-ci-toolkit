@@ -52,7 +52,7 @@ clean:
 build: test
 	docker build . --tag install-uninstall-test-image --no-cache --pull
 
-run-deps: pas-config tile-config build pivnet-token
+run-deps: pivnet-token pas-config tile-config build
 
 logs:
 	mkdir -p ./logs
