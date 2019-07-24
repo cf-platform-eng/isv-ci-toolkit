@@ -51,7 +51,8 @@ teardown() {
     export OM_FAIL_COMMAND=upload-product
     run ./install-tile.sh tile.pivotal config.yml
     [ "$status" -eq 1 ]
-    [ "$output" = "Failed to upload product tile.pivotal" ]
+    [[ "$output" = *"Failed to upload product tile.pivotal"* ]]
+    [[ "$output" = *"If you see an 'x509' error, try setting OM_SKIP_SSL_VALIDATION=true"* ]]
 }
 
 @test "exits if om stage-product fails" {
@@ -62,7 +63,8 @@ teardown() {
     }'    
     run ./install-tile.sh tile.pivotal config.yml
     [ "$status" -eq 1 ]
-    [ "$output" = "Failed to stage version 1.2.3 of my-tile" ]
+    [[ "$output" = *"Failed to stage version 1.2.3 of my-tile"* ]]
+    [[ "$output" = *"If you see an 'x509' error, try setting OM_SKIP_SSL_VALIDATION=true"* ]]
 }
 
 @test "exits if om configure-product fails" {
@@ -73,14 +75,16 @@ teardown() {
     }'    
     run ./install-tile.sh tile.pivotal config.yml
     [ "$status" -eq 1 ]
-    [ "$output" = "Failed to configure product my-tile" ]
+    [[ "$output" = *"Failed to configure product my-tile"* ]]
+    [[ "$output" = *"If you see an 'x509' error, try setting OM_SKIP_SSL_VALIDATION=true"* ]]
 }
 
 @test "exits if om apply-changes fails" {
     export OM_FAIL_COMMAND=apply-changes
     run ./install-tile.sh tile.pivotal config.yml
     [ "$status" -eq 1 ]
-    [ "$output" = "Failed to apply changes" ]
+    [[ "$output" = *"Failed to apply changes"* ]]
+    [[ "$output" = *"If you see an 'x509' error, try setting OM_SKIP_SSL_VALIDATION=true"* ]]
 }
 
 @test "happy path calls the right om calls" {

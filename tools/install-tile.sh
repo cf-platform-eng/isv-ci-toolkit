@@ -15,11 +15,13 @@ install_tile() {
 
     if ! om upload-product -p "${TILE}" ; then
         echo "Failed to upload product ${TILE}" >&2
+        echo "If you see an 'x509' error, try setting OM_SKIP_SSL_VALIDATION=true" >&2
         return 1
     fi
 
     if ! om stage-product --product-name "${PRODUCT_NAME}" --product-version "${PRODUCT_VERSION}" ; then
         echo "Failed to stage version ${PRODUCT_VERSION} of ${PRODUCT_NAME}" >&2
+        echo "If you see an 'x509' error, try setting OM_SKIP_SSL_VALIDATION=true" >&2
         return 1
     fi
 
@@ -29,6 +31,7 @@ install_tile() {
 
     if ! om configure-product --config ./config.json ; then
         echo "Failed to configure product ${PRODUCT_NAME}" >&2
+        echo "If you see an 'x509' error, try setting OM_SKIP_SSL_VALIDATION=true" >&2
         return 1
     fi
 
@@ -36,6 +39,7 @@ install_tile() {
 
     if ! om apply-changes ; then 
         echo "Failed to apply changes" >&2
+        echo "If you see an 'x509' error, try setting OM_SKIP_SSL_VALIDATION=true" >&2
         return 1
     fi
 }
