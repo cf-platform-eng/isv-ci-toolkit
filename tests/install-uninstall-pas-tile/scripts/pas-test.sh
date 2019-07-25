@@ -12,8 +12,7 @@ fi
 log-dependencies.sh
 
 mrlog section-start --name="tile install"
-<<<<<<< HEAD
-install-tile.sh "/tile/${TILE_NAME}" "/tile-config/${TILE_CONFIG}"
+install-tile.sh "/tile/${TILE_NAME}" "/tile-config/${TILE_CONFIG}" "${USE_SELECTIVE_DEPLOY:-false}"
 result=$?
 mrlog section-end --name="tile install" --result=$result
 if [[ $result -ne 0 ]] ; then
@@ -22,18 +21,10 @@ if [[ $result -ne 0 ]] ; then
 fi
 
 mrlog section-start --name="tile uninstall"
-uninstall-tile.sh "/tile/${TILE_NAME}"
+uninstall-tile.sh "/tile/${TILE_NAME}" "${USE_SELECTIVE_DEPLOY:-false}"
 result=$?
 mrlog section-end --name="tile uninstall" --result=$result
 if [[ $result -ne 0 ]] ; then
     echo "uninstall-tile failed" >&2
     exit 1
 fi
-=======
-install-tile.sh "/tile/${TILE_NAME}" "/tile-config/${TILE_CONFIG}" "${USE_SELECTIVE_DEPLOY:-false}"
-mrlog section-end --name="tile install" --result=$?
-
-mrlog section-start --name="tile uninstall"
-uninstall-tile.sh "/tile/${TILE_NAME}" "${USE_SELECTIVE_DEPLOY:-false}"
-mrlog section-end --name="tile uninstall" --result=$?
->>>>>>> Pass along a flag to use selective deployment
