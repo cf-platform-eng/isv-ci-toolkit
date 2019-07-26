@@ -1,5 +1,8 @@
+load temp/bats-mock # docs at https://github.com/grayhemp/bats-mock
+
 setup() {
     export BATS_TMPDIR
+    echo ${BATS_TMPDIR}
     mkdir -p "$BATS_TMPDIR/bin"
 
     mkdir -p "$BATS_TMPDIR/om-calls"
@@ -18,10 +21,14 @@ fi
 exit ${MOCK_OM_RETURN_CODE:-0}
 EOF
 
-    echo 'exit 0' > "$BATS_TMPDIR/bin/build-tile-config.sh"
-    echo 'exit 0' > "$BATS_TMPDIR/bin/upload_and_assign_stemcells.sh"
+    export mock_build_tile_config="$(mock_create)"
+    ln -sf "${mock_build_tile_config}" "${BATS_TMPDIR}/bin/build-tile-config.sh"
 
-    echo 'echo ${MOCK_TILEINSPECT_OUTPUT}; exit ${MOCK_TILEINSPECT_RETURN_CODE:-0}' > "$BATS_TMPDIR/bin/tileinspect"
+    export mock_upload_and_assign_stemcells="$(mock_create)"
+    ln -sf "${mock_upload_and_assign_stemcells}" "${BATS_TMPDIR}/bin/upload_and_assign_stemcells.sh"
+
+    export mock_tileinspect="$(mock_create)"
+    ln -sf "${mock_tileinspect}" "${BATS_TMPDIR}/bin/tileinspect"
 
     chmod a+x "$BATS_TMPDIR/bin"/*
     export PATH="$BATS_TMPDIR/bin:${PATH}"
@@ -31,8 +38,6 @@ teardown() {
     rm -rf "$BATS_TMPDIR/bin"
     rm -rf "$BATS_TMPDIR/om-calls"
     unset MOCK_OM_RETURN_CODE
-    unset MOCK_TILEINSPECT_OUTPUT
-    unset MOCK_TILEINSPECT_RETURN_CODE
 }
 
 @test "displays usage when no parameters provided" {
@@ -63,10 +68,7 @@ teardown() {
 
 @test "exits if om stage-product fails" {
     export OM_FAIL_COMMAND=stage-product
-    export MOCK_TILEINSPECT_OUTPUT='{
-        "name": "my-tile",
-        "product_version": "1.2.3"
-    }'    
+
     run ./install-tile.sh tile.pivotal config.yml
     [ "$status" -eq 1 ]
     [[ "$output" = *"Failed to stage version 1.2.3 of my-tile"* ]]
@@ -75,10 +77,11 @@ teardown() {
 
 @test "exits if om configure-product fails" {
     export OM_FAIL_COMMAND=configure-product
-    export MOCK_TILEINSPECT_OUTPUT='{
-        "name": "my-tile",
-        "product_version": "1.2.3"
-    }'    
+        ${mock_set_output} "${mock_tileinspect}" '{
+            "name": "my-tile",
+            "product_version": "1.2.3"
+        }'
+
     run ./install-tile.sh tile.pivotal config.yml
     [ "$status" -eq 1 ]
     [[ "$output" = *"Failed to configure product my-tile"* ]]
@@ -94,10 +97,10 @@ teardown() {
 }
 
 @test "happy path calls the right om calls" {
-    export MOCK_TILEINSPECT_OUTPUT='{
-        "name": "my-tile",
-        "product_version": "1.2.3"
-    }'
+    mock_set_output "${mock_tileinspect}" '{
+            "name": "my-tile",
+            "product_version": "1.2.3"
+        }'
 
     run ./install-tile.sh ./my-tile.pivotal ./config.json
     [ "$status" -eq 0 ]
@@ -114,10 +117,10 @@ teardown() {
 }
 
 @test "setting selective deploy to false runs a full apply-changes" {
-    export MOCK_TILEINSPECT_OUTPUT='{
-        "name": "my-tile",
-        "product_version": "1.2.3"
-    }'
+    mock_set_output "${mock_tileinspect}" '{
+            "name": "my-tile",
+            "product_version": "1.2.3"
+        }'
 
     run ./install-tile.sh ./my-tile.pivotal ./config.json false
     [ "$status" -eq 0 ]
@@ -126,10 +129,10 @@ teardown() {
 }
 
 @test "setting selective deploy to true runs a full apply-changes" {
-    export MOCK_TILEINSPECT_OUTPUT='{
-        "name": "my-tile",
-        "product_version": "1.2.3"
-    }'
+    mock_set_output "${mock_tileinspect}" '{
+            "name": "my-tile",
+            "product_version": "1.2.3"
+        }'
 
     run ./install-tile.sh ./my-tile.pivotal ./config.json true
     [ "$status" -eq 0 ]
