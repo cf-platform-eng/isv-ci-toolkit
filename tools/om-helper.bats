@@ -1,16 +1,12 @@
-#!/usr/bin/env bats
+load test-helpers
 
 setup() {
-    mkdir -p "$BATS_TMPDIR/bin"
-    echo 'echo ${MOCK_OM_OUTPUT}; exit ${MOCK_OM_RETURN_CODE:-0}' > "$BATS_TMPDIR/bin/om"
-    chmod a+x "$BATS_TMPDIR/bin/om"
-    export PATH="$BATS_TMPDIR/bin:${PATH}"
+    export mock_om="$(mock_bin om)"
+    export PATH="${BIN_MOCKS}:${PATH}"
 }
 
 teardown() {
-    rm -rf "$BATS_TMPDIR/bin"
-    unset MOCK_OM_OUTPUT
-    unset MOCK_OM_RETURN_CODE
+    clean_bin_mocks
 }
 
 @test "displays usage when no parameters provided" {
@@ -33,21 +29,20 @@ teardown() {
 }
 
 @test "errors if om fails" {
-    export MOCK_OM_OUTPUT=''
-    export MOCK_OM_RETURN_CODE=1
+    mock_set_status "${mock_om}" 1
     run ./om-helper.sh stemcell-assignments
     [ "$status" -eq 1 ]
 }
 
 @test "returns empty array when no products" {
-    export MOCK_OM_OUTPUT='{ "products": [] }'
+    mock_set_output "${mock_om}" '{ "products": [] }'
     run ./om-helper.sh stemcell-assignments
     [ "$status" -eq 0 ]
     [ "$output" = "[]" ]
 }
 
 @test "returns all required stemcells for products" {
-    export MOCK_OM_OUTPUT='{
+    mock_set_output "${mock_om}" '{
     "products" : [{
         "guid": "product-1-abcfefg12345",
         "required_stemcell_os": "ubuntu-xenial",
@@ -66,7 +61,7 @@ teardown() {
 }
 
 @test "returns unmet stemcells for products when given --unmet flag" {
-    export MOCK_OM_OUTPUT='{
+    mock_set_output "${mock_om}" '{
     "products" : [{
         "guid": "product-1-abcfefg12345",
         "required_stemcell_os": "ubuntu-xenial",
@@ -85,7 +80,7 @@ teardown() {
 }
 
 @test "returns empty list when there are no unmet stemcells and given --unmet flag" {
-    export MOCK_OM_OUTPUT='{
+    mock_set_output "${mock_om}" '{
     "products" : [{
         "guid": "product-1-abcfefg12345",
         "required_stemcell_os": "ubuntu-xenial",
