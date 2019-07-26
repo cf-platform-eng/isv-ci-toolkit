@@ -29,7 +29,7 @@ uaac token client get "$CLIENT_ID" -s "$CLIENT_SECRET"
 ACCESS_TOKEN=$(uaac context "$CLIENT_ID" | grep access_token | xargs | cut -d" " -f2)
 
 set +e
-read -d '' GIPS_INSTALL_REQUEST <<INSTALL
+read -r -d '' GIPS_INSTALL_REQUEST <<INSTALL
 {
   "iaas": "gcp",
   "paver_name": "prod_gcp",
@@ -57,4 +57,17 @@ read -d '' GIPS_INSTALL_REQUEST <<INSTALL
 INSTALL
 set -e
 
-curl -X POST -H "Authorization: $ACCESS_TOKEN" "https://$GIPS_ADDRESS/v1/installs" -d "$GIPS_INSTALL_REQUEST"
+install_request=$(curl -X POST -H "Authorization: $ACCESS_TOKEN" "https://$GIPS_ADDRESS/v1/installs" -d "$GIPS_INSTALL_REQUEST")
+
+install_name=$(echo "${install_request}" | jq -r ".name" )
+
+installation=$(curl -H "Authorization: $ACCESS_TOKEN" "https://$GIPS_ADDRESS/v1/installs/${install_name}/")
+install_status=$(echo "${installation}" | jq -r .paver_job_status)
+while [ "${install_status}" = "queued" ] || [ "${install_status}" = "working" ]
+do
+  sleep 60
+  installation=$(curl -H "Authorization: $ACCESS_TOKEN" "https://$GIPS_ADDRESS/v1/installs/${install_name}/")
+  install_status=$(echo "${installation}" | jq -r .paver_job_status)
+done
+
+echo "${installation}" > environment.json
