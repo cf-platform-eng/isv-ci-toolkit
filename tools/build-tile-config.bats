@@ -1,11 +1,9 @@
-#!/usr/bin/env bats
+load test-helpers
 
 setup() {
-    export BATS_TMPDIR
-    mkdir -p "$BATS_TMPDIR/bin"
-    echo 'echo ${MOCK_OM_OUTPUT}; exit ${MOCK_OM_RETURN_CODE:-0}' > "$BATS_TMPDIR/bin/om"
-    chmod a+x "$BATS_TMPDIR/bin/om"
-    export PATH="$BATS_TMPDIR/bin:${PATH}"
+    export mock_om="$(mock_bin om)"
+    export PATH="${BIN_MOCKS}:${PATH}"
+
     cat <<EOF > "$BATS_TMPDIR/pete-config.yml"
 product-properties:
   ".properties.apply_open_security_group":
@@ -65,10 +63,9 @@ EOF
 }
 
 teardown() {
-    rm -rf "$BATS_TMPDIR/bin"
+    rm "$BATS_TMPDIR/pete-config.json"
     rm "$BATS_TMPDIR/pete-config.yml"
-    unset MOCK_OM_OUTPUT
-    unset MOCK_OM_RETURN_CODE
+    clean_bin_mocks
 }
 
 @test "displays usage when no parameters provided" {
@@ -84,42 +81,42 @@ teardown() {
 }
 
 @test "exits if om fails" {
-    export MOCK_OM_RETURN_CODE=1
+    mock_set_status "${mock_om}" 1
     run ./build-tile-config.sh test-name pete-config.yml
     [ "$status" -eq 1 ]
     [ "$output" = "Failed to get cloud_config from OpsManager" ]
 }
 
 @test "exits if cloud config has no networks" {
-    export MOCK_OM_OUTPUT='{"cloud_config":{"azs":[{"name":"us-c-f"},{"name":"us-c-c"}],"vm_types":[{"name":"micro"},{"name":"micro.cpu"},{"name":"small"},{"name":"small.disk"}],"disk_types":[{"name":"1024"},{"name":"2048"},{"name":"5120"},{"name":"10240"}]}}'
+    mock_set_output "${mock_om}" '{"cloud_config":{"azs":[{"name":"us-c-f"},{"name":"us-c-c"}],"vm_types":[{"name":"micro"},{"name":"micro.cpu"},{"name":"small"},{"name":"small.disk"}],"disk_types":[{"name":"1024"},{"name":"2048"},{"name":"5120"},{"name":"10240"}]}}'
     run ./build-tile-config.sh test-name pete-config.yml
     [ "$status" -eq 1 ]
     [ "${lines[1]}" = "OpsManager cloud config has no networks" ]
 }
 
 @test "exits if cloud config has no availability zones" {
-    export MOCK_OM_OUTPUT='{"cloud_config":{"networks":[{"name":"m-management-s"},{"name":"m-pas-s"},{"name":"m-services-s"}],"vm_types":[{"name":"micro"},{"name":"micro.cpu"},{"name":"small"},{"name":"small.disk"}],"disk_types":[{"name":"1024"},{"name":"2048"},{"name":"5120"},{"name":"10240"}]}}'
+    mock_set_output "${mock_om}" '{"cloud_config":{"networks":[{"name":"m-management-s"},{"name":"m-pas-s"},{"name":"m-services-s"}],"vm_types":[{"name":"micro"},{"name":"micro.cpu"},{"name":"small"},{"name":"small.disk"}],"disk_types":[{"name":"1024"},{"name":"2048"},{"name":"5120"},{"name":"10240"}]}}'
     run ./build-tile-config.sh test-name pete-config.yml
     [ "$status" -eq 1 ]
     [ "${lines[1]}" = "OpsManager cloud config has no availability zones" ]
 }
 
 @test "exits if cloud config has no vm types" {
-    export MOCK_OM_OUTPUT='{"cloud_config":{"azs":[{"name":"us-c-f"},{"name":"us-c-c"}],"networks":[{"name":"m-management-s"},{"name":"m-pas-s"},{"name":"m-services-s"}],"disk_types":[{"name":"1024"},{"name":"2048"},{"name":"5120"},{"name":"10240"}]}}'
+    mock_set_output "${mock_om}" '{"cloud_config":{"azs":[{"name":"us-c-f"},{"name":"us-c-c"}],"networks":[{"name":"m-management-s"},{"name":"m-pas-s"},{"name":"m-services-s"}],"disk_types":[{"name":"1024"},{"name":"2048"},{"name":"5120"},{"name":"10240"}]}}'
     run ./build-tile-config.sh test-name pete-config.yml
     [ "$status" -eq 1 ]
     [ "${lines[1]}" = "OpsManager cloud config has no vm types" ]
 }
 
 @test "exits if cloud config has no disk types" {
-    export MOCK_OM_OUTPUT='{"cloud_config":{"azs":[{"name":"us-c-f"},{"name":"us-c-c"}],"networks":[{"name":"m-management-s"},{"name":"m-pas-s"},{"name":"m-services-s"}],"vm_types":[{"name":"micro"},{"name":"micro.cpu"},{"name":"small"},{"name":"small.disk"}]}}'
+    mock_set_output "${mock_om}" '{"cloud_config":{"azs":[{"name":"us-c-f"},{"name":"us-c-c"}],"networks":[{"name":"m-management-s"},{"name":"m-pas-s"},{"name":"m-services-s"}],"vm_types":[{"name":"micro"},{"name":"micro.cpu"},{"name":"small"},{"name":"small.disk"}]}}'
     run ./build-tile-config.sh test-name pete-config.yml
     [ "$status" -eq 1 ]
     [ "${lines[1]}" = "OpsManager cloud config has no disk types" ]
 }
 
 @test "builds valid config from yml" {
-    export MOCK_OM_OUTPUT='{"cloud_config":{"azs":[{"name":"us-c-f"},{"name":"us-c-c"}],"networks":[{"name":"m-management-s"},{"name":"m-pas-s"},{"name":"m-services-s"}],"vm_types":[{"name":"micro"},{"name":"micro.cpu"},{"name":"small"},{"name":"small.disk"}],"disk_types":[{"name":"1024"},{"name":"2048"},{"name":"5120"},{"name":"10240"}]}}'
+    mock_set_output "${mock_om}" '{"cloud_config":{"azs":[{"name":"us-c-f"},{"name":"us-c-c"}],"networks":[{"name":"m-management-s"},{"name":"m-pas-s"},{"name":"m-services-s"}],"vm_types":[{"name":"micro"},{"name":"micro.cpu"},{"name":"small"},{"name":"small.disk"}],"disk_types":[{"name":"1024"},{"name":"2048"},{"name":"5120"},{"name":"10240"}]}}'
     run ./build-tile-config.sh test-name "$BATS_TMPDIR/pete-config.yml"
     [ "$status" -eq 0 ]
     [ `echo $output | jq -r '.["product-name"]'` = "test-name" ]
@@ -132,7 +129,7 @@ teardown() {
 }
 
 @test "builds valid config from json" {
-    export MOCK_OM_OUTPUT='{"cloud_config":{"azs":[{"name":"us-c-f"},{"name":"us-c-c"}],"networks":[{"name":"m-management-s"},{"name":"m-pas-s"},{"name":"m-services-s"}],"vm_types":[{"name":"micro"},{"name":"micro.cpu"},{"name":"small"},{"name":"small.disk"}],"disk_types":[{"name":"1024"},{"name":"2048"},{"name":"5120"},{"name":"10240"}]}}'
+    mock_set_output "${mock_om}" '{"cloud_config":{"azs":[{"name":"us-c-f"},{"name":"us-c-c"}],"networks":[{"name":"m-management-s"},{"name":"m-pas-s"},{"name":"m-services-s"}],"vm_types":[{"name":"micro"},{"name":"micro.cpu"},{"name":"small"},{"name":"small.disk"}],"disk_types":[{"name":"1024"},{"name":"2048"},{"name":"5120"},{"name":"10240"}]}}'
     run ./build-tile-config.sh test-name "$BATS_TMPDIR/pete-config.json"
     [ "$status" -eq 0 ]
     [ `echo $output | jq -r '.["product-name"]'` = "test-name" ]
@@ -145,7 +142,7 @@ teardown() {
 }
 
 @test "replaces placeholders" {
-    export MOCK_OM_OUTPUT='{"cloud_config":{"azs":[{"name":"us-c-f"},{"name":"us-c-c"}],"networks":[{"name":"m-management-s"},{"name":"m-pas-s"},{"name":"m-services-s"}],"vm_types":[{"name":"micro"},{"name":"micro.cpu"},{"name":"small"},{"name":"small.disk"}],"disk_types":[{"name":"1024"},{"name":"2048"},{"name":"5120"},{"name":"10240"}]}}'
+    mock_set_output "${mock_om}" '{"cloud_config":{"azs":[{"name":"us-c-f"},{"name":"us-c-c"}],"networks":[{"name":"m-management-s"},{"name":"m-pas-s"},{"name":"m-services-s"}],"vm_types":[{"name":"micro"},{"name":"micro.cpu"},{"name":"small"},{"name":"small.disk"}],"disk_types":[{"name":"1024"},{"name":"2048"},{"name":"5120"},{"name":"10240"}]}}'
     run ./build-tile-config.sh test-name "$BATS_TMPDIR/pete-config.yml"
     [ "$status" -eq 0 ]
     [ `echo $output | jq -r '.["product-properties"][".properties.some_availability_zone"].value'` = "us-c-f" ]
