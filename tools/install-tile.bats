@@ -1,27 +1,16 @@
-load temp/bats-mock # docs at https://github.com/grayhemp/bats-mock
+load test-helpers
 
 setup() {
-    export BATS_TMPDIR
-    mkdir -p "$BATS_TMPDIR/bin"
+    export mock_om="$(mock_bin om)"
+    export mock_build_tile_config="$(mock_bin build-tile-config.sh)"
+    export mock_upload_and_assign_stemcells="$(mock_bin upload_and_assign_stemcells.sh)"
+    export mock_tileinspect="$(mock_bin tileinspect)"
 
-    export mock_om="$(mock_create)"
-    ln -sf "${mock_om}" "${BATS_TMPDIR}/bin/om"
-
-    export mock_build_tile_config="$(mock_create)"
-    ln -sf "${mock_build_tile_config}" "${BATS_TMPDIR}/bin/build-tile-config.sh"
-
-    export mock_upload_and_assign_stemcells="$(mock_create)"
-    ln -sf "${mock_upload_and_assign_stemcells}" "${BATS_TMPDIR}/bin/upload_and_assign_stemcells.sh"
-
-    export mock_tileinspect="$(mock_create)"
-    ln -sf "${mock_tileinspect}" "${BATS_TMPDIR}/bin/tileinspect"
-
-    chmod a+x "$BATS_TMPDIR/bin"/*
-    export PATH="$BATS_TMPDIR/bin:${PATH}"
+    export PATH="${BIN_MOCKS}:${PATH}"
 }
 
 teardown() {
-    rm -rf "$BATS_TMPDIR/bin"
+    clean_bin_mocks
 }
 
 @test "happy path calls the right tools" {
