@@ -9,7 +9,9 @@ if [[ $result -ne 0 ]] ; then
     exit 1
 fi
 
+mrlog section-start --name="dependencies"
 log-dependencies.sh
+mrlog section-end --name="dependencies" --result=0
 
 mrlog section-start --name="tile install"
 install-tile.sh "/tile/${TILE_NAME}" "/tile-config/${TILE_CONFIG}" "${USE_SELECTIVE_DEPLOY:-false}"
