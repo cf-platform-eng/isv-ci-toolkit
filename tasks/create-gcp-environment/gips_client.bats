@@ -55,7 +55,7 @@ teardown() {
 }
 
 @test "asks for a credendials file when only one parameter is provided" {
-    run ./gips_client.sh "uaa.pdoium.tls.cfapps.io"
+    run ./gips_client.sh "uaa.podium.tls.cfapps.io"
     [ "$status" -eq 1 ]
     [ "$output" = "no credential file provided" ]
 }
@@ -75,7 +75,7 @@ teardown() {
 }
 
 @test "passes the token to curl" {
-    export UAAC_OUTPUT="$(cat test-fixtures/uaac-context.txt)"
+    export UAAC_OUTPUT="$(cat ./test/fixtures/uaac-context.txt)"
 
     run ./gips_client.sh "uaa.podium.tls.cfapps.io" "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 0 ]
@@ -84,7 +84,7 @@ teardown() {
 }
 
 @test "creates a request to install" {
-    export UAAC_OUTPUT="$(cat test-fixtures/uaac-context.txt)"
+    export UAAC_OUTPUT="$(cat ./test/fixtures/uaac-context.txt)"
 
     run ./gips_client.sh "uaa.podium.tls.cfapps.io" "$BATS_TMPDIR/input/credentials.json"
 
@@ -95,7 +95,7 @@ teardown() {
 }
 
 @test "sleeps for 60 seconds when checking the status of the environment" {
-    export UAAC_OUTPUT="$(cat test-fixtures/uaac-context.txt)"
+    export UAAC_OUTPUT="$(cat ./test/fixtures/uaac-context.txt)"
 
     run ./gips_client.sh "uaa.podium.tls.cfapps.io" "$BATS_TMPDIR/input/credentials.json"
 
@@ -103,7 +103,7 @@ teardown() {
 }
 
 @test "writes the environment.json file to the output directory" {
-    export UAAC_OUTPUT="$(cat test-fixtures/uaac-context.txt)"
+    export UAAC_OUTPUT="$(cat ./test/fixtures/uaac-context.txt)"
 
     run ./gips_client.sh "uaa.podium.tls.cfapps.io" "$BATS_TMPDIR/input/credentials.json"
 

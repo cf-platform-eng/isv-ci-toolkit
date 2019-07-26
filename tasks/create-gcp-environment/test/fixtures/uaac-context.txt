@@ -1,0 +1,10 @@
+[0]*[https://gips-prod.login.run.pivotal.io]
+
+  [0]*[podium-prod-pe-gui-user]
+      client_id: podium-prod-pe-gui-user
+      access_token: eyJWT9a
+      token_type: bearer
+      expires_in: 43199
+      scope: podium.user
+      jti: 11111111111111111111111111111111
+
