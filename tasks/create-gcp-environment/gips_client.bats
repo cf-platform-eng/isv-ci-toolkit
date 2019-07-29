@@ -29,7 +29,7 @@ EOF
 teardown() {
     rm -rf "$BATS_TMPDIR/input"
     rm -rf "$BATS_TMPDIR/bin"
-    rm -f environment.json
+    rm -f ./output/environment.json
 }
 
 @test "asks for gips address if none is provided" {
@@ -87,7 +87,7 @@ teardown() {
     run ./gips_client.sh "uaa.podium.tls.cfapps.io" "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 0 ]
     [ "$(mock_get_call_num ${mock_curl})" = "4" ]
-    [ "$(mock_get_call_args ${mock_curl} 2 | grep -c "https://podium.tls.cfapps.io/v1/installs/coolinstallation1234/")" -eq 1 ]
+    [ "$(mock_get_call_args ${mock_curl} 2 | grep -c "https://podium.tls.cfapps.io/v1/installs/coolinstallation1234")" -eq 1 ]
     [ "$(mock_get_call_num ${mock_sleep})" = "2" ]
     [ "$(mock_get_call_args ${mock_sleep} 1)" -eq 60 ]
     [ "$(mock_get_call_args ${mock_sleep} 2)" -eq 60 ]
@@ -105,6 +105,6 @@ teardown() {
 
     run ./gips_client.sh "uaa.podium.tls.cfapps.io" "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 0 ]
-    [ -f ./environment.json ]
-    [ "$(jq -r ".paver_paving_output.details" ./environment.json)" = "important" ]
+    [ -f ./output/environment.json ]
+    [ "$(jq -r ".paver_paving_output.details" ./output/environment.json)" = "important" ]
 }

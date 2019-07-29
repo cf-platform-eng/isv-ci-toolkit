@@ -36,38 +36,37 @@ read -r -d '' GIPS_INSTALL_REQUEST <<INSTALL
   "opsman_version": "2.6.2",
   "dns_suffix": "cfplatformeng.com",
   "credentials": {
-    "service_account_key": "$SERVICE_ACCOUNT_KEY"
+    "service_account_key": $SERVICE_ACCOUNT_KEY
   },
   "options": {
     "dns_service": {
-      "zone_name": "aws-or-gcp-or-azure",
-      "service_account_key": {}
+      "zone_name": "cfplatformeng",
+      "service_account_key": $SERVICE_ACCOUNT_KEY
     },
     "region": "us-central1",
     "zones": [
-      "us-central-1a",
-      "us-central-1b",
-      "us-central-1c"
+      "us-central1-a",
+      "us-central1-b",
+      "us-central1-c"
     ],
     "buckets_location": "US",
     "create_blobstore_service_account_key": true,
-    "create_iam_service_account_members": true,
+    "create_iam_service_account_members": true
   }
 }
 INSTALL
 set -e
 
-install_request=$(curl -X POST -H "Authorization: $ACCESS_TOKEN" "https://$GIPS_ADDRESS/v1/installs" -d "$GIPS_INSTALL_REQUEST")
-
+install_request=$(curl -H "Content-Type: application/json" -H "Authorization: Bearer $ACCESS_TOKEN" "https://$GIPS_ADDRESS/v1/installs" -d "${GIPS_INSTALL_REQUEST}")
 install_name=$(echo "${install_request}" | jq -r ".name" )
 
-installation=$(curl -H "Authorization: $ACCESS_TOKEN" "https://$GIPS_ADDRESS/v1/installs/${install_name}/")
+installation=$(curl -H "Authorization: Bearer $ACCESS_TOKEN" "https://$GIPS_ADDRESS/v1/installs/${install_name}/")
 install_status=$(echo "${installation}" | jq -r .paver_job_status)
 while [ "${install_status}" = "queued" ] || [ "${install_status}" = "working" ]
 do
   sleep 60
-  installation=$(curl -H "Authorization: $ACCESS_TOKEN" "https://$GIPS_ADDRESS/v1/installs/${install_name}/")
+  installation=$(curl -H "Authorization: Bearer $ACCESS_TOKEN" "https://$GIPS_ADDRESS/v1/installs/${install_name}/")
   install_status=$(echo "${installation}" | jq -r .paver_job_status)
 done
 
-echo "${installation}" > environment.json
+echo "${installation}" > output/environment.json
