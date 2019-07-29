@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -eo pipefail
 
 GIPS_UAA_ADDRESS="$1"
 CRED_FILE="$2"
@@ -14,19 +14,48 @@ if [[ -z "$CRED_FILE" ]]; then
 	echo "no credential file provided"
 	exit 1
 fi
+if [[ ! -f "$CRED_FILE" ]]; then
+  echo "\"$CRED_FILE\" was not found"
+	exit 1
+fi
+if ! jq -r . "$CRED_FILE" > /dev/null 2>&1 ; then
+  echo "\"$CRED_FILE\" is not valid JSON"
+  exit 1
+fi
 
 if [[ -z "$GIPS_ADDRESS" ]]; then
 	GIPS_ADDRESS="podium.tls.cfapps.io"
 fi
 
-CLIENT_ID=$(jq -r ".client_id" "$CRED_FILE")
-CLIENT_SECRET=$(jq -r ".client_secret" "$CRED_FILE")
-SERVICE_ACCOUNT_KEY=$(jq -r ".service_account_key" "$CRED_FILE")
+if ! CLIENT_ID=$(jq -er ".client_id" "$CRED_FILE") ; then
+  echo 'credential file missing "client_id"'
+  exit 1
+fi
 
-uaac target "$GIPS_UAA_ADDRESS" 
-uaac token client get "$CLIENT_ID" -s "$CLIENT_SECRET"
+if ! CLIENT_SECRET=$(jq -er ".client_secret" "$CRED_FILE") ; then
+  echo 'credential file missing "client_secret"'
+  exit 1
+fi
 
-ACCESS_TOKEN=$(uaac context "$CLIENT_ID" | grep access_token | xargs | cut -d" " -f2)
+if ! SERVICE_ACCOUNT_KEY=$(jq -er ".service_account_key" "$CRED_FILE") ; then
+  echo 'credential file missing "service_account_key"'
+  exit 1
+fi
+
+if ! uaac target "$GIPS_UAA_ADDRESS" ; then
+  echo 'failed to set UAA target'
+  exit 1
+fi
+
+if ! uaac token client get "$CLIENT_ID" -s "$CLIENT_SECRET" ; then
+  echo 'failed to get UAA client token'
+  exit 1
+fi
+
+if ! ACCESS_TOKEN=$(uaac context "$CLIENT_ID" | grep access_token | xargs | cut -d" " -f2) ; then
+  echo 'failed to get UAA access token'
+  exit 1
+fi
 
 set +e
 read -r -d '' GIPS_INSTALL_REQUEST <<INSTALL
@@ -57,17 +86,31 @@ read -r -d '' GIPS_INSTALL_REQUEST <<INSTALL
 INSTALL
 set -e
 
-install_request=$(curl -H "Content-Type: application/json" -H "Authorization: Bearer $ACCESS_TOKEN" "https://$GIPS_ADDRESS/v1/installs" -d "${GIPS_INSTALL_REQUEST}")
+if ! install_request=$(curl -H "Content-Type: application/json" -H "Authorization: Bearer $ACCESS_TOKEN" "https://$GIPS_ADDRESS/v1/installs" -d "${GIPS_INSTALL_REQUEST}") ; then
+  echo "failed to submit installation request"
+  exit 1
+fi
 install_name=$(echo "${install_request}" | jq -r ".name" )
 
-installation=$(curl -H "Authorization: Bearer $ACCESS_TOKEN" "https://$GIPS_ADDRESS/v1/installs/${install_name}/")
-install_status=$(echo "${installation}" | jq -r .paver_job_status)
-while [ "${install_status}" = "queued" ] || [ "${install_status}" = "working" ]
-do
-  sleep 60
-  installation=$(curl -H "Authorization: Bearer $ACCESS_TOKEN" "https://$GIPS_ADDRESS/v1/installs/${install_name}/")
+while : ; do
+  if ! installation=$(curl -H "Authorization: Bearer $ACCESS_TOKEN" "https://$GIPS_ADDRESS/v1/installs/${install_name}/") ; then
+    echo "failed to get installation status"
+    exit 1
+  fi
   install_status=$(echo "${installation}" | jq -r .paver_job_status)
+
+  if [ "${install_status}" != "queued" ] && [ "${install_status}" != "working" ] ; then
+    break
+  fi
+
+  sleep 60
 done
+
+if [ "${install_status}" = "failed" ] ; then
+  echo 'installation failed:'
+  echo "${installation}"
+  exit 1
+fi
 
 mkdir -p output
 echo "${installation}" > output/environment.json
