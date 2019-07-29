@@ -69,4 +69,5 @@ do
   install_status=$(echo "${installation}" | jq -r .paver_job_status)
 done
 
+mkdir -p output
 echo "${installation}" > output/environment.json

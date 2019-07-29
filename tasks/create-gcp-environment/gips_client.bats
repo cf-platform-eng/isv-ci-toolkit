@@ -6,7 +6,7 @@ setup() {
 {
     "client_id": "pete",
     "client_secret": "super-secret-1",
-    "service_account_key": "ultra-secret-key"
+    "service_account_key": { "status": "secret", "should-i-tell-anyone": false }
 }
 EOF
 
@@ -29,7 +29,7 @@ EOF
 teardown() {
     rm -rf "$BATS_TMPDIR/input"
     rm -rf "$BATS_TMPDIR/bin"
-    rm -f ./output/environment.json
+    rm -rf ./output
 }
 
 @test "asks for gips address if none is provided" {
@@ -63,7 +63,7 @@ teardown() {
 
     run ./gips_client.sh "uaa.podium.tls.cfapps.io" "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 0 ]
-    [ "$(mock_get_call_args ${mock_curl} 1 | grep -c "Authorization: eyJWT9a")" -eq 1 ]
+    [ "$(mock_get_call_args ${mock_curl} 1 | grep -c "Authorization: Bearer eyJWT9a")" -eq 1 ]
 }
 
 @test "creates a request to install" {
@@ -71,10 +71,10 @@ teardown() {
 
     run ./gips_client.sh "uaa.podium.tls.cfapps.io" "$BATS_TMPDIR/input/credentials.json"
 
-    [ "$(mock_get_call_args ${mock_curl} 1 | grep -c "Authorization: eyJWT9a")" -eq 1 ]
-    [ "$(mock_get_call_args ${mock_curl} 1 | grep -c "\-X POST")" -eq 1 ]
+    [ "$(mock_get_call_args ${mock_curl} 1 | grep -c "Authorization: Bearer eyJWT9a")" -eq 1 ]
     [ "$(mock_get_call_args ${mock_curl} 1 | grep -c "https://podium.tls.cfapps.io/v1/installs")" -eq 1 ]
-    [ "$(mock_get_call_args ${mock_curl} 1 | grep -c '"service_account_key": "ultra-secret-key"')" -eq 1 ]
+    [ "$(mock_get_call_args ${mock_curl} 1 | grep -c '"service_account_key": {')" -eq 2 ]
+    [ "$(mock_get_call_args ${mock_curl} 1 | grep -c '"should-i-tell-anyone": false')" -eq 2 ]
 }
 
 @test "sleeps for 60 seconds when checking the status of the environment" {
