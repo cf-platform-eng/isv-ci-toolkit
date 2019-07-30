@@ -36,20 +36,14 @@ teardown() {
     run ./gips_client.sh
     [ "$status" -eq 1 ]
     [ "${lines[0]}" = "no OpsManager version provided" ]
-    [ "${lines[1]}" = "USAGE: gips_client <OpsManager version> <GIPS UAA address> <credential file> [<GIPS address>]" ]
+    [ "${lines[1]}" = "USAGE: gips_client <OpsManager version> <credential file> [<GIPS address>] [<GIPS UAA address>]" ]
     [ "${lines[2]}" = "    OpsManager version - the vesion of the OpsManager that should be created" ]
-    [ "${lines[3]}" = "    GIPS UAA address - " ]
-    [ "${lines[4]}" = "    credential file - JSON file containing credentials.  Must include:" ]
-    [ "${lines[5]}" = "        client_id" ]
-    [ "${lines[6]}" = "        client_secret" ]
-    [ "${lines[7]}" = "        service_account_key" ]
-    [ "${lines[8]}" = "    GIPS address - (default: podium.tls.cfapps.io) " ]
-}
-
-@test "asks for gips address if none is provided" {
-    run ./gips_client.sh 2.6.2
-    [ "$status" -eq 1 ]
-    [ "${lines[0]}" = "no gips uaa address provided" ]
+    [ "${lines[3]}" = "    credential file - JSON file containing credentials.  Must include:" ]
+    [ "${lines[4]}" = "        client_id" ]
+    [ "${lines[5]}" = "        client_secret" ]
+    [ "${lines[6]}" = "        service_account_key" ]
+    [ "${lines[7]}" = "    GIPS address - target podium instance (default: podium.tls.cfapps.io)" ]
+    [ "${lines[8]}" = "    GIPS UAA address - override the authentication endpoint for GIPS (default: gips-prod.login.run.pivotal.io)" ]
 }
 
 @test "asks for a credendials file when only one parameter is provided" {

@@ -6,30 +6,24 @@ GIPS_UAA_ADDRESS="$2"
 CRED_FILE="$3"
 GIPS_ADDRESS="$4"
 default_gips_address="podium.tls.cfapps.io"
+default_gips_uaa_address="gips-prod.login.run.pivotal.io"
 
 function usage {
-  echo "USAGE: gips_client <OpsManager version> <GIPS UAA address> <credential file> [<GIPS address>]"
+  echo "USAGE: gips_client <OpsManager version> <credential file> [<GIPS address>] [<GIPS UAA address>]"
   echo "    OpsManager version - the vesion of the OpsManager that should be created"
-  echo "    GIPS UAA address - "
   echo "    credential file - JSON file containing credentials.  Must include:"
   echo "        client_id"
   echo "        client_secret"
   echo "        service_account_key"
-  echo "    GIPS address - (default: ${default_gips_address}) "
+  echo "    GIPS address - target podium instance (default: ${default_gips_address})"
+  echo "    GIPS UAA address - override the authentication endpoint for GIPS (default: ${default_gips_uaa_address})"
 }
 
-if [[ -z "${OPS_MAN_VERSION}" ]] ; then
+if [[ -z "${OPS_MAN_VERSION}" ]]; then
 	echo "no OpsManager version provided"
   usage
 	exit 1
 fi
-
-if [[ -z "$GIPS_UAA_ADDRESS" ]]; then
-	echo "no gips uaa address provided"
-  usage
-	exit 1
-fi
-
 if [[ -z "$CRED_FILE" ]]; then
 	echo "no credential file provided"
   usage
@@ -48,6 +42,9 @@ fi
 
 if [[ -z "$GIPS_ADDRESS" ]]; then
 	GIPS_ADDRESS="${default_gips_address}"
+fi
+if [[ -z "$GIPS_UAA_ADDRESS" ]]; then
+  GIPS_UAA_ADDRESS="${default_gips_uaa_address}"
 fi
 
 if ! CLIENT_ID=$(jq -er ".client_id" "$CRED_FILE") ; then
