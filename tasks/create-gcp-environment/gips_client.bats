@@ -47,58 +47,63 @@ teardown() {
 }
 
 @test "asks for a credendials file when only one parameter is provided" {
-    run ./gips_client.sh 2.6.2 "uaa.podium.tls.cfapps.io"
+    run ./gips_client.sh 2.6.2
     [ "$status" -eq 1 ]
     [ "${lines[0]}" = "no credential file provided" ]
 }
 
 @test "missing credential file" {
-    run ./gips_client.sh 2.6.2 "uaa.podium.tls.cfapps.io" "/this/path/does/not/exist"
+    run ./gips_client.sh 2.6.2 "/this/path/does/not/exist"
     [ "$status" -eq 1 ]
     [ "${lines[0]}" = '"/this/path/does/not/exist" was not found' ]
 }
 
 @test "invalid credential file" {
     echo "this is not valid json" > "$BATS_TMPDIR/input/credentials.json"
-    run ./gips_client.sh 2.6.2 "uaa.podium.tls.cfapps.io" "$BATS_TMPDIR/input/credentials.json"
+    run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
     [ "${lines[0]}" = "\"$BATS_TMPDIR/input/credentials.json\" is not valid JSON" ]
 }
 
 @test "credential file missing important fields" {
+    echo '' > "$BATS_TMPDIR/input/credentials.json"
+    run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
+    [ "$status" -eq 1 ]
+    [ "${lines[0]}" = 'credential file missing "client_id"' ]
+
     echo '{}' > "$BATS_TMPDIR/input/credentials.json"
-    run ./gips_client.sh 2.6.2 "uaa.podium.tls.cfapps.io" "$BATS_TMPDIR/input/credentials.json"
+    run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
     [ "${lines[0]}" = 'credential file missing "client_id"' ]
 
     echo '{"client_id": "pete"}' > "$BATS_TMPDIR/input/credentials.json"
-    run ./gips_client.sh 2.6.2 "uaa.podium.tls.cfapps.io" "$BATS_TMPDIR/input/credentials.json"
+    run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
     [ "${lines[0]}" = 'credential file missing "client_secret"' ]
 
     echo '{"client_id": "pete", "client_secret": "shhh"}' > "$BATS_TMPDIR/input/credentials.json"
-    run ./gips_client.sh 2.6.2 "uaa.podium.tls.cfapps.io" "$BATS_TMPDIR/input/credentials.json"
+    run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
     [ "${lines[0]}" = 'credential file missing "service_account_key"' ]
 }
 
 @test "fails to set uaac target" {
     mock_set_status "${mock_uaac}" 1 1
-    run ./gips_client.sh 2.6.2 "uaa.podium.tls.cfapps.io" "$BATS_TMPDIR/input/credentials.json"
+    run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
     [ "$output" = 'failed to set UAA target' ]
 }
 
 @test "fails to get uaac client token" {
     mock_set_status "${mock_uaac}" 1 2
-    run ./gips_client.sh 2.6.2 "uaa.podium.tls.cfapps.io" "$BATS_TMPDIR/input/credentials.json"
+    run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
     [ "$output" = 'failed to get UAA client token' ]
 }
 
 @test "fails to get uaac access token" {
     mock_set_status "${mock_uaac}" 1 3
-    run ./gips_client.sh 2.6.2 "uaa.podium.tls.cfapps.io" "$BATS_TMPDIR/input/credentials.json"
+    run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
     [ "$output" = 'failed to get UAA access token' ]
 }
@@ -106,7 +111,7 @@ teardown() {
 @test "fails to submit installation request" {
     cat ./test/fixtures/uaac-context.txt | mock_set_output "${mock_uaac}" - 3
     mock_set_status "${mock_curl}" 1 1
-    run ./gips_client.sh 2.6.2 "uaa.podium.tls.cfapps.io" "$BATS_TMPDIR/input/credentials.json"
+    run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
     [ "$output" = 'failed to submit installation request' ]
 }
@@ -114,7 +119,7 @@ teardown() {
 @test "fails to get installation status" {
     cat ./test/fixtures/uaac-context.txt | mock_set_output "${mock_uaac}" - 3
     mock_set_status "${mock_curl}" 1 2
-    run ./gips_client.sh 2.6.2 "uaa.podium.tls.cfapps.io" "$BATS_TMPDIR/input/credentials.json"
+    run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
     [ "$output" = 'failed to get installation status' ]
 }
@@ -123,7 +128,7 @@ teardown() {
     cat ./test/fixtures/uaac-context.txt | mock_set_output "${mock_uaac}" - 3
     mock_set_output "${mock_curl}" '{"name": "coolinstallation1234", "paver_job_status": "queued"}' 2
     mock_set_status "${mock_curl}" 1 3
-    run ./gips_client.sh 2.6.2 "uaa.podium.tls.cfapps.io" "$BATS_TMPDIR/input/credentials.json"
+    run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
     [ "$output" = 'failed to get installation status' ]
 }
@@ -131,7 +136,7 @@ teardown() {
 @test "installation creation fails" {
     cat ./test/fixtures/uaac-context.txt | mock_set_output "${mock_uaac}" - 3
     mock_set_output "${mock_curl}" '{"name": "coolinstallation1234", "paver_job_status": "failed"}' 2
-    run ./gips_client.sh 2.6.2 "uaa.podium.tls.cfapps.io" "$BATS_TMPDIR/input/credentials.json"
+    run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
     [ "${lines[0]}" = 'installation failed:' ]
     [ "${lines[1]}" = '{"name": "coolinstallation1234", "paver_job_status": "failed"}' ]
@@ -150,11 +155,11 @@ teardown() {
         }
     }' 4
 
-    run ./gips_client.sh 2.6.2 "uaa.podium.tls.cfapps.io" "$BATS_TMPDIR/input/credentials.json"
+    run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 0 ]
 
     # fetches a token from the uaa provided
-    [ "$(mock_get_call_args ${mock_uaac} 1)" == "target uaa.podium.tls.cfapps.io" ]
+    [ "$(mock_get_call_args ${mock_uaac} 1)" == "target gips-prod.login.run.pivotal.io" ]
     [ "$(mock_get_call_args ${mock_uaac} 2)" == "token client get pete -s super-secret-1" ]
     [ "$(mock_get_call_args ${mock_uaac} 3)" == "context pete" ]
 
@@ -185,7 +190,21 @@ teardown() {
             "details": "important"
         }
     }'
-    run ./gips_client.sh 2.6.2 "uaa.podium.tls.cfapps.io" "$BATS_TMPDIR/input/credentials.json" "podium2.example.com"
+    run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json" "podium2.example.com"
     [ "$(mock_get_call_args ${mock_curl} 1 | grep -c "https://podium2.example.com/v1/installs")" -eq 1 ]
+    [ "$status" -eq 0 ]
+}
+
+@test "uses an alternative gips uaa address if provided" {
+    cat ./test/fixtures/uaac-context.txt | mock_set_output "${mock_uaac}" - 3
+    mock_set_output "${mock_curl}" '{
+        "name": "coolinstallation1234",
+        "paver_job_status": "complete",
+        "paver_paving_output": {
+            "details": "important"
+        }
+    }'
+    run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json" "podium2.example.com" "myuaa.example.net"
+    [ "$(mock_get_call_args ${mock_uaac} 1)" == "target myuaa.example.net" ]
     [ "$status" -eq 0 ]
 }

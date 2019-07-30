@@ -2,9 +2,9 @@
 set -eo pipefail
 
 OPS_MAN_VERSION="$1"
-GIPS_UAA_ADDRESS="$2"
-CRED_FILE="$3"
-GIPS_ADDRESS="$4"
+CRED_FILE="$2"
+GIPS_ADDRESS="$3"
+GIPS_UAA_ADDRESS="$4"
 default_gips_address="podium.tls.cfapps.io"
 default_gips_uaa_address="gips-prod.login.run.pivotal.io"
 
@@ -47,19 +47,22 @@ if [[ -z "$GIPS_UAA_ADDRESS" ]]; then
   GIPS_UAA_ADDRESS="${default_gips_uaa_address}"
 fi
 
-if ! CLIENT_ID=$(jq -er ".client_id" "$CRED_FILE") ; then
+CLIENT_ID=$(jq -r ".client_id // empty" "$CRED_FILE")
+if [[ -z "${CLIENT_ID}" ]] ; then
   echo 'credential file missing "client_id"'
   usage
   exit 1
 fi
 
-if ! CLIENT_SECRET=$(jq -er ".client_secret" "$CRED_FILE") ; then
+CLIENT_SECRET=$(jq -r ".client_secret // empty" "$CRED_FILE")
+if [[ -z "${CLIENT_SECRET}" ]] ; then
   echo 'credential file missing "client_secret"'
   usage
   exit 1
 fi
 
-if ! SERVICE_ACCOUNT_KEY=$(jq -er ".service_account_key" "$CRED_FILE") ; then
+SERVICE_ACCOUNT_KEY=$(jq -r ".service_account_key // empty" "$CRED_FILE")
+if [[ -z "${SERVICE_ACCOUNT_KEY}" ]] ; then
   echo 'credential file missing "service_account_key"'
   usage
   exit 1

@@ -1,4 +1,4 @@
-.PHONY: lint test
+.PHONY: build clean deps lint publish run shell test
 
 temp/make-tags/deps:
 	mkdir -p temp/make-tags
@@ -15,3 +15,28 @@ lint:
 
 test: deps lint
 	bats --tap *.bats
+
+build:
+	docker build . -t gcr.io/fe-rabbit-mq-tile-ci/create-gcp-environment
+
+publish:
+	docker push gcr.io/fe-rabbit-mq-tile-ci/create-gcp-environment
+
+run:
+	docker run -it \
+		-e OPS_MAN_VERSION \
+		-e CRED_FILE=$(shell basename "${CRED_FILE_PATH}") \
+		-e GIPS_ADDRESS \
+		-e GIPS_UAA_ADDRESS \
+		-v $(shell dirname "${CRED_FILE_PATH}"):/input \
+		gcr.io/fe-rabbit-mq-tile-ci/create-gcp-environment
+
+shell:
+	docker run -it \
+		-e OPS_MAN_VERSION \
+		-e CRED_FILE=$(shell basename "${CRED_FILE_PATH}") \
+		-e GIPS_ADDRESS \
+		-e GIPS_UAA_ADDRESS \
+		-v $(shell dirname "${CRED_FILE_PATH}"):/input \
+		gcr.io/fe-rabbit-mq-tile-ci/create-gcp-environment \
+		/bin/bash
