@@ -55,38 +55,41 @@ teardown() {
     echo '' > "$BATS_TMPDIR/input/credentials.json"
     run ./teardown.sh coolinstallation1234 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
-    [ "${lines[0]}" = 'credential file missing "client_id"' ]
+    [ "${lines[0]}" = 'Credential file missing "client_id"' ]
 
     echo '{}' > "$BATS_TMPDIR/input/credentials.json"
     run ./teardown.sh coolinstallation1234 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
-    [ "${lines[0]}" = 'credential file missing "client_id"' ]
+    [ "${lines[0]}" = 'Credential file missing "client_id"' ]
 
     echo '{"client_id": "pete"}' > "$BATS_TMPDIR/input/credentials.json"
     run ./teardown.sh coolinstallation1234 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
-    [ "${lines[0]}" = 'credential file missing "client_secret"' ]
+    [ "${lines[0]}" = 'Credential file missing "client_secret"' ]
 }
 
 @test "fails to set uaac target" {
     mock_set_status "${mock_uaac}" 1 1
     run ./teardown.sh coolinstallation1234 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
-    [ "$output" = 'failed to set UAA target' ]
+    [ "${lines[0]}" = 'Authenticating with GIPS...' ]
+    [ "${lines[1]}" = 'Failed to set UAA target' ]
 }
 
 @test "fails to get uaac client token" {
     mock_set_status "${mock_uaac}" 1 2
     run ./teardown.sh coolinstallation1234 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
-    [ "$output" = 'failed to get UAA client token' ]
+    [ "${lines[0]}" = 'Authenticating with GIPS...' ]
+    [ "${lines[1]}" = 'Failed to get UAA client token' ]
 }
 
 @test "fails to get uaac access token" {
     mock_set_status "${mock_uaac}" 1 3
     run ./teardown.sh coolinstallation1234 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
-    [ "$output" = 'failed to get UAA access token' ]
+    [ "${lines[0]}" = 'Authenticating with GIPS...' ]
+    [ "${lines[1]}" = 'Failed to get UAA access token' ]
 }
 
 @test "fails to submit deletion request" {
@@ -94,7 +97,9 @@ teardown() {
     mock_set_status "${mock_curl}" 1 1
     run ./teardown.sh coolinstallation1234 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
-    [ "$output" = 'failed to submit deletion request' ]
+    [ "${lines[0]}" = 'Authenticating with GIPS...' ]
+    [ "${lines[1]}" = 'Submitting environment deletion request...' ]
+    [ "${lines[2]}" = 'Failed to submit deletion request' ]
 }
 
 @test "fails to get deletion status" {
@@ -102,7 +107,10 @@ teardown() {
     mock_set_status "${mock_curl}" 1 2
     run ./teardown.sh coolinstallation1234 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
-    [ "$output" = 'failed to get deletion status' ]
+    [ "${lines[0]}" = 'Authenticating with GIPS...' ]
+    [ "${lines[1]}" = 'Submitting environment deletion request...' ]
+    [ "${lines[2]}" = "Environment is being deleted \"coolinstallation1234\"" ]
+    [ "${lines[3]}" = 'Failed to get deletion status' ]
 }
 
 @test "fails to get deletion status after checking again" {
@@ -111,7 +119,10 @@ teardown() {
     mock_set_status "${mock_curl}" 1 3
     run ./teardown.sh coolinstallation1234 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
-    [ "$output" = 'failed to get deletion status' ]
+    [ "${lines[0]}" = 'Authenticating with GIPS...' ]
+    [ "${lines[1]}" = 'Submitting environment deletion request...' ]
+    [ "${lines[2]}" = "Environment is being deleted \"coolinstallation1234\"." ]
+    [ "${lines[3]}" = 'Failed to get deletion status' ]
 }
 
 @test "installation deletion fails" {
@@ -119,13 +130,15 @@ teardown() {
     mock_set_output "${mock_curl}" '{"name": "coolinstallation1234", "paver_job_status": "failed"}' 2
     run ./teardown.sh coolinstallation1234 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
-    [ "${lines[0]}" = 'deletion failed:' ]
-    [ "${lines[1]}" = '{"name": "coolinstallation1234", "paver_job_status": "failed"}' ]
+    [ "${lines[0]}" = 'Authenticating with GIPS...' ]
+    [ "${lines[1]}" = 'Submitting environment deletion request...' ]
+    [ "${lines[2]}" = "Environment is being deleted \"coolinstallation1234\"" ]
+    [ "${lines[3]}" = 'Environment deletion failed:' ]
+    [ "${lines[4]}" = '{"name": "coolinstallation1234", "paver_job_status": "failed"}' ]
 }
 
 @test "creates a deletion request, waits for it to finish" {
     cat ./test/fixtures/uaac-context.txt | mock_set_output "${mock_uaac}" - 3
-    mock_set_output "${mock_curl}" '{"name": "coolinstallation1234"}' 1
     mock_set_output "${mock_curl}" '{"name": "coolinstallation1234", "paver_job_status": "queued"}' 2
     mock_set_output "${mock_curl}" '{"name": "coolinstallation1234", "paver_job_status": "deleting"}' 3
     mock_set_output "${mock_curl}" 'curl: (22) The requested URL returned error: 404 Not Found' 4
@@ -149,6 +162,11 @@ teardown() {
     [ "$(mock_get_call_num ${mock_sleep})" = "2" ]
     [ "$(mock_get_call_args ${mock_sleep} 1)" -eq 60 ]
     [ "$(mock_get_call_args ${mock_sleep} 2)" -eq 60 ]
+
+    [ "${lines[0]}" = 'Authenticating with GIPS...' ]
+    [ "${lines[1]}" = 'Submitting environment deletion request...' ]
+    [ "${lines[2]}" = "Environment is being deleted \"coolinstallation1234\".." ]
+    [ "${lines[3]}" = 'Environment deleted!' ]
 }
 
 @test "uses an alternative gips address if provided" {
