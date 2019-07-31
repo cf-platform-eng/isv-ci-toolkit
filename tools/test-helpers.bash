@@ -21,3 +21,19 @@ mock_bin() {
 clean_bin_mocks() {
     rm -rf "${BIN_MOCKS}"
 }
+
+# usage:
+#   say "a thing"
+#
+# Fails if 'a thing' is not in $output/
+# it also removes everything in output up to and including the matched string,
+# perfect for order checking.
+say() {
+    if [[ "${output}" == *"${1}"* ]]; then
+        output="${output#*${1}}"
+        echo "# Could not find ${1} in output:" >&2
+        echo "${output}" >&2
+    else
+        return 1
+    fi
+}
