@@ -29,6 +29,7 @@ run:
 		-e GIPS_ADDRESS \
 		-e GIPS_UAA_ADDRESS \
 		-v $(shell dirname "${CRED_FILE_PATH}"):/input \
+		-v `pwd`/output:/output \
 		gcr.io/fe-rabbit-mq-tile-ci/create-gcp-environment
 
 shell:
@@ -38,5 +39,6 @@ shell:
 		-e GIPS_ADDRESS \
 		-e GIPS_UAA_ADDRESS \
 		-v $(shell dirname "${CRED_FILE_PATH}"):/input \
+		-v `pwd`/output:/output \
 		gcr.io/fe-rabbit-mq-tile-ci/create-gcp-environment \
 		/bin/bash
