@@ -17,7 +17,7 @@ test: deps lint
 	bats --tap *.bats
 
 build:
-	docker build . -t gcr.io/fe-rabbit-mq-tile-ci/create-gcp-environment
+	docker build --pull . -t gcr.io/fe-rabbit-mq-tile-ci/create-gcp-environment
 
 publish:
 	docker push gcr.io/fe-rabbit-mq-tile-ci/create-gcp-environment
