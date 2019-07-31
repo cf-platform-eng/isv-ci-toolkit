@@ -31,9 +31,9 @@ clean_bin_mocks() {
 say() {
     if [[ "${output}" == *"${1}"* ]]; then
         output="${output#*${1}}"
+    else
         echo "# Could not find ${1} in output:" >&2
         echo "${output}" >&2
-    else
         return 1
     fi
 }
