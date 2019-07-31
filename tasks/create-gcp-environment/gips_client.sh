@@ -119,7 +119,7 @@ if ! install_request=$(curl -s -H "Content-Type: application/json" -H "Authoriza
   exit 1
 fi
 install_name=$(echo "${install_request}" | jq -r ".name" )
-echo -n "Environment is being created \"${install_name}\"."
+echo -n "Environment is being created \"${install_name}\""
 
 while : ; do
   if ! installation=$(curl -s -H "Authorization: Bearer $ACCESS_TOKEN" "https://$GIPS_ADDRESS/v1/installs/${install_name}/") ; then

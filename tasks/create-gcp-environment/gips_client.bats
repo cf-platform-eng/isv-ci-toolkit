@@ -129,7 +129,7 @@ teardown() {
     [ "$status" -eq 1 ]
     [ "${lines[0]}" = 'Authenticating with GIPS...' ]
     [ "${lines[1]}" = 'Submitting environment request...' ]
-    [ "${lines[2]}" = "Environment is being created \"coolinstallation1234\"." ]
+    [ "${lines[2]}" = "Environment is being created \"coolinstallation1234\"" ]
     [ "${lines[3]}" = 'Failed to get installation status' ]
 }
 
@@ -142,7 +142,7 @@ teardown() {
     [ "$status" -eq 1 ]
     [ "${lines[0]}" = 'Authenticating with GIPS...' ]
     [ "${lines[1]}" = 'Submitting environment request...' ]
-    [ "${lines[2]}" = "Environment is being created \"coolinstallation1234\".." ]
+    [ "${lines[2]}" = "Environment is being created \"coolinstallation1234\"." ]
     [ "${lines[3]}" = 'Failed to get installation status' ]
 }
 
@@ -154,7 +154,7 @@ teardown() {
     [ "$status" -eq 1 ]
     [ "${lines[0]}" = 'Authenticating with GIPS...' ]
     [ "${lines[1]}" = 'Submitting environment request...' ]
-    [ "${lines[2]}" = "Environment is being created \"coolinstallation1234\"." ]
+    [ "${lines[2]}" = "Environment is being created \"coolinstallation1234\"" ]
     [ "${lines[3]}" = 'Environment creation failed:' ]
     [ "${lines[4]}" = '{"name": "coolinstallation1234", "paver_job_status": "failed"}' ]
 }
@@ -195,7 +195,7 @@ teardown() {
 
     [ "${lines[0]}" = 'Authenticating with GIPS...' ]
     [ "${lines[1]}" = 'Submitting environment request...' ]
-    [ "${lines[2]}" = "Environment is being created \"coolinstallation1234\"..." ]
+    [ "${lines[2]}" = "Environment is being created \"coolinstallation1234\".." ]
     [ "${lines[3]}" = "Environment created!" ]
 
     # environment file exists in the output
