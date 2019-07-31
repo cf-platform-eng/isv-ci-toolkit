@@ -23,12 +23,12 @@ clean_bin_mocks() {
 }
 
 # usage:
-#   say "a thing"
+#   output_says "a thing"
 #
 # Fails if 'a thing' is not in $output/
 # it also removes everything in output up to and including the matched string,
 # perfect for order checking.
-say() {
+output_says() {
     if [[ "${output}" == *"${1}"* ]]; then
         output="${output#*${1}}"
     else
