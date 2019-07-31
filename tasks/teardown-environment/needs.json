@@ -1,0 +1,9 @@
+[
+    {
+        "type": "environment_variable",
+        "name": "OPS_MAN_VERSION"
+    }, {
+        "type": "environment_variable",
+        "name": "CRED_FILE"
+    }
+]
