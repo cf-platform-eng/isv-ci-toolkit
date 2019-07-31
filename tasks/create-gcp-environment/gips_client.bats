@@ -35,7 +35,7 @@ teardown() {
 @test "asks for ops manager version if none is provided" {
     run ./gips_client.sh
     [ "$status" -eq 1 ]
-    [ "${lines[0]}" = "no OpsManager version provided" ]
+    [ "${lines[0]}" = "No OpsManager version provided" ]
     [ "${lines[1]}" = "USAGE: gips_client <OpsManager version> <credential file> [<GIPS address>] [<GIPS UAA address>]" ]
     [ "${lines[2]}" = "    OpsManager version - the vesion of the OpsManager that should be created" ]
     [ "${lines[3]}" = "    credential file - JSON file containing credentials.  Must include:" ]
@@ -49,7 +49,7 @@ teardown() {
 @test "asks for a credendials file when only one parameter is provided" {
     run ./gips_client.sh 2.6.2
     [ "$status" -eq 1 ]
-    [ "${lines[0]}" = "no credential file provided" ]
+    [ "${lines[0]}" = "No credential file provided" ]
 }
 
 @test "missing credential file" {
@@ -69,43 +69,46 @@ teardown() {
     echo '' > "$BATS_TMPDIR/input/credentials.json"
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
-    [ "${lines[0]}" = 'credential file missing "client_id"' ]
+    [ "${lines[0]}" = 'Credential file missing "client_id"' ]
 
     echo '{}' > "$BATS_TMPDIR/input/credentials.json"
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
-    [ "${lines[0]}" = 'credential file missing "client_id"' ]
+    [ "${lines[0]}" = 'Credential file missing "client_id"' ]
 
     echo '{"client_id": "pete"}' > "$BATS_TMPDIR/input/credentials.json"
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
-    [ "${lines[0]}" = 'credential file missing "client_secret"' ]
+    [ "${lines[0]}" = 'Credential file missing "client_secret"' ]
 
     echo '{"client_id": "pete", "client_secret": "shhh"}' > "$BATS_TMPDIR/input/credentials.json"
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
-    [ "${lines[0]}" = 'credential file missing "service_account_key"' ]
+    [ "${lines[0]}" = 'Credential file missing "service_account_key"' ]
 }
 
 @test "fails to set uaac target" {
     mock_set_status "${mock_uaac}" 1 1
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
-    [ "$output" = 'failed to set UAA target' ]
+    [ "${lines[0]}" = 'Authenticating with GIPS...' ]
+    [ "${lines[1]}" = 'Failed to set UAA target' ]
 }
 
 @test "fails to get uaac client token" {
     mock_set_status "${mock_uaac}" 1 2
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
-    [ "$output" = 'failed to get UAA client token' ]
+    [ "${lines[0]}" = 'Authenticating with GIPS...' ]
+    [ "${lines[1]}" = 'Failed to get UAA client token' ]
 }
 
 @test "fails to get uaac access token" {
     mock_set_status "${mock_uaac}" 1 3
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
-    [ "$output" = 'failed to get UAA access token' ]
+    [ "${lines[0]}" = 'Authenticating with GIPS...' ]
+    [ "${lines[1]}" = 'Failed to get UAA access token' ]
 }
 
 @test "fails to submit installation request" {
@@ -113,33 +116,47 @@ teardown() {
     mock_set_status "${mock_curl}" 1 1
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
-    [ "$output" = 'failed to submit installation request' ]
+    [ "${lines[0]}" = 'Authenticating with GIPS...' ]
+    [ "${lines[1]}" = 'Submitting environment request...' ]
+    [ "${lines[2]}" = 'Failed to submit installation request' ]
 }
 
 @test "fails to get installation status" {
     cat ./test/fixtures/uaac-context.txt | mock_set_output "${mock_uaac}" - 3
+    mock_set_output "${mock_curl}" '{"name": "coolinstallation1234"}' 1
     mock_set_status "${mock_curl}" 1 2
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
-    [ "$output" = 'failed to get installation status' ]
+    [ "${lines[0]}" = 'Authenticating with GIPS...' ]
+    [ "${lines[1]}" = 'Submitting environment request...' ]
+    [ "${lines[2]}" = "Environment is being created \"coolinstallation1234\"." ]
+    [ "${lines[3]}" = 'Failed to get installation status' ]
 }
 
 @test "fails to get installation status after checking again" {
     cat ./test/fixtures/uaac-context.txt | mock_set_output "${mock_uaac}" - 3
+    mock_set_output "${mock_curl}" '{"name": "coolinstallation1234"}' 1
     mock_set_output "${mock_curl}" '{"name": "coolinstallation1234", "paver_job_status": "queued"}' 2
     mock_set_status "${mock_curl}" 1 3
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
-    [ "$output" = 'failed to get installation status' ]
+    [ "${lines[0]}" = 'Authenticating with GIPS...' ]
+    [ "${lines[1]}" = 'Submitting environment request...' ]
+    [ "${lines[2]}" = "Environment is being created \"coolinstallation1234\".." ]
+    [ "${lines[3]}" = 'Failed to get installation status' ]
 }
 
 @test "installation creation fails" {
     cat ./test/fixtures/uaac-context.txt | mock_set_output "${mock_uaac}" - 3
+    mock_set_output "${mock_curl}" '{"name": "coolinstallation1234"}' 1
     mock_set_output "${mock_curl}" '{"name": "coolinstallation1234", "paver_job_status": "failed"}' 2
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
-    [ "${lines[0]}" = 'installation failed:' ]
-    [ "${lines[1]}" = '{"name": "coolinstallation1234", "paver_job_status": "failed"}' ]
+    [ "${lines[0]}" = 'Authenticating with GIPS...' ]
+    [ "${lines[1]}" = 'Submitting environment request...' ]
+    [ "${lines[2]}" = "Environment is being created \"coolinstallation1234\"." ]
+    [ "${lines[3]}" = 'Environment creation failed:' ]
+    [ "${lines[4]}" = '{"name": "coolinstallation1234", "paver_job_status": "failed"}' ]
 }
 
 @test "creates an installation, waits for it to finish and writes the environment.json file to the output directory" {
@@ -175,6 +192,11 @@ teardown() {
     [ "$(mock_get_call_num ${mock_sleep})" = "2" ]
     [ "$(mock_get_call_args ${mock_sleep} 1)" -eq 60 ]
     [ "$(mock_get_call_args ${mock_sleep} 2)" -eq 60 ]
+
+    [ "${lines[0]}" = 'Authenticating with GIPS...' ]
+    [ "${lines[1]}" = 'Submitting environment request...' ]
+    [ "${lines[2]}" = "Environment is being created \"coolinstallation1234\"..." ]
+    [ "${lines[3]}" = "Environment created!" ]
 
     # environment file exists in the output
     [ -f ./output/environment.json ]
