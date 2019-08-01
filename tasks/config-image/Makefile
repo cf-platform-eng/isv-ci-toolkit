@@ -51,5 +51,5 @@ shell: pcf-version product-version product-name build
 lint:
 	shellcheck *.sh
 
-test:
+test: lint
 	bats --tap *.bats
