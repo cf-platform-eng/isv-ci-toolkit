@@ -14,12 +14,10 @@ PCF_VERSION_MATCH="${BASH_REMATCH[0]}"
 [[ $TILE_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+ ]]
 TILE_VERSION_MATCH="${BASH_REMATCH[0]}"
 
-while read i; do
-  semver $PCF_VERSION_MATCH -r "$i" &>/dev/null
-  if [[ "0" = "$?" ]]; then
+while read -r i; do
+  if semver "$PCF_VERSION_MATCH" -r "$i" &>/dev/null ; then
     j=$(jq -cr ".[$index] | .version_ranges.tile_version" "$JSON_FILE")
-    semver $TILE_VERSION_MATCH -r "$j" &>/dev/null
-    if [[ "0" = "$?" ]]; then
+    if semver "$TILE_VERSION_MATCH" -r "$j" &>/dev/null ; then
       count=$((count+1))
       if [[ $count -gt 1 ]]; then
         echo "Found multiple configurations matching the version combination."
@@ -36,5 +34,5 @@ if [[ -z ${config} ]]; then
   echo "Could not find configuration matching the version combination."
   exit 1
 else
-  echo $config
+  echo "${config}"
 fi

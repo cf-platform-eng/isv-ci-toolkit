@@ -1,30 +1,48 @@
-PRODUCT_VERSION ?= 2.6.1
-PRODUCT_NAME ?= srt
-PCF_VERSION ?= 2.6.1
+.PHONY: pcf-version product-version product-name build run shell lint test
+
+SKIP_APPLY_CHANGES ?= false
 SKIP_TILE_UPLOAD ?= false
 
-temp/marman:
-	mkdir -p temp
-	(cd temp && marman download-release -o cf-platform-eng -r marman -f "marman-linux")
-	mv temp/marman-linux temp/marman
+pcf-version:
+ifndef PCF_VERSION
+	$(error PCF_VERSION not defined)
+else
+	$(NOOP)
+endif
 
-build: temp/marman
+product-version:
+ifndef PRODUCT_VERSION
+	$(error PRODUCT_VERSION not defined)
+else
+	$(NOOP)
+endif
+
+product-name:
+ifndef PRODUCT_NAME
+	$(error PRODUCT_NAME not defined)
+else
+	$(NOOP)
+endif
+
+build: lint test
 	docker build . --tag gcr.io/fe-rabbit-mq-tile-ci/config-image:latest
 
-run:
+run: pcf-version product-version product-name build
 	docker run \
-		-e PRODUCT_VERSION=$(PRODUCT_VERSION) \
-		-e PRODUCT_NAME=$(PRODUCT_NAME) \
-		-e PCF_VERSION=$(PCF_VERSION) \
+		-e PCF_VERSION \
+		-e PRODUCT_VERSION \
+		-e PRODUCT_NAME \
+		-e SKIP_APPLY_CHANGES=$(SKIP_APPLY_CHANGES) \
 		-e SKIP_TILE_UPLOAD=$(SKIP_TILE_UPLOAD) \
 		-v `pwd`/input:/input \
 		gcr.io/fe-rabbit-mq-tile-ci/config-image:latest
 
-shell:
+shell: pcf-version product-version product-name build
 	docker run -it \
-		-e PRODUCT_VERSION=$(PRODUCT_VERSION) \
-		-e PRODUCT_NAME=$(PRODUCT_NAME) \
-		-e PCF_VERSION=$(PCF_VERSION) \
+		-e PCF_VERSION \
+		-e PRODUCT_VERSION \
+		-e PRODUCT_NAME \
+		-e SKIP_APPLY_CHANGES=$(SKIP_APPLY_CHANGES) \
 		-e SKIP_TILE_UPLOAD=$(SKIP_TILE_UPLOAD) \
 		-v `pwd`/input:/input \
 		gcr.io/fe-rabbit-mq-tile-ci/config-image:latest \
