@@ -5,6 +5,7 @@ setup() {
     export mock_build_tile_config="$(mock_bin build-tile-config.sh)"
     export mock_upload_and_assign_stemcells="$(mock_bin upload_and_assign_stemcells.sh)"
     export mock_tileinspect="$(mock_bin tileinspect)"
+    export mock_compare_staged_config="$(mock_bin compare-staged-config.sh)"
 
     export PATH="${BIN_MOCKS}:${PATH}"
 }
@@ -14,6 +15,8 @@ teardown() {
 }
 
 @test "happy path calls the right tools" {
+    mock_set_status "${mock_compare_staged_config}" 0
+
     mock_set_output "${mock_om}" '{
         "stemcell_library": [{
             "infrastructure": "some-required-stemcell"
@@ -27,11 +30,20 @@ teardown() {
 
     run ./install-tile.sh tile.pivotal config.json
     [ "$status" -eq 0 ]
+
+    [ "$(mock_get_call_num ${mock_om})" -eq 5 ]
     [ "$(mock_get_call_args ${mock_om} 1)" == "upload-product --product tile.pivotal" ]
     [ "$(mock_get_call_args ${mock_om} 2)" == "stage-product --product-name my-tile --product-version 1.2.3" ]
     [ "$(mock_get_call_args ${mock_om} 3)" == "curl -s -p /api/v0/stemcell_assignments" ]
+    # TODO check this outputs to the correct file
     [ "$(mock_get_call_args ${mock_upload_and_assign_stemcells})" == "some-required-stemcell" ]
+    # TODO need a seperate test to ensure we handle build tile config errors (it should stop the run)
+    # Also worth adding section(s) to inside build-tile-config.sh
     [ "$(mock_get_call_args ${mock_build_tile_config})" == "my-tile config.json" ]
+
+    [ "$(mock_get_call_num ${mock_compare_staged_config})" -eq 1 ]
+    [ "$(mock_get_call_args ${mock_compare_staged_config})" == "my-tile ${PWD}/config.json" ]
+
     [ "$(mock_get_call_args ${mock_om} 4)" == "configure-product --config ./config.json" ]
     [ "$(mock_get_call_args ${mock_om} 5)" == "apply-changes" ]
 }
@@ -85,6 +97,32 @@ teardown() {
     [ "$status" -eq 1 ]
     [ -n "$(echo "${output}" | grep "Failed to stage version 1.2.3 of my-tile")" ]
     [ -n "$(echo "${output}" | grep "If you see an 'x509' error, try setting OM_SKIP_SSL_VALIDATION=true")" ]
+}
+
+@test "exits if compare-staged-config fails" {
+    mock_set_output "${mock_compare_staged_config}" 'Failed to compare configurations'
+    mock_set_status "${mock_compare_staged_config}" 1
+
+    mock_set_output "${mock_tileinspect}" '{
+        "name": "my-tile",
+        "product_version": "1.2.3"
+    }'
+
+    mock_set_status "${mock_om}" 0 1
+    mock_set_status "${mock_om}" 0 2
+
+    run ./install-tile.sh path/to/tile.pivotal path/to/config.yml
+    [ "$(mock_get_call_num ${mock_om})" -eq 2 ]
+
+    [ "$(mock_get_call_args ${mock_om} 1)" == "upload-product --product path/to/tile.pivotal" ]
+    [ "$(mock_get_call_args ${mock_om} 2)" == "stage-product --product-name my-tile --product-version 1.2.3" ]
+
+    [ "$(mock_get_call_num ${mock_compare_staged_config})" -eq 1 ]
+    [ "$(mock_get_call_args ${mock_compare_staged_config})" == "my-tile ${PWD}/config.json" ]
+
+    [ "$status" -eq 1 ]
+    output_says "Failed to compare configurations"
+
 }
 
 @test "exits if om configure-product fails" {
