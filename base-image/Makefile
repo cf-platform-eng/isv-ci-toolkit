@@ -1,5 +1,5 @@
 SHELL = /bin/bash
-.PHONY: build publish run clean
+.PHONY: build clean github-token pivnet-token publish run
 
 clean:
 	rm -rf temp
@@ -19,17 +19,16 @@ else
 	$(NOOP)
 endif
 
-
 #
 # Docker image targets
 #
-temp/phony/cfplatformeng/test-ksm-ci: pivnet-token github-token Dockerfile
+temp/make-tags/build: pivnet-token github-token Dockerfile
 	@docker build . --file Dockerfile --tag gcr.io/fe-rabbit-mq-tile-ci/base-test-image:latest \
 		--build-arg GITHUB_TOKEN=${GITHUB_TOKEN} \
 		--build-arg PIVNET_TOKEN=${PIVNET_TOKEN} 
-	mkdir -p temp/phony/cfplatformeng && touch temp/phony/cfplatformeng/test-ksm-ci
+	mkdir -p temp/make-tags && touch temp/make-tags/build
 
-build: temp/phony/cfplatformeng/test-ksm-ci
+build: temp/make-tags/build
 
 publish: build
 	echo "WARNING: this image contains files that are not fit for public release.  DO NOT PUBLISH PUBLICLY"
