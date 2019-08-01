@@ -31,7 +31,7 @@ teardown() {
     run ./install-tile.sh tile.pivotal config.json
     [ "$status" -eq 0 ]
 
-    [ "$(mock_get_call_num ${mock_om})" -eq 5 ]
+    [ "$(mock_get_call_num ${mock_om})" -eq 6 ]
     [ "$(mock_get_call_args ${mock_om} 1)" == "upload-product --product tile.pivotal" ]
     [ "$(mock_get_call_args ${mock_om} 2)" == "stage-product --product-name my-tile --product-version 1.2.3" ]
     [ "$(mock_get_call_args ${mock_om} 3)" == "curl -s -p /api/v0/stemcell_assignments" ]
@@ -43,9 +43,10 @@ teardown() {
 
     [ "$(mock_get_call_num ${mock_compare_staged_config})" -eq 1 ]
     [ "$(mock_get_call_args ${mock_compare_staged_config})" == "my-tile ${PWD}/config.json" ]
-
-    [ "$(mock_get_call_args ${mock_om} 4)" == "configure-product --config ./config.json" ]
-    [ "$(mock_get_call_args ${mock_om} 5)" == "apply-changes" ]
+    # TODO check this outputs right dependencies
+    [ "$(mock_get_call_args ${mock_om} 4)" == "curl --path /api/v0/stemcell_assignments" ]
+    [ "$(mock_get_call_args ${mock_om} 5)" == "configure-product --config ./config.json" ]
+    [ "$(mock_get_call_args ${mock_om} 6)" == "apply-changes" ]
 }
 
 @test "displays usage when no parameters provided" {
@@ -133,7 +134,7 @@ teardown() {
             }
         ]
     }' 3
-    mock_set_status "${mock_om}" 1 4
+    mock_set_status "${mock_om}" 1 5
 
     mock_set_output "${mock_tileinspect}" '{
         "name": "my-tile",
@@ -142,14 +143,14 @@ teardown() {
 
     run ./install-tile.sh tile.pivotal config.yml
 
-    [ "$(mock_get_call_num ${mock_om})" -eq 4 ]
+    [ "$(mock_get_call_num ${mock_om})" -eq 5 ]
 
     [ "$(mock_get_call_args ${mock_om} 1)" == "upload-product --product tile.pivotal" ]
     [ "$(mock_get_call_args ${mock_om} 2)" == "stage-product --product-name my-tile --product-version 1.2.3" ]
     [ "$(mock_get_call_args ${mock_om} 3)" == "curl -s -p /api/v0/stemcell_assignments" ]
     [ "$(mock_get_call_args ${mock_upload_and_assign_stemcells})" == "some-required-stemcell" ]
-
-    [ "$(mock_get_call_args ${mock_om} 4)" == "configure-product --config ./config.json" ]
+    [ "$(mock_get_call_args ${mock_om} 4)" == "curl --path /api/v0/stemcell_assignments" ]
+    [ "$(mock_get_call_args ${mock_om} 5)" == "configure-product --config ./config.json" ]
 
     [ "$status" -eq 1 ]
     [ -n "$(echo "${output}" | grep "Failed to configure product my-tile")" ]
@@ -157,15 +158,15 @@ teardown() {
 }
 
 @test "exits if om apply-changes fails" {
-    mock_set_status "${mock_om}" 1 5
+    mock_set_status "${mock_om}" 1 6
 
     run ./install-tile.sh tile.pivotal config.yml
     [ "$status" -eq 1 ]
     [ -n "$(echo "${output}" | grep "Failed to apply changes")" ]
     [ -n "$(echo "${output}" | grep "If you see an 'x509' error, try setting OM_SKIP_SSL_VALIDATION=true")" ]
 
-    [ "$(mock_get_call_num ${mock_om})" -eq 5 ]
-    [ "$(mock_get_call_args ${mock_om} 5)" == "apply-changes" ]
+    [ "$(mock_get_call_num ${mock_om})" -eq 6 ]
+    [ "$(mock_get_call_args ${mock_om} 6)" == "apply-changes" ]
 }
 
 @test "setting selective deploy to false runs a full apply-changes" {
@@ -182,7 +183,7 @@ teardown() {
 
     run ./install-tile.sh tile.pivotal config.json false
     [ "$status" -eq 0 ]
-    [ "$(mock_get_call_args ${mock_om} 5)" == "apply-changes" ]
+    [ "$(mock_get_call_args ${mock_om} 6)" == "apply-changes" ]
 }
 
 @test "setting selective deploy to true runs a selective apply-changes" {
@@ -199,5 +200,5 @@ teardown() {
 
     run ./install-tile.sh tile.pivotal config.json true
     [ "$status" -eq 0 ]
-    [ "$(mock_get_call_args ${mock_om} 5)" == "apply-changes --product-name my-tile" ]
+    [ "$(mock_get_call_args ${mock_om} 6)" == "apply-changes --product-name my-tile" ]
 }
