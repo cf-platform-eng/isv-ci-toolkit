@@ -1,5 +1,13 @@
 .PHONY: lint test
 
+MRLOG := $(shell command -v mrlog 2> /dev/null)
+
+mrlog:
+ifndef MRLOG
+    $(error "please instal mrlog https://github.com/cf-platform-eng/mrlog/releases/latest")
+endif
+    $(NOOP)
+
 temp/make-tags/deps:
 	unset PYTHONPATH && pipenv sync --dev
 	mkdir -p temp/make-tags
@@ -10,7 +18,7 @@ temp/make-tags/deps:
 clean:
 	rm -f temp/make-tags/deps
 
-deps: temp/make-tags/deps
+deps: temp/make-tags/deps mrlog
 
 lint:
 	shellcheck *.sh
