@@ -10,12 +10,14 @@ usage() {
 }
 
 install_tile() {
-    TILE=$1
-    TILE_CONFIG=$2
+    TILE=$1             # TODO TILE_PATH
+    TILE_CONFIG=$2      # TODO TILE_CONFIG_PATH
     USE_SELECTIVE_DEPLOY=$3
 
     PRODUCT_NAME=$(tileinspect metadata -t "${TILE}" | yq -r .name)
     PRODUCT_VERSION=$(tileinspect metadata -t "${TILE}" | yq -r .product_version)
+
+    GENERATED_CONFIG_PATH="${PWD}/config.json"
 
     if ! om upload-product --product "${TILE}" ; then
         echo "Failed to upload product ${TILE}" >&2
@@ -29,9 +31,10 @@ install_tile() {
         return 1
     fi
 
-    upload_and_assign_stemcells.sh "$(om curl -s -p /api/v0/stemcell_assignments | jq -r .stemcell_library[0].infrastructure)"
+    build-tile-config.sh "${PRODUCT_NAME}" "${TILE_CONFIG}" > "${GENERATED_CONFIG_PATH}"
+    compare-staged-config.sh "${PRODUCT_NAME}" "${GENERATED_CONFIG_PATH}"
 
-    build-tile-config.sh "${PRODUCT_NAME}" "${TILE_CONFIG}" > config.json
+    upload_and_assign_stemcells.sh "$(om curl -s -p /api/v0/stemcell_assignments | jq -r .stemcell_library[0].infrastructure)"
 
     if ! om configure-product --config ./config.json ; then
         echo "Failed to configure product ${PRODUCT_NAME}" >&2
