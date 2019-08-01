@@ -20,7 +20,7 @@ om -k configure-authentication --decryption-passphrase "$PASSWORD"
 om -k configure-director --config /tmp/director-config.json
 
 if [[ "${SKIP_TILE_UPLOAD}" != "true" ]] ; then
-    marman download-tile -s elastic-runtime -v "${PRODUCT_VERSION}" -f "${PRODUCT_NAME}-.*.pivotal"
+    marman download-srt --version "${PRODUCT_VERSION}"
     om -k upload-product --product ./*.pivotal
     om -k stage-product --product-name cf --product-version "${PRODUCT_VERSION}"
 fi
