@@ -36,6 +36,10 @@ install_tile() {
 
     upload_and_assign_stemcells.sh "$(om curl -s -p /api/v0/stemcell_assignments | jq -r .stemcell_library[0].infrastructure)"
 
+
+    stemcells="$(om curl --path /api/v0/stemcell_assignments | jq .stemcell_library)"
+    $(echo -e "${stemcells}" | jq -r '.[] | "mrlog dependency --name \(.infrastructure)-\(.hypervisor)-\(.os) --version \(.version)"')
+
     if ! om configure-product --config ./config.json ; then
         echo "Failed to configure product ${PRODUCT_NAME}" >&2
         echo "If you see an 'x509' error, try setting OM_SKIP_SSL_VALIDATION=true" >&2
