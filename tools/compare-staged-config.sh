@@ -12,5 +12,5 @@ mrlog section-end --name="expected configuration"
 
 
 mrlog section-start --name="actual configuration"
-cat "${2}"
+jq . < "${2}"
 mrlog section-end --name="actual configuration"

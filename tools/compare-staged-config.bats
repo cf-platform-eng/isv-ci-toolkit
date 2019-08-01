@@ -41,7 +41,9 @@ teardown() {
     output_says "section-end: 'expected configuration'"
 
     output_says "section-start: 'actual configuration'"
-    output_says "$(cat ${STUB_CONFIG_FILE})"
+    output_says "\"product-properties\":"
+    output_says "\".properties.something\":"
+    output_says "\"value\": \"my-property\""
     output_says "section-end: 'actual configuration' result: 0"
 }
 
