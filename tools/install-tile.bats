@@ -156,6 +156,14 @@ teardown() {
     [ -n "$(echo "${output}" | grep "Failed to configure product my-tile")" ]
     [ -n "$(echo "${output}" | grep "If you see an 'x509' error, try setting OM_SKIP_SSL_VALIDATION=true")" ]
 }
+@test "exits if list stemcells fails" {
+    mock_set_status "${mock_om}" 1 4
+
+    run ./install-tile.sh tile.pivotal config.yml
+    [ "$status" -eq 1 ]
+    [ "$(mock_get_call_num ${mock_om})" -eq 4 ]
+    [ "$(mock_get_call_args ${mock_om} 4)" == "curl --path /api/v0/stemcell_assignments" ]
+}
 
 @test "exits if om apply-changes fails" {
     mock_set_status "${mock_om}" 1 6
