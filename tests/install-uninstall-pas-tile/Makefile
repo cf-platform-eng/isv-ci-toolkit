@@ -70,7 +70,7 @@ run: run-deps logs
 	-v $(shell dirname "${TILE_PATH}"):/tile \
 	-v $(shell dirname "${TILE_CONFIG_PATH}"):/tile-config \
 	-v ${PWD}/../../tools:/bin/tools \
-	install-uninstall-test-image:latest | tee ./logs/$(shell date "+%Y.%m.%d-%H.%M.%S").log
+	install-uninstall-test-image:latest 2>&1 | tee ./logs/$(shell date "+%Y.%m.%d-%H.%M.%S").log
 
 shell: run-deps
 	docker run -it \
