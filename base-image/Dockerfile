@@ -41,6 +41,7 @@ RUN marman download-release --owner cf-platform-eng --repo mrlog --filter "mrlog
 
 # bosh
 ARG BOSH_CLI_VER=5.4.0
+
 RUN wget "https://github.com/cloudfoundry/bosh-cli/releases/download/v${BOSH_CLI_VER}/bosh-cli-${BOSH_CLI_VER}-linux-amd64"
 RUN mv "bosh-cli-${BOSH_CLI_VER}-linux-amd64" /usr/local/bin/bosh
 RUN chmod +x /usr/local/bin/bosh
@@ -85,7 +86,7 @@ RUN apt-get -y update && apt-get -y install kubectl
 RUN mrlog dependency --name marman --version $(marman version | cut -f3 -d" ") >> ${BASE_IMAGE_DEPENDENCIES_FILE}
 
 # needs
-RUN marman download-release --owner cf-platform-eng --repo needs --filter "needs-linux" && cp needs-linux /usr/local/bin/needs && chmod +x /usr/local/bin/needs
+RUN marman download-release --owner cf-platform-eng --repo needs --filter "needs-linux" && mv needs-linux /usr/local/bin/needs && chmod +x /usr/local/bin/needs
 
 RUN mrlog dependency --name needs --version $(needs --version) >> ${BASE_IMAGE_DEPENDENCIES_FILE}
 
@@ -128,12 +129,12 @@ RUN mrlog dependency --name pks-cli --version $(pks --version | grep "PKS CLI" |
 
 # pksctl
 ARG PKSCTL_VERSION=0.0.522
-RUN marman download-release --owner pivotal --repo pe-pixie --version ${PKSCTL_VERSION} --filter "linux$" && cp pksctl-${PKSCTL_VERSION}.linux /usr/local/bin/pksctl && chmod +x /usr/local/bin/pksctl
+RUN marman download-release --owner pivotal --repo pe-pixie --version ${PKSCTL_VERSION} --filter "linux$" && mv pksctl-${PKSCTL_VERSION}.linux /usr/local/bin/pksctl && chmod +x /usr/local/bin/pksctl
 
 RUN mrlog dependency --name pksctl --version $(pksctl version | grep "PKSCTL" | cut -d" " -f3) >> ${BASE_IMAGE_DEPENDENCIES_FILE}
 
 # tileinspect
-RUN marman download-release --owner cf-platform-eng --repo tileinspect --filter "tileinspect-linux" && cp tileinspect-linux /usr/local/bin/tileinspect && chmod +x /usr/local/bin/tileinspect
+RUN marman download-release --owner cf-platform-eng --repo tileinspect --filter "tileinspect-linux" && mv tileinspect-linux /usr/local/bin/tileinspect && chmod +x /usr/local/bin/tileinspect
 
 RUN mrlog dependency --name tileinspect --version $(tileinspect version | cut -d" " -f3) >> ${BASE_IMAGE_DEPENDENCIES_FILE}
 
