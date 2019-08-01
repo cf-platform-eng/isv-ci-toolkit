@@ -36,8 +36,8 @@ install_tile() {
 
     upload_and_assign_stemcells.sh "$(om curl -s -p /api/v0/stemcell_assignments | jq -r .stemcell_library[0].infrastructure)"
 
-
     stemcells="$(om curl --path /api/v0/stemcell_assignments | jq .stemcell_library)"
+    # shellcheck disable=SC2091
     $(echo -e "${stemcells}" | jq -r '.[] | "mrlog dependency --name \(.infrastructure)-\(.hypervisor)-\(.os) --version \(.version)"')
 
     if ! om configure-product --config ./config.json ; then
