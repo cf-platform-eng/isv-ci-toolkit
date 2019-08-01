@@ -15,3 +15,6 @@ create a Go based binary for.
         ```bash
         pipenv two
         ``` 
+
+* mrlog tool
+    https://github.com/cf-platform-eng/mrlog/releases/latest
