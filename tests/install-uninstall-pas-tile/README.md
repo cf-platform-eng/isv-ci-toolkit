@@ -47,24 +47,27 @@ product-properties:
 JSON:
 
 ```json
-"product-properties": {
-    ".properties.space": {
-        "type": "string",
-        "value": "test-tile-space"
-    },
-    ".properties.allow_paid_service_plans": {
-        "type": "boolean",
-        "value": false
-    },
-    ".properties.apply_open_security_group": {
-        "type": "boolean",
-        "value": false
-    },
-    ".properties.org": {
-        "type": "string",
-        "value": "test-tile-org"
+{
+    "product-properties": {
+        ".properties.space": {
+            "type": "string",
+            "value": "test-tile-space"
+        },
+        ".properties.allow_paid_service_plans": {
+            "type": "boolean",
+            "value": false
+        },
+        ".properties.apply_open_security_group": {
+            "type": "boolean",
+            "value": false
+        },
+        ".properties.org": {
+            "type": "string",
+            "value": "test-tile-org"
+        }
     }
 }
+
 ```
 
 ### Substitution strings
