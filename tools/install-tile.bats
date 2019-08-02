@@ -48,7 +48,6 @@ teardown() {
     [ "$(mock_get_call_args ${mock_om} 3)" == "curl -s -p /api/v0/stemcell_assignments" ]
     # TODO check this outputs to the correct file
     [ "$(mock_get_call_args ${mock_upload_and_assign_stemcells})" == "some-required-stemcell" ]
-    # TODO need a seperate test to ensure we handle build tile config errors (it should stop the run)
     # Also worth adding section(s) to inside build-tile-config.sh
     [ "$(mock_get_call_args ${mock_build_tile_config})" == "my-tile config.json" ]
 
@@ -76,6 +75,21 @@ teardown() {
     [ "${lines[1]}" = "    tile - path to a .pivotal file" ]
     [ "${lines[2]}" = "    config.yml - path to tile configuration" ]
     [ "${lines[3]}" = "    selective deploy - if true, only deploy this tile (default false)" ]
+}
+
+@test "exits if build tile config fails" {
+    mock_set_output "${mock_tileinspect}" '{
+            "name": "my-tile",
+            "product_version": "1.2.3"
+        }'
+        
+    mock_set_status "${mock_build_tile_config}" 1
+
+    run ./install-tile.sh tile.pivotal config.json
+
+    [ "$status" -eq 1 ]
+    [ "$(mock_get_call_args ${mock_build_tile_config})" == "my-tile config.json" ]
+    [ "$(mock_get_call_num ${mock_om})" -eq 2 ]
 }
 
 @test "exits if om upload-product fails" {
