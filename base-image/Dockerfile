@@ -21,7 +21,8 @@ RUN apt-get -y install \
     ruby-dev \
     openssl \
     libssl-dev \
-    python-pip
+    python-pip && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN pip install yq
 RUN gem install bundler
@@ -51,7 +52,7 @@ RUN marman download-release --owner cloudfoundry --repo bosh-cli --version "v${B
 # cf
 RUN wget -q -O - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key | apt-key add - && \
     echo "deb https://packages.cloudfoundry.org/debian stable main" | tee /etc/apt/sources.list.d/cloudfoundry-cli.list && \
-    apt-get -y update && apt-get -y install cf-cli
+    apt-get -y update && apt-get -y install cf-cli && rm -rf /var/lib/apt/lists/*
 
 # credhub
 ARG CREDHUB_CLI_VER=2.5.2
@@ -77,7 +78,7 @@ RUN marman download-release --owner cf-platform-eng --repo ksm --version ${KSM_V
 # kubectl
 RUN curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
     echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list && \
-    apt-get -y update && apt-get -y install kubectl
+    apt-get -y update && apt-get -y install kubectl && rm -rf /var/lib/apt/lists/*
 
 # marman
 RUN mrlog dependency --name marman --version $(marman version | cut -f3 -d" ") >> ${BASE_IMAGE_DEPENDENCIES_FILE}
@@ -91,7 +92,7 @@ RUN marman download-release --owner cf-platform-eng --repo needs --filter "needs
 # om
 RUN wget -q -O - https://raw.githubusercontent.com/starkandwayne/homebrew-cf/master/public.key | apt-key add - && \
     echo "deb http://apt.starkandwayne.com stable main" | tee /etc/apt/sources.list.d/starkandwayne.list && \
-    apt-get update && apt-get -y install om
+    apt-get update && apt-get -y install om && rm -rf /var/lib/apt/lists/*
 
 # ops-manifest
 ARG OPS_MANIFEST_VERSION=2.7.0-internalDev.128
@@ -145,8 +146,5 @@ RUN gem install cf-uaac && \
 RUN export CLOUD_SDK_REPO="cloud-sdk-xenial" && \
     echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
     curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
-    apt-get update -y && apt-get install google-cloud-sdk -y && \
+    apt-get update -y && apt-get install google-cloud-sdk -y && rm -rf /var/lib/apt/lists/* && \
     eval "$(gcloud version --format json | jq -r 'to_entries[] | "mrlog dependency --name gcloud-\(.key) --version \(.value) >> ${BASE_IMAGE_DEPENDENCIES_FILE}"')"
-
-# finalize
-RUN rm -rf /var/lib/apt/lists/*
