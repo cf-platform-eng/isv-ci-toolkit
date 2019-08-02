@@ -28,6 +28,17 @@ teardown() {
             "product_version": "1.2.3"
         }'
 
+    mock_set_output "${mock_om}" '{
+        "stemcell_library": [
+            {
+                "version": "315.70",
+                "os": "ubuntu-xenial",
+                "infrastructure": "google",
+                "hypervisor": "kvm"
+            }
+        ]
+    }' 4
+
     run ./install-tile.sh tile.pivotal config.json
     [ "$status" -eq 0 ]
 
@@ -43,8 +54,8 @@ teardown() {
 
     [ "$(mock_get_call_num ${mock_compare_staged_config})" -eq 1 ]
     [ "$(mock_get_call_args ${mock_compare_staged_config})" == "my-tile ${PWD}/config.json" ]
-    # TODO check this outputs right dependencies
     [ "$(mock_get_call_args ${mock_om} 4)" == "curl --path /api/v0/stemcell_assignments" ]
+    output_says "dependency: 'google-kvm-ubuntu-xenial' version '315.70'"
     [ "$(mock_get_call_args ${mock_om} 5)" == "configure-product --config ./config.json" ]
     [ "$(mock_get_call_args ${mock_om} 6)" == "apply-changes" ]
 }
