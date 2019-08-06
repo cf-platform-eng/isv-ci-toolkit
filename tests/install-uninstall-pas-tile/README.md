@@ -114,7 +114,7 @@ docker run \
   -e TILE_CONFIG=$(basename "${TILE_CONFIG_PATH}") \
   -v $(dirname "${TILE_PATH}"):/tile \
   -v $(dirname "${TILE_CONFIG_PATH}"):/tile-config \
-  install-uninstall-test-image:latest
+  cfplatformeng/install-uninstall-test-image:latest
 ```
 
 ### Output

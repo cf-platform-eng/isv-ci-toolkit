@@ -68,13 +68,6 @@ RUN wget https://get.helm.sh/helm-v${HELM_CLI_VER}-linux-amd64.tar.gz && \
     rm helm-v${HELM_CLI_VER}-linux-amd64.tar.gz && \
     mrlog dependency --name helm-cli --version ${HELM_CLI_VER} >> ${BASE_IMAGE_DEPENDENCIES_FILE}
 
-# ksm
-ARG KSM_VERSION=0.4.66
-RUN marman download-release --owner cf-platform-eng --repo ksm --version ${KSM_VERSION} --filter "ksm-.*\.linux$" && \
-    mv ksm-${KSM_VERSION}.linux /usr/local/bin/ksm && \
-    chmod +x /usr/local/bin/ksm && \
-    mrlog dependency --name ksm-cli --version $(shasum $(which ksm) | cut -f1 -d" ") >> ${BASE_IMAGE_DEPENDENCIES_FILE}
-
 # kubectl
 RUN curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
     echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list && \
@@ -94,43 +87,12 @@ RUN wget -q -O - https://raw.githubusercontent.com/starkandwayne/homebrew-cf/mas
     echo "deb http://apt.starkandwayne.com stable main" | tee /etc/apt/sources.list.d/starkandwayne.list && \
     apt-get update && apt-get -y install om && rm -rf /var/lib/apt/lists/*
 
-# ops-manifest
-ARG OPS_MANIFEST_VERSION=2.7.0-internalDev.128
-# TODO deal with licensing
-RUN marman download-tile --slug pivotal-ops-manifest --version ${OPS_MANIFEST_VERSION} && \
-    gem install *.gem && \
-    rm *.gem && \
-    mrlog dependency --name ops-manifest --version $(gem list | grep ops-manifest | cut -d" " -f2) >> ${BASE_IMAGE_DEPENDENCIES_FILE}
-
 # pivnet
 ARG PIVNET_CLI_VER=0.0.60
 RUN marman download-release --owner pivotal-cf --repo pivnet-cli --version "v${PIVNET_CLI_VER}" --filter "pivnet-linux-amd64-${PIVNET_CLI_VER}" && \
     mv "pivnet-linux-amd64-${PIVNET_CLI_VER}" /usr/local/bin/pivnet && \
     chmod +x /usr/local/bin/pivnet && \
     mrlog dependency --name pivnet-cli --version ${PIVNET_CLI_VER} >> ${BASE_IMAGE_DEPENDENCIES_FILE}
-
-# pks
-# TODO deal with licensing
-ARG PKS_VERSION=1.4.0
-RUN pivnet login --api-token ${PIVNET_TOKEN} && \
-    PKS_FILE_NAME=`pivnet product-files --product-slug pivotal-container-service --release-version ${PKS_VERSION} --format=json | jq -r '.[] | select(.name=="PKS CLI - Linux") | .aws_object_key' | xargs basename` && \
-    PKS_FILE_ID=`pivnet product-files --product-slug pivotal-container-service --release-version ${PKS_VERSION} --format=json | jq -r '.[] | select(.name=="PKS CLI - Linux") | .id'` && \
-    pivnet download-product-files \
-        --accept-eula \
-        --product-slug pivotal-container-service \
-        --release-version ${PKS_VERSION} \
-        --product-file-id ${PKS_FILE_ID} && \
-    pivnet logout && \
-    mv ${PKS_FILE_NAME} /usr/local/bin/pks && \
-    chmod +x /usr/local/bin/pks && \
-    mrlog dependency --name pks-cli --version $(pks --version | grep "PKS CLI" | cut -d" " -f4) >> ${BASE_IMAGE_DEPENDENCIES_FILE}
-
-# pksctl
-ARG PKSCTL_VERSION=0.0.522
-RUN marman download-release --owner pivotal --repo pe-pixie --version ${PKSCTL_VERSION} --filter "linux$" && \
-    mv pksctl-${PKSCTL_VERSION}.linux /usr/local/bin/pksctl && \
-    chmod +x /usr/local/bin/pksctl && \
-    mrlog dependency --name pksctl --version $(pksctl version | grep "PKSCTL" | cut -d" " -f3) >> ${BASE_IMAGE_DEPENDENCIES_FILE}
 
 # tileinspect
 RUN marman download-release --owner cf-platform-eng --repo tileinspect --filter "tileinspect-linux" && \

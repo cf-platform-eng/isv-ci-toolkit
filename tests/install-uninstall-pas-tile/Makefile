@@ -50,7 +50,7 @@ clean:
 	rm -rf ./logs
 
 build: test
-	docker build . --tag install-uninstall-test-image --no-cache --pull
+	docker build . --tag cfplatformeng/install-uninstall-test-image --no-cache --pull
 
 run-deps: pivnet-token pas-config tile-config build
 
@@ -70,7 +70,7 @@ run: run-deps logs
 	-v $(shell dirname "${TILE_PATH}"):/tile \
 	-v $(shell dirname "${TILE_CONFIG_PATH}"):/tile-config \
 	-v ${PWD}/../../tools:/bin/tools \
-	install-uninstall-test-image:latest 2>&1 | tee ./logs/$(shell date "+%Y.%m.%d-%H.%M.%S").log
+	cfplatformeng/install-uninstall-test-image 2>&1 | tee ./logs/$(shell date "+%Y.%m.%d-%H.%M.%S").log
 
 shell: run-deps
 	docker run -it \
@@ -85,7 +85,7 @@ shell: run-deps
 	-v $(shell dirname "${TILE_PATH}"):/tile \
 	-v $(shell dirname "${TILE_CONFIG_PATH}"):/tile-config \
 	-v ${PWD}/../../tools:/bin/tools \
-	install-uninstall-test-image:latest \
+	cfplatformeng/install-uninstall-test-image \
 	/bin/bash
 
 lint: scripts/*.sh
