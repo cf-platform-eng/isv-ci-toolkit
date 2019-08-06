@@ -1,4 +1,4 @@
-FROM gcr.io/fe-rabbit-mq-tile-ci/base-test-image:latest
+FROM cfplatformeng/base-image:latest
 
 RUN wget \
     https://raw.githubusercontent.com/cf-platform-eng/isv-ci-toolkit/master/tools/build-tile-config.sh \
