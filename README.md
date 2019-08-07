@@ -2,6 +2,9 @@
 
 This repo contains curated content for Pivotal Partners to use when testing their integrations with Pivotal Cloud Foundry.
 
+Some essential reading:
+  * [The ISV CI design guide](./docs/design-guide.md)
+
 ## Tests
 
 The `tests` directory contains docker images that execute a test.
