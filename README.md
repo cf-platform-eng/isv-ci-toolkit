@@ -4,6 +4,8 @@ This repo contains curated content for Pivotal Partners to use when testing thei
 
 Some essential reading:
   * [The ISV CI design guide](./docs/design-guide.md)
+  * [The Getting Started guide](./docs/getting-started-guide.md)
+
 
 ## Tests
 
