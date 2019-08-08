@@ -1,4 +1,20 @@
-.PHONY: pas-config om-username om-password om-target tile-config tile-path tile-config-path clean build run run-deps shell
+.PHONY: pas-config om-username om-password om-target tile-config tile-path tile-config-path clean build run run-deps shell deps-dev
+
+BATS_INSTALLED := $(shell command -v bats 2>&1 > /dev/null; echo $$?)
+SHELLCHECK_INSTALLED := $(shell command -v shellcheck 2>&1 > /dev/null; echo $$?)
+
+deps-dev:
+ifneq ($(BATS_INSTALLED),0)
+  $(warning 'bats' not installed. See https://github.com/bats-core/bats-core)
+  MISSING := 1
+endif
+ifneq ($(SHELLCHECK_INSTALLED),0)
+  $(warning 'shellcheck' not installed. See https://www.shellcheck.net/)
+  MISSING := 1
+endif
+ifdef MISSING
+  $(error "Please install missing dependencies")
+endif
 
 om-username:
 ifndef OM_USERNAME
@@ -50,7 +66,7 @@ clean:
 	docker image rm install-uninstall-test-image
 	rm -rf ./logs
 
-build: test
+build: deps-dev test
 	docker build . --tag cfplatformeng/install-uninstall-test-image --no-cache --pull
 
 run-deps: pivnet-token pas-config tile-config build
