@@ -1,8 +1,5 @@
 .PHONY: pas-config om-username om-password om-target tile-config tile-path tile-config-path clean build run run-deps shell
 
-pas-config:	om-username om-password om-target
-tile-config: tile-path tile-config-path
-
 om-username:
 ifndef OM_USERNAME
 	$(error OM_USERNAME not defined)
@@ -24,6 +21,8 @@ else
 	$(NOOP)
 endif
 
+pas-config:	om-username om-password om-target
+
 tile-path:
 ifndef TILE_PATH
 	$(error TILE_PATH not defined. Set this with the full path to your .pivotal tile)
@@ -37,6 +36,8 @@ ifndef TILE_CONFIG_PATH
 else
 	$(NOOP)
 endif
+
+tile-config: tile-path tile-config-path
 
 pivnet-token:
 ifndef PIVNET_TOKEN
