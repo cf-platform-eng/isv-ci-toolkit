@@ -5,5 +5,8 @@
     }, {
         "type": "environment_variable",
         "name": "CRED_FILE"
+    }, {
+        "type": "file",
+        "path": "/input/*.json"
     }
 ]

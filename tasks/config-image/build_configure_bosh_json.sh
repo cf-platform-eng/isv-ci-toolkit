@@ -1,7 +1,7 @@
 #!/bin/bash
 ENV_FILE=$1
 CREDS_FILE=$2
-ENV_NAME="$(jq -r '.name' $ENV_FILE)"
+ENV_NAME="$(jq -r '.name' "$ENV_FILE")"
 
 if [[ -z $ENV_FILE ]]; then
     echo "no config file provided"
@@ -14,28 +14,29 @@ if [[ -z $CREDS_FILE ]]; then
 fi
 
 set -x
-iaas=$(jq -r '.iaas' $ENV_FILE)
-network_name=$(jq -r '.paver_iaas_specific_output.network_name' $ENV_FILE)
-management_subnet_name=$(jq -r '.paver_iaas_specific_output.management_subnet_name' $ENV_FILE)
-pas_subnet_name=$(jq -r '.paver_iaas_specific_output.pas_subnet_name' $ENV_FILE)
-services_subnet_name=$(jq -r '.paver_iaas_specific_output.services_subnet_name' $ENV_FILE)
+iaas=$(jq -r '.iaas' "$ENV_FILE")
+network_name=$(jq -r '.paver_iaas_specific_output.network_name' "$ENV_FILE")
+management_subnet_name=$(jq -r '.paver_iaas_specific_output.management_subnet_name' "$ENV_FILE")
+pas_subnet_name=$(jq -r '.paver_iaas_specific_output.pas_subnet_name' "$ENV_FILE")
+services_subnet_name=$(jq -r '.paver_iaas_specific_output.services_subnet_name' "$ENV_FILE")
+service_account_email=$(jq -r '.paver_iaas_specific_output.service_account_email' "$ENV_FILE")
 
 OPSMAN_NETWORK_NAME="$management_subnet_name"
 
-PUBLIC_KEY="$(jq -r '.paver_iaas_specific_output.ops_manager_ssh_public_key' $ENV_FILE)"
-PRIVATE_KEY="$(jq -r '.paver_paving_output.ops_manager_ssh_private_key.value' $ENV_FILE)"
+PUBLIC_KEY="$(jq -r '.paver_iaas_specific_output.ops_manager_ssh_public_key' "$ENV_FILE")"
+PRIVATE_KEY="$(jq -r '.paver_paving_output.ops_manager_ssh_private_key.value' "$ENV_FILE")"
 
 if [ "${iaas}" = "azure" ] ; then
   OPS_MANAGER_IAAS_IDENTIFIER="$network_name/$management_subnet_name"
   PAS_IAAS_IDENTIFIER="$network_name/$pas_subnet_name"
   SERVICES_IAAS_IDENTIFIER="$network_name/$services_subnet_name"
 
-  SUBSCRIPTION_ID="$(jq -r '.subscription_id' $CREDS_FILE)"
-  TENANT_ID="$(jq -r '.tenant_id' $CREDS_FILE)"
-  CLIENT_ID="$(jq -r '.client_id' $CREDS_FILE)"
-  CLIENT_SECRET="$(jq -r '.client_secret' $CREDS_FILE)"
+  SUBSCRIPTION_ID="$(jq -r '.subscription_id' "$CREDS_FILE")"
+  TENANT_ID="$(jq -r '.tenant_id' "$CREDS_FILE")"
+  CLIENT_ID="$(jq -r '.client_id' "$CREDS_FILE")"
+  CLIENT_SECRET="$(jq -r '.client_secret' "$CREDS_FILE")"
 
-  read -d '' iaas_jq_input << EOF
+  read -r -d '' iaas_jq_input << EOF
 {
   "networks-configuration": {
     "icmp_checks_enabled": false,
@@ -129,18 +130,19 @@ EOF
 fi
 
 if [ "${iaas}" = "gcp" ] ; then
-  export SERVICE_ACCOUNT_KEY=$(jq -r '.service_account_key | tostring' $CREDS_FILE)
+  SERVICE_ACCOUNT_KEY=$(jq -r '.service_account_key | tostring' "$CREDS_FILE")
+  export SERVICE_ACCOUNT_KEY
   
-  project=$(jq -r '.paver_iaas_specific_output.project' $ENV_FILE)
-  region=$(jq -r '.paver_iaas_specific_output.region' $ENV_FILE)
+  project=$(jq -r '.paver_iaas_specific_output.project' "$ENV_FILE")
+  region=$(jq -r '.paver_iaas_specific_output.region' "$ENV_FILE")
 
   OPS_MANAGER_IAAS_IDENTIFIER="$network_name/$management_subnet_name/$region"
   PAS_IAAS_IDENTIFIER="$network_name/$pas_subnet_name/$region"
   SERVICES_IAAS_IDENTIFIER="$network_name/$services_subnet_name/$region"
 
-  NETWORK_AZS="$(jq -c -M '.paver_iaas_specific_output.azs | .[] |= { "name": .}' $ENV_FILE)"
+  NETWORK_AZS="$(jq -c -M '.paver_iaas_specific_output.azs | .[] |= { "name": .}' "$ENV_FILE")"
 
-  read -d '' iaas_jq_input << EOF
+  read -r -d '' iaas_jq_input << EOF
 {
   "az-configuration": $NETWORK_AZS,
   "properties-configuration": {
@@ -228,6 +230,6 @@ if [ "${iaas}" = "gcp" ] ; then
 EOF
 fi
 
-iaas_configuration=$(jq -r ". | $iaas_jq_input" $ENV_FILE)
-echo $iaas_configuration
+iaas_configuration=$(jq -r ". | $iaas_jq_input" "$ENV_FILE")
+echo "${iaas_configuration}"
 exit 0
