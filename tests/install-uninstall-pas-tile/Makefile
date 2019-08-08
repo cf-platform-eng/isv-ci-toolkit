@@ -1,9 +1,14 @@
-.PHONY: pas-config om-username om-password om-target tile-config tile-path tile-config-path clean build run run-deps shell deps-dev
+.PHONY: pas-config om-username om-password om-target tile-config
+.PHONY: tile-path tile-config-path clean build run run-deps shell deps-test test lint
+
+BASH_SRC := $(shell find scripts -name "*.sh")
+SRC := $(BASH_SRC) needs.json Dockerfile
+TEST_SRC := $(shell find scripts -name "*.bats")
 
 BATS_INSTALLED := $(shell command -v bats 2>&1 > /dev/null; echo $$?)
 SHELLCHECK_INSTALLED := $(shell command -v shellcheck 2>&1 > /dev/null; echo $$?)
 
-deps-dev:
+deps-test:
 ifneq ($(BATS_INSTALLED),0)
   $(warning 'bats' not installed. See https://github.com/bats-core/bats-core)
   MISSING := 1
@@ -63,18 +68,34 @@ else
 endif
 
 clean:
-	docker image rm install-uninstall-test-image
+	rm -rf temp
+	docker image rm -f cfplatformeng/install-uninstall-test-image
 	rm -rf ./logs
 
-build: deps-dev test
+temp/make-tags/lint: $(BASH_SRC)
+	shellcheck scripts/*.sh
+	mkdir -p temp/make-tags && touch temp/make-tags/lint
+
+lint: temp/make-tags/lint
+
+temp/make-tags/test: $(BASH_SRC) $(TEST_SRC)
+	bats --tap scripts/*.bats
+	mkdir -p temp/make-tags && touch temp/make-tags/test
+
+test: deps-test temp/make-tags/lint temp/make-tags/test
+
+temp/make-tags/build: temp/make-tags/lint temp/make-tags/test $(SRC)
 	docker build . --tag cfplatformeng/install-uninstall-test-image --no-cache --pull
+	mkdir -p temp/make-tags && touch temp/make-tags/build
+
+build: temp/make-tags/build
 
 run-deps: pivnet-token pas-config tile-config build
 
 logs:
 	mkdir -p ./logs
 
-run: run-deps logs
+run: run-deps logs temp/make-tags/build
 	docker run \
 	-e OM_USERNAME \
 	-e OM_PASSWORD \
@@ -89,7 +110,7 @@ run: run-deps logs
 	-v ${PWD}/../../tools:/bin/tools \
 	cfplatformeng/install-uninstall-test-image 2>&1 | tee ./logs/$(shell date "+%Y.%m.%d-%H.%M.%S").log
 
-shell: run-deps
+shell: run-deps temp/make-tags/build
 	docker run -it \
 	-e OM_USERNAME \
 	-e OM_PASSWORD \
@@ -104,10 +125,4 @@ shell: run-deps
 	-v ${PWD}/../../tools:/bin/tools \
 	cfplatformeng/install-uninstall-test-image \
 	/bin/bash
-
-lint: scripts/*.sh
-	shellcheck scripts/*.sh
-
-test: lint
-	bats --tap scripts/*.bats
 
