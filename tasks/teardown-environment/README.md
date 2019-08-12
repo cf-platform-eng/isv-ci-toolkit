@@ -29,7 +29,7 @@ The following environment variables are required:
 
 The following environment variables are optional:
 
-* `GIPS_ADDRESS` - The address of GIPS to send the environment creation request (defaults to `podium.tls.cfapps.io`).
+* `GIPS_ADDRESS` - The address of GIPS to send the environment deletion request (defaults to `podium.tls.cfapps.io`).
 * `GIPS_UAA_ADDRESS` - The address of GIPS' UAA server, used for authentication (defaults to `gips-prod.login.run.pivotal.io`).
 
 ### Running with Makefile
