@@ -2,7 +2,7 @@ load test-helpers
 
 setup() {
     export mock_om="$(mock_bin om)"
-    export mock_build_tile_config="$(mock_bin build-tile-config.sh)"
+    export mock_generate_config_for_tile="$(mock_bin generate-config-for-tile.sh)"
     export mock_upload_and_assign_stemcells="$(mock_bin upload_and_assign_stemcells.sh)"
     export mock_tileinspect="$(mock_bin tileinspect)"
     export mock_compare_staged_config="$(mock_bin compare-staged-config.sh)"
@@ -49,7 +49,7 @@ teardown() {
     # TODO check this outputs to the correct file
     [ "$(mock_get_call_args ${mock_upload_and_assign_stemcells})" == "some-required-stemcell" ]
     # Also worth adding section(s) to inside build-tile-config.sh
-    [ "$(mock_get_call_args ${mock_build_tile_config})" == "my-tile config.json" ]
+    [ "$(mock_get_call_args ${mock_generate_config_for_tile})" == "tile.pivotal config.json" ]
 
     [ "$(mock_get_call_num ${mock_compare_staged_config})" -eq 1 ]
     [ "$(mock_get_call_args ${mock_compare_staged_config})" == "my-tile ${PWD}/config.json" ]
@@ -83,12 +83,12 @@ teardown() {
             "product_version": "1.2.3"
         }'
         
-    mock_set_status "${mock_build_tile_config}" 1
+    mock_set_status "${mock_generate_config_for_tile}" 1
 
     run ./install-tile.sh tile.pivotal config.json
 
     [ "$status" -eq 1 ]
-    [ "$(mock_get_call_args ${mock_build_tile_config})" == "my-tile config.json" ]
+    [ "$(mock_get_call_args ${mock_generate_config_for_tile})" == "tile.pivotal config.json" ]
     [ "$(mock_get_call_num ${mock_om})" -eq 2 ]
 }
 
