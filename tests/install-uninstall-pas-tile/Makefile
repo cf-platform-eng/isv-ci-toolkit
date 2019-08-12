@@ -110,7 +110,7 @@ run: run-deps logs temp/make-tags/build
 	-v ${PWD}/../../tools:/bin/tools \
 	cfplatformeng/install-uninstall-test-image 2>&1 | tee ./logs/$(shell date "+%Y.%m.%d-%H.%M.%S").log
 
-shell: run-deps temp/make-tags/build
+define run-docker-interactive
 	docker run -it \
 	-e OM_USERNAME \
 	-e OM_PASSWORD \
@@ -124,5 +124,14 @@ shell: run-deps temp/make-tags/build
 	-v $(shell dirname "${TILE_CONFIG_PATH}"):/tile-config \
 	-v ${PWD}/../../tools:/bin/tools \
 	cfplatformeng/install-uninstall-test-image \
-	/bin/bash
+	$1 $2
+endef
 
+shell: run-deps temp/make-tags/build
+	$(call run-docker-interactive,"/bin/bash")
+
+needs-list:
+	$(call run-docker-interactive,/bin/bash,-c "needs list | jq .")
+
+needs-check:
+	$(call run-docker-interactive,/bin/bash,-c "needs check | jq .")
