@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2016
 
 set -ueo pipefail
 
@@ -11,10 +12,6 @@ function gen_tile_config {
     CONFIG_FILE=$2
 
     if ! PRODUCT_NAME=$(tileinspect metadata -t "${TILE_PATH}" | yq -r .name); then 
-        echo "Failed to get metadata from ${TILE_PATH}"
-        return 1
-    fi
-    if ! PRODUCT_VERSION=$(tileinspect metadata -t "${TILE_PATH}" | yq -r .product_version); then 
         echo "Failed to get metadata from ${TILE_PATH}"
         return 1
     fi
