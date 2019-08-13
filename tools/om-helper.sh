@@ -8,7 +8,10 @@ usage() {
 
 stemcell-assignments() {
     STEMCELL_ASSIGNMENTS="$(om curl --silent --path /api/v0/stemcell_assignments)"
-    STEMCELLS="$(echo "${STEMCELL_ASSIGNMENTS}" | jq -c '.products | map({
+    STEMCELLS="$(echo "${STEMCELL_ASSIGNMENTS}" | jq -c '.products | 
+    map(select( .required_stemcell_os ) | 
+        select( .required_stemcell_version)) | 
+    map({
         product: .guid,
         os: .required_stemcell_os,
         version: .required_stemcell_version,
