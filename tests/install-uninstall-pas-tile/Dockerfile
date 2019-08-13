@@ -1,9 +1,9 @@
 FROM cfplatformeng/base-image:latest
 
 RUN wget \
-    https://raw.githubusercontent.com/cf-platform-eng/isv-ci-toolkit/master/tools/build-tile-config.sh \
+    https://raw.githubusercontent.com/cf-platform-eng/isv-ci-toolkit/master/tools/generate-config-for-tile.sh \
     --directory-prefix /usr/local/bin
-RUN chmod +x /usr/local/bin/build-tile-config.sh
+RUN chmod +x /usr/local/bin/generate-config-for-tile.sh
 
 RUN wget \
     https://raw.githubusercontent.com/cf-platform-eng/isv-ci-toolkit/master/tools/om-helper.sh \
