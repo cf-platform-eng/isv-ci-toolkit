@@ -21,7 +21,7 @@ teardown() {
         "stemcell_library": [{
             "infrastructure": "some-required-stemcell"
         }]
-    }' 3
+    }' 4
 
     mock_set_output "${mock_tileinspect}" '{
             "name": "my-tile",
@@ -37,7 +37,7 @@ teardown() {
                 "hypervisor": "kvm"
             }
         ]
-    }' 4
+    }' 3
 
     run ./install-tile.sh tile.pivotal config.json
     [ "$status" -eq 0 ]
@@ -45,7 +45,8 @@ teardown() {
     [ "$(mock_get_call_num ${mock_om})" -eq 6 ]
     [ "$(mock_get_call_args ${mock_om} 1)" == "upload-product --product tile.pivotal" ]
     [ "$(mock_get_call_args ${mock_om} 2)" == "stage-product --product-name my-tile --product-version 1.2.3" ]
-    [ "$(mock_get_call_args ${mock_om} 3)" == "curl -s -p /api/v0/stemcell_assignments" ]
+    [ "$(mock_get_call_args ${mock_om} 3)" == "curl --path /api/v0/stemcell_assignments" ]
+    [ "$(mock_get_call_args ${mock_om} 4)" == "curl -s -p /api/v0/stemcell_assignments" ]
     # TODO check this outputs to the correct file
     [ "$(mock_get_call_args ${mock_upload_and_assign_stemcells})" == "some-required-stemcell" ]
     # Also worth adding section(s) to inside build-tile-config.sh
@@ -53,7 +54,6 @@ teardown() {
 
     [ "$(mock_get_call_num ${mock_compare_staged_config})" -eq 1 ]
     [ "$(mock_get_call_args ${mock_compare_staged_config})" == "my-tile ${PWD}/config.json" ]
-    [ "$(mock_get_call_args ${mock_om} 4)" == "curl --path /api/v0/stemcell_assignments" ]
     output_says "dependency: 'google-kvm-ubuntu-xenial' version '315.70'"
     [ "$(mock_get_call_args ${mock_om} 5)" == "configure-product --config ./config.json" ]
     [ "$(mock_get_call_args ${mock_om} 6)" == "apply-changes" ]
@@ -158,7 +158,7 @@ teardown() {
                 "infrastructure": "some-required-stemcell"
             }
         ]
-    }' 3
+    }' 4
     mock_set_status "${mock_om}" 1 5
 
     mock_set_output "${mock_tileinspect}" '{
@@ -172,9 +172,9 @@ teardown() {
 
     [ "$(mock_get_call_args ${mock_om} 1)" == "upload-product --product tile.pivotal" ]
     [ "$(mock_get_call_args ${mock_om} 2)" == "stage-product --product-name my-tile --product-version 1.2.3" ]
-    [ "$(mock_get_call_args ${mock_om} 3)" == "curl -s -p /api/v0/stemcell_assignments" ]
+    [ "$(mock_get_call_args ${mock_om} 3)" == "curl --path /api/v0/stemcell_assignments" ]
+    [ "$(mock_get_call_args ${mock_om} 4)" == "curl -s -p /api/v0/stemcell_assignments" ]
     [ "$(mock_get_call_args ${mock_upload_and_assign_stemcells})" == "some-required-stemcell" ]
-    [ "$(mock_get_call_args ${mock_om} 4)" == "curl --path /api/v0/stemcell_assignments" ]
     [ "$(mock_get_call_args ${mock_om} 5)" == "configure-product --config ./config.json" ]
 
     [ "$status" -eq 1 ]
@@ -182,12 +182,12 @@ teardown() {
     [ -n "$(echo "${output}" | grep "If you see an 'x509' error, try setting OM_SKIP_SSL_VALIDATION=true")" ]
 }
 @test "exits if list stemcells fails" {
-    mock_set_status "${mock_om}" 1 4
+    mock_set_status "${mock_om}" 1 3
 
     run ./install-tile.sh tile.pivotal config.yml
     [ "$status" -eq 1 ]
-    [ "$(mock_get_call_num ${mock_om})" -eq 4 ]
-    [ "$(mock_get_call_args ${mock_om} 4)" == "curl --path /api/v0/stemcell_assignments" ]
+    [ "$(mock_get_call_num ${mock_om})" -eq 3 ]
+    [ "$(mock_get_call_args ${mock_om} 3)" == "curl --path /api/v0/stemcell_assignments" ]
 }
 
 @test "exits if om apply-changes fails" {
