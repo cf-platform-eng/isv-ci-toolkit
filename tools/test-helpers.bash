@@ -37,3 +37,17 @@ output_says() {
         return 1
     fi
 }
+
+output_equals() {
+    if [[ "${output}" != "${1}" ]]; then
+        echo "# expected output to equal ${1}, but got ${output}"
+        return 1
+    fi
+}
+
+status_equals() {
+    if [[ "${status}" -ne ${1} ]]; then
+        echo "# expected status to equal ${1}, but got ${status}"
+        return 1
+    fi
+}
