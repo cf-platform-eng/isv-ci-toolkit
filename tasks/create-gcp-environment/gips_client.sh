@@ -7,6 +7,8 @@ GIPS_ADDRESS="$3"
 GIPS_UAA_ADDRESS="$4"
 default_gips_address="podium.tls.cfapps.io"
 default_gips_uaa_address="gips-prod.login.run.pivotal.io"
+default_dns_suffix="env.isv.ci"
+default_top_level_zone_name="isvci"
 
 function usage {
   echo "USAGE: gips_client <OpsManager version> <credential file> [<GIPS address>] [<GIPS UAA address>]"
@@ -17,6 +19,8 @@ function usage {
   echo "        service_account_key"
   echo "    GIPS address - target podium instance (default: ${default_gips_address})"
   echo "    GIPS UAA address - override the authentication endpoint for GIPS (default: ${default_gips_uaa_address})"
+  echo "    DNS suffix - override the DNS suffix (default: ${default_dns_suffix})"
+  echo "    Top level zone name - override the top level zone name (default: ${default_top_level_zone_name})"
 }
 
 if [[ -z "${OPS_MAN_VERSION}" ]]; then
@@ -45,6 +49,12 @@ if [[ -z "$GIPS_ADDRESS" ]]; then
 fi
 if [[ -z "$GIPS_UAA_ADDRESS" ]]; then
   GIPS_UAA_ADDRESS="${default_gips_uaa_address}"
+fi
+if [[ -z "$DNS_SUFFIX" ]]; then
+  DNS_SUFFIX="${default_dns_suffix}"
+fi
+if [[ -z "$TOP_LEVEL_ZONE_NAME" ]]; then
+  TOP_LEVEL_ZONE_NAME="${default_top_level_zone_name}"
 fi
 
 CLIENT_ID=$(jq -r ".client_id // empty" "$CRED_FILE")
@@ -90,13 +100,13 @@ read -r -d '' GIPS_INSTALL_REQUEST <<INSTALL
   "iaas": "gcp",
   "paver_name": "prod_gcp",
   "opsman_version": "${OPS_MAN_VERSION}",
-  "dns_suffix": "cfplatformeng.com",
+  "dns_suffix": "${DNS_SUFFIX}",
   "credentials": {
     "service_account_key": $SERVICE_ACCOUNT_KEY
   },
   "options": {
     "dns_service": {
-      "zone_name": "cfplatformeng",
+      "zone_name": "${TOP_LEVEL_ZONE_NAME}",
       "service_account_key": $SERVICE_ACCOUNT_KEY
     },
     "region": "us-central1",
