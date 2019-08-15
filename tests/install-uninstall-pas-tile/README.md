@@ -18,9 +18,9 @@ The following environment variables are necessary to run the process:
 The following environment variables are used, but not necessary:
 
 - OM_SKIP_SSL_VALIDATION - if your opsman is using self-signed certs
-- USE_SELECTIVE_DEPLOY - if set to `true`, only deploy the product under test, not all deployed products.
+- USE_FULL_DEPLOY - if set to `true`, deploy all staged products
 
-NOTE: Using `USE_SELECTIVE_DEPLOY` will result in a faster test runtime, but may miss some product incompatibilities.
+NOTE: Using `USE_FULL_DEPLOY` will result in a slower test runtime, but will catch product incompatibilities.
 
 ## Config file
 

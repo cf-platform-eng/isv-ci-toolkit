@@ -12,7 +12,7 @@ usage() {
 install_tile() {
     TILE=$1             # TODO TILE_PATH
     TILE_CONFIG=$2      # TODO TILE_CONFIG_PATH
-    USE_SELECTIVE_DEPLOY=$3
+    USE_FULL_DEPLOY=$3
 
     PRODUCT_NAME=$(tileinspect metadata -t "${TILE}" | yq -r .name)
     PRODUCT_VERSION=$(tileinspect metadata -t "${TILE}" | yq -r .product_version)
@@ -48,12 +48,13 @@ install_tile() {
 
     rm config.json
 
-    SELECTIVE_DEPLOY_ARG=""
-    if [ "${USE_SELECTIVE_DEPLOY}" == "true" ] ; then
-        SELECTIVE_DEPLOY_ARG=(--product-name "${PRODUCT_NAME}")
+    SELECTIVE_DEPLOY_ARG=(" " --product-name "${PRODUCT_NAME}")
+    if [ "${USE_FULL_DEPLOY}" == "true" ] ; then
+      SELECTIVE_DEPLOY_ARG=("")
     fi
 
-    if ! om apply-changes ${SELECTIVE_DEPLOY_ARG[*]} ; then
+    # shellcheck disable=SC2086
+    if ! om apply-changes${SELECTIVE_DEPLOY_ARG[*]} ; then
         echo "Failed to apply changes" >&2
         echo "If you see an 'x509' error, try setting OM_SKIP_SSL_VALIDATION=true" >&2
         return 1

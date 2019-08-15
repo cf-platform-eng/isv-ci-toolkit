@@ -56,7 +56,7 @@ teardown() {
     [ "$(mock_get_call_args ${mock_compare_staged_config})" == "my-tile ${PWD}/config.json" ]
     output_says "dependency: 'google-kvm-ubuntu-xenial' version '315.70'"
     [ "$(mock_get_call_args ${mock_om} 5)" == "configure-product --config ./config.json" ]
-    [ "$(mock_get_call_args ${mock_om} 6)" == "apply-changes" ]
+    [ "$(mock_get_call_args ${mock_om} 6)" == "apply-changes --product-name my-tile" ]
 }
 
 @test "displays usage when no parameters provided" {
@@ -199,10 +199,26 @@ teardown() {
     [ -n "$(echo "${output}" | grep "If you see an 'x509' error, try setting OM_SKIP_SSL_VALIDATION=true")" ]
 
     [ "$(mock_get_call_num ${mock_om})" -eq 6 ]
+}
+
+@test "setting full deploy to true runs a full apply-changes" {
+    mock_set_output "${mock_om}" '{
+        "stemcell_library": [{
+            "infrastructure": "some-required-stemcell"
+        }]
+    }' 3
+
+    mock_set_output "${mock_tileinspect}" '{
+            "name": "my-tile",
+            "product_version": "1.2.3"
+        }'
+
+    run ./install-tile.sh tile.pivotal config.json true
+    [ "$status" -eq 0 ]
     [ "$(mock_get_call_args ${mock_om} 6)" == "apply-changes" ]
 }
 
-@test "setting selective deploy to false runs a full apply-changes" {
+@test "setting full deploy to false runs a selective apply-changes" {
     mock_set_output "${mock_om}" '{
         "stemcell_library": [{
             "infrastructure": "some-required-stemcell"
@@ -216,10 +232,10 @@ teardown() {
 
     run ./install-tile.sh tile.pivotal config.json false
     [ "$status" -eq 0 ]
-    [ "$(mock_get_call_args ${mock_om} 6)" == "apply-changes" ]
+    [ "$(mock_get_call_args ${mock_om} 6)" == "apply-changes --product-name my-tile" ]
 }
 
-@test "setting selective deploy to true runs a selective apply-changes" {
+@test "using default full deploy option runs a selective apply-changes" {
     mock_set_output "${mock_om}" '{
         "stemcell_library": [{
             "infrastructure": "some-required-stemcell"
@@ -231,7 +247,7 @@ teardown() {
             "product_version": "1.2.3"
         }'
 
-    run ./install-tile.sh tile.pivotal config.json true
+    run ./install-tile.sh tile.pivotal config.json
     [ "$status" -eq 0 ]
     [ "$(mock_get_call_args ${mock_om} 6)" == "apply-changes --product-name my-tile" ]
 }

@@ -104,7 +104,7 @@ run: run-deps logs temp/make-tags/build
 	-e PIVNET_TOKEN \
 	-e TILE_NAME=$(shell basename "${TILE_PATH}") \
 	-e TILE_CONFIG=$(shell basename "${TILE_CONFIG_PATH}") \
-	-e USE_SELECTIVE_DEPLOY \
+	-e USE_FULL_DEPLOY \
 	-v $(shell dirname "${TILE_PATH}"):/tile \
 	-v $(shell dirname "${TILE_CONFIG_PATH}"):/tile-config \
 	-v ${PWD}/../../tools:/bin/tools \
@@ -119,7 +119,7 @@ define run-docker-interactive
 	-e PIVNET_TOKEN \
 	-e TILE_NAME=$(shell basename "${TILE_PATH}") \
 	-e TILE_CONFIG=$(shell basename "${TILE_CONFIG_PATH}") \
-	-e USE_SELECTIVE_DEPLOY \
+	-e USE_FULL_DEPLOY \
 	-v $(shell dirname "${TILE_PATH}"):/tile \
 	-v $(shell dirname "${TILE_CONFIG_PATH}"):/tile-config \
 	-v ${PWD}/../../tools:/bin/tools \
