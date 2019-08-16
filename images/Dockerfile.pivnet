@@ -1,0 +1,16 @@
+FROM cfplatformeng/marman AS fetch-pivnet
+ARG PIVNET_CLI_VER
+RUN if [ -z "${PIVNET_CLI_VER}" ] ; then \
+        marman download-release --owner pivotal-cf --repo pivnet-cli --filter "pivnet-linux-amd64-" ; \
+    else \
+        marman download-release --owner pivotal-cf --repo pivnet-cli --version "v${PIVNET_CLI_VER}" --filter "pivnet-linux-amd64-${PIVNET_CLI_VER}" ; \
+    fi
+RUN mv pivnet-linux-amd64-* /usr/local/bin/pivnet
+RUN chmod +x /usr/local/bin/pivnet
+
+FROM ubuntu:xenial
+LABEL maintainer="Pivotal Platform Engineering ISV-CI Team <cf-isv-dashboard@pivotal.io>"
+
+COPY --from=fetch-pivnet /usr/local/bin/pivnet /usr/local/bin
+
+ENTRYPOINT [ "pivnet" ]

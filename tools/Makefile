@@ -25,3 +25,7 @@ lint:
 
 test: deps lint
 	pipenv run -- bats --tap *.bats
+
+SCRIPTS := $(shell ls *.sh)
+build-image: $(SCRIPTS)
+	docker build --tag cfplatformeng/isv-ci-toolkit:dev --file Dockerfile .
