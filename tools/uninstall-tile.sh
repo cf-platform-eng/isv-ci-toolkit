@@ -3,14 +3,14 @@
 set -ueo pipefail
 
 usage() {
-    echo "usage: uninstall-tile.sh <tile> [<selective deploy>]"
+    echo "usage: uninstall-tile.sh <tile> [<full deploy>]"
     echo "    tile - path to a .pivotal file"
-    echo "    selective deploy - if true, only deploy this tile (default false)"
+    echo "    full deploy - if true, deploys all products, otherwise only deploys this tile (default false)"
 }
 
 uninstall_tile() {
     TILE=$1
-    USE_SELECTIVE_DEPLOY=$2
+    USE_FULL_DEPLOY=$2
 
     PRODUCT_NAME=$(tileinspect metadata -t "${TILE}" | yq -r .name)
     PRODUCT_VERSION=$(tileinspect metadata -t "${TILE}" | yq -r .product_version)
@@ -20,13 +20,15 @@ uninstall_tile() {
         return 1
     fi
 
-    SELECTIVE_DEPLOY_ARG=""
-    if [ "${USE_SELECTIVE_DEPLOY}" == "true" ] ; then
-        SELECTIVE_DEPLOY_ARG=(--product-name "${PRODUCT_NAME}")
+    SELECTIVE_DEPLOY_ARG=(" " --product-name "${PRODUCT_NAME}")
+    if [ "${USE_FULL_DEPLOY}" == "true" ] ; then
+      SELECTIVE_DEPLOY_ARG=("")
     fi
 
-    if ! om apply-changes ${SELECTIVE_DEPLOY_ARG[*]} ; then
+    # shellcheck disable=SC2086
+    if ! om apply-changes${SELECTIVE_DEPLOY_ARG[*]} ; then
         echo "Failed to apply changes" >&2
+        echo "If you see an 'x509' error, try setting OM_SKIP_SSL_VALIDATION=true" >&2
         return 1
     fi
 

@@ -3,10 +3,10 @@
 set -ueo pipefail
 
 usage() {
-    echo "usage: install-tile.sh <tile> <config.yml> [<selective deploy>]"
+    echo "usage: install-tile.sh <tile> <config.yml> [<full deploy>]"
     echo "    tile - path to a .pivotal file"
     echo "    config.yml - path to tile configuration"
-    echo "    selective deploy - if true, only deploy this tile (default false)"
+    echo "    full deploy - if true, deploys all products, otherwise only deploys this tile (default false)"
 }
 
 install_tile() {

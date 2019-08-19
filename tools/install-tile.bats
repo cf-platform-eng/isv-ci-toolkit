@@ -62,19 +62,19 @@ teardown() {
 @test "displays usage when no parameters provided" {
     run ./install-tile.sh
     [ "$status" -eq 1 ]
-    [ "${lines[0]}" = "usage: install-tile.sh <tile> <config.yml> [<selective deploy>]" ]
+    [ "${lines[0]}" = "usage: install-tile.sh <tile> <config.yml> [<full deploy>]" ]
     [ "${lines[1]}" = "    tile - path to a .pivotal file" ]
     [ "${lines[2]}" = "    config.yml - path to tile configuration" ]
-    [ "${lines[3]}" = "    selective deploy - if true, only deploy this tile (default false)" ]
+    [ "${lines[3]}" = "    full deploy - if true, deploys all products, otherwise only deploys this tile (default false)" ]
 }
 
 @test "displays usage when only one parameter provided" {
     run ./install-tile.sh tile.pivotal
     [ "$status" -eq 1 ]
-    [ "${lines[0]}" = "usage: install-tile.sh <tile> <config.yml> [<selective deploy>]" ]
+    [ "${lines[0]}" = "usage: install-tile.sh <tile> <config.yml> [<full deploy>]" ]
     [ "${lines[1]}" = "    tile - path to a .pivotal file" ]
     [ "${lines[2]}" = "    config.yml - path to tile configuration" ]
-    [ "${lines[3]}" = "    selective deploy - if true, only deploy this tile (default false)" ]
+    [ "${lines[3]}" = "    full deploy - if true, deploys all products, otherwise only deploys this tile (default false)" ]
 }
 
 @test "exits if build tile config fails" {
