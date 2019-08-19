@@ -1,37 +1,26 @@
+FROM cfplatformeng/marman:latest         AS marman
+FROM cfplatformeng/mrlog:latest          AS mrlog
+FROM cfplatformeng/needs:latest          AS needs
+FROM cfplatformeng/om:latest             AS om
+FROM cfplatformeng/pivnet:latest         AS pivnet
+FROM cfplatformeng/tileinspect:latest    AS tileinspect
+FROM cfplatformeng/isv-ci-toolkit:latest AS tools
+
+# Build the test image
 FROM cfplatformeng/base-image:latest
 
-RUN wget \
-    https://raw.githubusercontent.com/cf-platform-eng/isv-ci-toolkit/master/tools/generate-config-for-tile.sh \
-    --directory-prefix /usr/local/bin
-RUN chmod +x /usr/local/bin/generate-config-for-tile.sh
+# Copy binaries from dependent images
+COPY --from=marman /usr/local/bin/marman /usr/local/bin/
+COPY --from=mrlog /usr/local/bin/mrlog /usr/local/bin/
+COPY --from=needs /usr/local/bin/needs /usr/local/bin/
+COPY --from=om /usr/local/bin/om /usr/local/bin/
+COPY --from=pivnet /usr/local/bin/pivnet /usr/local/bin/
+COPY --from=tileinspect /usr/local/bin/tileinspect /usr/local/bin/
+COPY --from=tools /usr/local/bin/*.sh /usr/local/bin/
 
-RUN wget \
-    https://raw.githubusercontent.com/cf-platform-eng/isv-ci-toolkit/master/tools/om-helper.sh \
-    --directory-prefix /usr/local/bin
-RUN chmod +x /usr/local/bin/om-helper.sh
+# Copy files for this test
+COPY [ "needs.json", "run.sh", "/test/" ]
+RUN chmod a+x /test/run.sh
+WORKDIR /test
 
-RUN wget \
-    https://raw.githubusercontent.com/cf-platform-eng/isv-ci-toolkit/master/tools/upload_and_assign_stemcells.sh \
-    --directory-prefix /usr/local/bin
-RUN chmod +x /usr/local/bin/upload_and_assign_stemcells.sh
-
-RUN wget \
-    https://raw.githubusercontent.com/cf-platform-eng/isv-ci-toolkit/master/tools/install-tile.sh \
-    --directory-prefix /usr/local/bin
-RUN chmod +x /usr/local/bin/install-tile.sh
-
-RUN wget \
-    https://raw.githubusercontent.com/cf-platform-eng/isv-ci-toolkit/master/tools/uninstall-tile.sh \
-    --directory-prefix /usr/local/bin
-RUN chmod +x /usr/local/bin/uninstall-tile.sh
-
-RUN wget \
-    https://raw.githubusercontent.com/cf-platform-eng/isv-ci-toolkit/master/tools/compare-staged-config.sh \
-    --directory-prefix /usr/local/bin
-RUN chmod +x /usr/local/bin/compare-staged-config.sh
-
-COPY needs.json /needs.json
-COPY scripts/* /scripts/
-ENV PATH="/bin/tools:${PATH}"
-
-CMD ["/bin/bash", "-c", "/scripts/pas-test.sh"]
+CMD ["/bin/bash", "-c", "/test/run.sh"]

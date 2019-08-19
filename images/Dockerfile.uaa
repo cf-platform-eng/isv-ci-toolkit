@@ -1,0 +1,16 @@
+FROM cfplatformeng/marman AS fetch-uaa
+ARG UAA_CLI_VER
+RUN if [ -z "${UAA_CLI_VER}" ] ; then \
+        marman download-release --owner cloudfoundry-incubator --repo uaa-cli --filter "uaa-linux-amd64-" ; \
+    else \
+        marman download-release --owner cloudfoundry-incubator --repo uaa-cli --version "${UAA_CLI_VER}" --filter "uaa-linux-amd64-${PIVNET_CLI_VER}" ; \
+    fi
+RUN mv uaa-linux-amd64-* /usr/local/bin/uaa
+RUN chmod +x /usr/local/bin/uaa
+
+FROM ubuntu:xenial
+LABEL maintainer="Pivotal Platform Engineering ISV-CI Team <cf-isv-dashboard@pivotal.io>"
+
+COPY --from=fetch-uaa /usr/local/bin/uaa /usr/local/bin
+
+ENTRYPOINT [ "uaa" ]

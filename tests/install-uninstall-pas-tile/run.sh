@@ -14,7 +14,7 @@ log-dependencies.sh
 mrlog section-end --name="dependencies" --result=0
 
 mrlog section-start --name="tile install"
-install-tile.sh "/tile/${TILE_NAME}" "/tile-config/${TILE_CONFIG}" "${USE_FULL_DEPLOY:-false}"
+install-tile.sh "/input/tile/${TILE_NAME}" "/input/tile-config/${TILE_CONFIG}" "${USE_FULL_DEPLOY:-false}"
 result=$?
 mrlog section-end --name="tile install" --result=$result
 if [[ $result -ne 0 ]] ; then
@@ -23,7 +23,7 @@ if [[ $result -ne 0 ]] ; then
 fi
 
 mrlog section-start --name="tile uninstall"
-uninstall-tile.sh "/tile/${TILE_NAME}" "${USE_FULL_DEPLOY:-false}"
+uninstall-tile.sh "/input/tile/${TILE_NAME}" "${USE_FULL_DEPLOY:-false}"
 result=$?
 mrlog section-end --name="tile uninstall" --result=$result
 if [[ $result -ne 0 ]] ; then

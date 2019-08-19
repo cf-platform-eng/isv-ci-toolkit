@@ -145,5 +145,4 @@ if [ "${install_status}" = "failed" ] ; then
 fi
 
 echo "Environment created!"
-mkdir -p output
-echo "${installation}" > output/environment.json
+echo "${installation}" > /output/environment.json

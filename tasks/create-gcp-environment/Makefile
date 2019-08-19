@@ -17,10 +17,10 @@ test: deps lint
 	bats --tap *.bats
 
 build:
-	docker build --pull . -t gcr.io/fe-rabbit-mq-tile-ci/create-gcp-environment
+	docker build --pull . -t cfplatformeng/create-gcp-environment
 
 publish:
-	docker push gcr.io/fe-rabbit-mq-tile-ci/create-gcp-environment
+	docker push cfplatformeng/create-gcp-environment
 
 run:
 	docker run -it \
@@ -30,7 +30,7 @@ run:
 		-e GIPS_UAA_ADDRESS \
 		-v $(shell dirname "${CRED_FILE_PATH}"):/input \
 		-v `pwd`/output:/output \
-		gcr.io/fe-rabbit-mq-tile-ci/create-gcp-environment
+		cfplatformeng/create-gcp-environment:latest
 
 shell:
 	docker run -it \
@@ -40,5 +40,5 @@ shell:
 		-e GIPS_UAA_ADDRESS \
 		-v $(shell dirname "${CRED_FILE_PATH}"):/input \
 		-v `pwd`/output:/output \
-		gcr.io/fe-rabbit-mq-tile-ci/create-gcp-environment \
+		cfplatformeng/create-gcp-environment:latest \
 		/bin/bash

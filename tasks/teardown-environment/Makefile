@@ -17,10 +17,10 @@ test: deps lint
 	bats --tap *.bats
 
 build:
-	docker build . -t gcr.io/fe-rabbit-mq-tile-ci/teardown-environment
+	docker build . -t cfplatformeng/teardown-environment
 
 publish:
-	docker push gcr.io/fe-rabbit-mq-tile-ci/teardown-environment
+	docker push cfplatformeng/teardown-environment
 
 run:
 	docker run -it \
@@ -29,7 +29,7 @@ run:
 		-e GIPS_ADDRESS \
 		-e GIPS_UAA_ADDRESS \
 		-v $(shell dirname "${CRED_FILE_PATH}"):/input \
-		gcr.io/fe-rabbit-mq-tile-ci/teardown-environment
+		cfplatformeng/teardown-environment
 
 shell:
 	docker run -it \
@@ -38,5 +38,5 @@ shell:
 		-e GIPS_ADDRESS \
 		-e GIPS_UAA_ADDRESS \
 		-v $(shell dirname "${CRED_FILE_PATH}"):/input \
-		gcr.io/fe-rabbit-mq-tile-ci/teardown \
+		cfplatformeng/teardown-environment \
 		/bin/bash

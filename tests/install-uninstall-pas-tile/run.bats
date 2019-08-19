@@ -59,7 +59,7 @@ teardown() {
     export TILE_NAME=test-tile.pivotal
     export TILE_CONFIG=test-tile.yml
     unset USE_FULL_DEPLOY
-    run ${BATS_TEST_DIRNAME}/pas-test.sh
+    run ${BATS_TEST_DIRNAME}/run.sh
     [ "$status" -eq 0 ]
     [ -e "$BATS_TMPDIR/log-dependencies-calls/0" ]
     [ -e "$BATS_TMPDIR/install-tile-calls/0" ]
@@ -72,7 +72,7 @@ teardown() {
     export TILE_NAME=test-tile.pivotal
     export TILE_CONFIG=test-tile.yml
     export USE_FULL_DEPLOY=true
-    run ${BATS_TEST_DIRNAME}/pas-test.sh
+    run ${BATS_TEST_DIRNAME}/run.sh
     [ "$status" -eq 0 ]
     [ -e "$BATS_TMPDIR/install-tile-calls/0" ]
     [ "$(cat "$BATS_TMPDIR/install-tile-calls/0")" = "/tile/test-tile.pivotal /tile-config/test-tile.yml true" ]
@@ -82,7 +82,7 @@ teardown() {
 
 @test "test exits before installing if needs are not met" {
     export MOCK_NEEDS_RETURN_CODE=1
-    run ${BATS_TEST_DIRNAME}/pas-test.sh
+    run ${BATS_TEST_DIRNAME}/run.sh
     [ "$status" -eq 1 ]
     [ -z "$(ls -A $BATS_TMPDIR/install-tile-calls/0)" ]
     [ -z "$(ls -A $BATS_TMPDIR/uninstall-tile-calls/0)" ]
@@ -91,14 +91,14 @@ teardown() {
 
 @test "returns error code when install tile fails" {
     export MOCK_INSTALL_TILE_RETURN_CODE=1
-    run ${BATS_TEST_DIRNAME}/pas-test.sh
+    run ${BATS_TEST_DIRNAME}/run.sh
     [ "$status" -eq 1 ]
     [ "${lines[0]}" = "install-tile failed" ]
 }
 
 @test "returns error code when uninstall tile fails" {
     export MOCK_UNINSTALL_TILE_RETURN_CODE=1
-    run ${BATS_TEST_DIRNAME}/pas-test.sh
+    run ${BATS_TEST_DIRNAME}/run.sh
     [ "$status" -eq 1 ]
     [ "${lines[0]}" = "uninstall-tile failed" ]
 }

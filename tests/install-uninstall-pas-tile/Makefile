@@ -85,7 +85,7 @@ temp/make-tags/test: $(BASH_SRC) $(TEST_SRC)
 test: deps-test temp/make-tags/lint temp/make-tags/test
 
 temp/make-tags/build: temp/make-tags/lint temp/make-tags/test $(SRC)
-	docker build . --tag cfplatformeng/install-uninstall-test-image --no-cache --pull
+	docker build . --tag cfplatformeng/install-uninstall-test-image
 	mkdir -p temp/make-tags && touch temp/make-tags/build
 
 build: temp/make-tags/build
@@ -105,8 +105,8 @@ run: run-deps logs temp/make-tags/build
 	-e TILE_NAME=$(shell basename "${TILE_PATH}") \
 	-e TILE_CONFIG=$(shell basename "${TILE_CONFIG_PATH}") \
 	-e USE_FULL_DEPLOY \
-	-v $(shell dirname "${TILE_PATH}"):/tile \
-	-v $(shell dirname "${TILE_CONFIG_PATH}"):/tile-config \
+	-v $(shell dirname "${TILE_PATH}"):/input/tile \
+	-v $(shell dirname "${TILE_CONFIG_PATH}"):/input/tile-config \
 	-v ${PWD}/../../tools:/bin/tools \
 	cfplatformeng/install-uninstall-test-image 2>&1 | tee ./logs/$(shell date "+%Y.%m.%d-%H.%M.%S").log
 
@@ -120,14 +120,14 @@ define run-docker-interactive
 	-e TILE_NAME=$(shell basename "${TILE_PATH}") \
 	-e TILE_CONFIG=$(shell basename "${TILE_CONFIG_PATH}") \
 	-e USE_FULL_DEPLOY \
-	-v $(shell dirname "${TILE_PATH}"):/tile \
-	-v $(shell dirname "${TILE_CONFIG_PATH}"):/tile-config \
+	-v $(shell dirname "${TILE_PATH}"):/input/tile \
+	-v $(shell dirname "${TILE_CONFIG_PATH}"):/input/tile-config \
 	-v ${PWD}/../../tools:/bin/tools \
 	cfplatformeng/install-uninstall-test-image \
 	$1 $2
 endef
 
-shell: run-deps temp/make-tags/build
+shell: temp/make-tags/build
 	$(call run-docker-interactive,"/bin/bash")
 
 needs-list:

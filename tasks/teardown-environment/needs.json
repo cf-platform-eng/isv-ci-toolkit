@@ -1,9 +1,9 @@
 [
     {
         "type": "environment_variable",
-        "name": "OPS_MAN_VERSION"
+        "name": "INSTALLATION_NAME"
     }, {
-        "type": "environment_variable",
-        "name": "CRED_FILE"
+        "type": "file",
+        "path": "/input/*.json"
     }
 ]
