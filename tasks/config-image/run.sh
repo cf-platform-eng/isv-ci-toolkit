@@ -2,6 +2,8 @@
 
 set -xe
 
+needs check
+
 iaas=$(jq -r '.iaas' /input/environment.json)
 
 # Configure OM environment variables

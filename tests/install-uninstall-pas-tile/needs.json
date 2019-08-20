@@ -10,8 +10,8 @@
     ]
 }, {
     "type": "file",
-    "path": "/tile/*.pivotal"
+    "path": "/input/tile/*.pivotal"
 }, {
     "type": "file",
-    "path": "/tile-config/*"
+    "path": "/input/tile-config/*"
 }]
