@@ -1,7 +1,9 @@
-load temp/bats-mock # docs at https://github.com/grayhemp/bats-mock
+load ../../tools/test-helpers
 
 setup() {
     mkdir -p "$BATS_TMPDIR/input"
+    mkdir -p "$BATS_TMPDIR/output"
+    export TASK_OUTPUT="$BATS_TMPDIR/output"
     cat > "$BATS_TMPDIR/input/credentials.json" <<'EOF'
 {
     "client_id": "pete",
@@ -10,31 +12,21 @@ setup() {
 }
 EOF
 
-    export BATS_TMPDIR
-    mkdir -p "$BATS_TMPDIR/bin"
-
-    export mock_curl="$(mock_create)"
-    ln -sf "${mock_curl}" "${BATS_TMPDIR}/bin/curl"
-
-    export mock_sleep="$(mock_create)"
-    ln -sf "${mock_sleep}" "${BATS_TMPDIR}/bin/sleep"
-
-    export mock_uaac="$(mock_create)"
-    ln -sf "${mock_uaac}" "${BATS_TMPDIR}/bin/uaac"
-
-    chmod a+x "$BATS_TMPDIR/bin"/*
-    export PATH="$BATS_TMPDIR/bin:${PATH}"
+    export mock_curl="$(mock_bin curl)"
+    export mock_sleep="$(mock_bin sleep)"
+    export mock_uaac="$(mock_bin uaac)"
+    export PATH="${BIN_MOCKS}:${PATH}"
 }
 
 teardown() {
     rm -rf "$BATS_TMPDIR/input"
-    rm -rf "$BATS_TMPDIR/bin"
-    rm -rf ./output
+    rm -rf "$BATS_TMPDIR/output"
+    clean_bin_mocks
 }
 
 @test "asks for ops manager version if none is provided" {
     run ./gips_client.sh
-    [ "$status" -eq 1 ]
+    status_equals 1
     [ "${lines[0]}" = "No OpsManager version provided" ]
     [ "${lines[1]}" = "USAGE: gips_client <OpsManager version> <credential file> [<GIPS address>] [<GIPS UAA address>]" ]
     [ "${lines[2]}" = "    OpsManager version - the vesion of the OpsManager that should be created" ]
@@ -48,49 +40,49 @@ teardown() {
 
 @test "asks for a credendials file when only one parameter is provided" {
     run ./gips_client.sh 2.6.2
-    [ "$status" -eq 1 ]
+    status_equals 1
     [ "${lines[0]}" = "No credential file provided" ]
 }
 
 @test "missing credential file" {
     run ./gips_client.sh 2.6.2 "/this/path/does/not/exist"
-    [ "$status" -eq 1 ]
+    status_equals 1
     [ "${lines[0]}" = '"/this/path/does/not/exist" was not found' ]
 }
 
 @test "invalid credential file" {
     echo "this is not valid json" > "$BATS_TMPDIR/input/credentials.json"
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
-    [ "$status" -eq 1 ]
+    status_equals 1
     [ "${lines[0]}" = "\"$BATS_TMPDIR/input/credentials.json\" is not valid JSON" ]
 }
 
 @test "credential file missing important fields" {
     echo '' > "$BATS_TMPDIR/input/credentials.json"
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
-    [ "$status" -eq 1 ]
+    status_equals 1
     [ "${lines[0]}" = 'Credential file missing "client_id"' ]
 
     echo '{}' > "$BATS_TMPDIR/input/credentials.json"
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
-    [ "$status" -eq 1 ]
+    status_equals 1
     [ "${lines[0]}" = 'Credential file missing "client_id"' ]
 
     echo '{"client_id": "pete"}' > "$BATS_TMPDIR/input/credentials.json"
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
-    [ "$status" -eq 1 ]
+    status_equals 1
     [ "${lines[0]}" = 'Credential file missing "client_secret"' ]
 
     echo '{"client_id": "pete", "client_secret": "shhh"}' > "$BATS_TMPDIR/input/credentials.json"
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
-    [ "$status" -eq 1 ]
+    status_equals 1
     [ "${lines[0]}" = 'Credential file missing "service_account_key"' ]
 }
 
 @test "fails to set uaac target" {
     mock_set_status "${mock_uaac}" 1 1
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
-    [ "$status" -eq 1 ]
+    status_equals 1
     [ "${lines[0]}" = 'Authenticating with GIPS...' ]
     [ "${lines[1]}" = 'Failed to set UAA target' ]
 }
@@ -98,7 +90,7 @@ teardown() {
 @test "fails to get uaac client token" {
     mock_set_status "${mock_uaac}" 1 2
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
-    [ "$status" -eq 1 ]
+    status_equals 1
     [ "${lines[0]}" = 'Authenticating with GIPS...' ]
     [ "${lines[1]}" = 'Failed to get UAA client token' ]
 }
@@ -106,7 +98,7 @@ teardown() {
 @test "fails to get uaac access token" {
     mock_set_status "${mock_uaac}" 1 3
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
-    [ "$status" -eq 1 ]
+    status_equals 1
     [ "${lines[0]}" = 'Authenticating with GIPS...' ]
     [ "${lines[1]}" = 'Failed to get UAA access token' ]
 }
@@ -115,7 +107,7 @@ teardown() {
     cat ./test/fixtures/uaac-context.txt | mock_set_output "${mock_uaac}" - 3
     mock_set_status "${mock_curl}" 1 1
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
-    [ "$status" -eq 1 ]
+    status_equals 1
     [ "${lines[0]}" = 'Authenticating with GIPS...' ]
     [ "${lines[1]}" = 'Submitting environment request...' ]
     [ "${lines[2]}" = 'Failed to submit installation request' ]
@@ -126,7 +118,7 @@ teardown() {
     mock_set_output "${mock_curl}" '{"name": "coolinstallation1234"}' 1
     mock_set_status "${mock_curl}" 1 2
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
-    [ "$status" -eq 1 ]
+    status_equals 1
     [ "${lines[0]}" = 'Authenticating with GIPS...' ]
     [ "${lines[1]}" = 'Submitting environment request...' ]
     [ "${lines[2]}" = "Environment is being created \"coolinstallation1234\"" ]
@@ -139,7 +131,7 @@ teardown() {
     mock_set_output "${mock_curl}" '{"name": "coolinstallation1234", "paver_job_status": "queued"}' 2
     mock_set_status "${mock_curl}" 1 3
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
-    [ "$status" -eq 1 ]
+    status_equals 1
     [ "${lines[0]}" = 'Authenticating with GIPS...' ]
     [ "${lines[1]}" = 'Submitting environment request...' ]
     [ "${lines[2]}" = "Environment is being created \"coolinstallation1234\"." ]
@@ -151,7 +143,7 @@ teardown() {
     mock_set_output "${mock_curl}" '{"name": "coolinstallation1234"}' 1
     mock_set_output "${mock_curl}" '{"name": "coolinstallation1234", "paver_job_status": "failed"}' 2
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
-    [ "$status" -eq 1 ]
+    status_equals 1
     [ "${lines[0]}" = 'Authenticating with GIPS...' ]
     [ "${lines[1]}" = 'Submitting environment request...' ]
     [ "${lines[2]}" = "Environment is being created \"coolinstallation1234\"" ]
@@ -173,7 +165,7 @@ teardown() {
     }' 4
 
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
-    [ "$status" -eq 0 ]
+    status_equals 0
 
     # fetches a token from the uaa provided
     [ "$(mock_get_call_args ${mock_uaac} 1)" == "target gips-prod.login.run.pivotal.io" ]
@@ -199,8 +191,8 @@ teardown() {
     [ "${lines[3]}" = "Environment created!" ]
 
     # environment file exists in the output
-    [ -f ./output/environment.json ]
-    [ "$(jq -r ".paver_paving_output.details" ./output/environment.json)" = "important" ]
+    [ -f "${TASK_OUTPUT}/environment.json" ]
+    [ "$(jq -r ".paver_paving_output.details" "${TASK_OUTPUT}/environment.json")" = "important" ]
 }
 
 @test "uses an alternative gips address if provided" {
@@ -214,7 +206,7 @@ teardown() {
     }'
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json" "podium2.example.com"
     [ "$(mock_get_call_args ${mock_curl} 1 | grep -c "https://podium2.example.com/v1/installs")" -eq 1 ]
-    [ "$status" -eq 0 ]
+    status_equals 0
 }
 
 @test "uses an alternative gips uaa address if provided" {
@@ -228,5 +220,5 @@ teardown() {
     }'
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json" "podium2.example.com" "myuaa.example.net"
     [ "$(mock_get_call_args ${mock_uaac} 1)" == "target myuaa.example.net" ]
-    [ "$status" -eq 0 ]
+    status_equals 0
 }

@@ -1,9 +1,9 @@
 .PHONY: pas-config om-username om-password om-target tile-config
 .PHONY: tile-path tile-config-path clean build run run-deps shell deps-test test lint
 
-BASH_SRC := $(shell find scripts -name "*.sh")
+BASH_SRC := $(shell find . -name "*.sh")
 SRC := $(BASH_SRC) needs.json Dockerfile
-TEST_SRC := $(shell find scripts -name "*.bats")
+TEST_SRC := $(shell find . -name "*.bats")
 
 BATS_INSTALLED := $(shell command -v bats 2>&1 > /dev/null; echo $$?)
 SHELLCHECK_INSTALLED := $(shell command -v shellcheck 2>&1 > /dev/null; echo $$?)
@@ -20,29 +20,8 @@ endif
 ifdef MISSING
   $(error "Please install missing dependencies")
 endif
-
-om-username:
-ifndef OM_USERNAME
-	$(error OM_USERNAME not defined)
-else
-	$(NOOP)
-endif
-
-om-password:
-ifndef OM_PASSWORD
-	$(error OM_PASSWORD not defined)
-else
-	$(NOOP)
-endif
-
-om-target:
-ifndef OM_TARGET
-	$(error OM_TARGET not defined)
-else
-	$(NOOP)
-endif
-
-pas-config:	om-username om-password om-target
+	mkdir -p temp
+	curl https://raw.githubusercontent.com/cf-platform-eng/bats-mock/master/src/bats-mock.bash > temp/bats-mock.bash
 
 tile-path:
 ifndef TILE_PATH
@@ -60,26 +39,19 @@ endif
 
 tile-config: tile-path tile-config-path
 
-pivnet-token:
-ifndef PIVNET_TOKEN
-	$(error PIVNET_TOKEN not defined, please obtain an api token from your Pivotal Network profile)
-else
-	$(NOOP)
-endif
-
 clean:
 	rm -rf temp
 	docker image rm -f cfplatformeng/install-uninstall-test-image
 	rm -rf ./logs
 
 temp/make-tags/lint: $(BASH_SRC)
-	shellcheck scripts/*.sh
+	shellcheck *.sh
 	mkdir -p temp/make-tags && touch temp/make-tags/lint
 
 lint: temp/make-tags/lint
 
 temp/make-tags/test: $(BASH_SRC) $(TEST_SRC)
-	bats --tap scripts/*.bats
+	bats --tap *.bats
 	mkdir -p temp/make-tags && touch temp/make-tags/test
 
 test: deps-test temp/make-tags/lint temp/make-tags/test
@@ -90,7 +62,7 @@ temp/make-tags/build: temp/make-tags/lint temp/make-tags/test $(SRC)
 
 build: temp/make-tags/build
 
-run-deps: pivnet-token pas-config tile-config build
+run-deps: tile-config build
 
 logs:
 	mkdir -p ./logs

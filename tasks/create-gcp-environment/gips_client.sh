@@ -145,4 +145,4 @@ if [ "${install_status}" = "failed" ] ; then
 fi
 
 echo "Environment created!"
-echo "${installation}" > /output/environment.json
+echo "${installation}" > "${TASK_OUTPUT:-/output}/environment.json"

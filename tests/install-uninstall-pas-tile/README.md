@@ -123,7 +123,7 @@ The output of this test is the logs of the `om` cli commands
 
 ## Development
 
-The test script is inside of `scripts/pas-test.sh`.  Changes there should be tested and reflected in the `pas-test.bats` test file.
+The test script is inside of `run.sh`.  Changes there should be tested and reflected in the `run.bats` test file.
 
 This test also utilizes several of the [tool scripts](https://github.com/cf-platform-eng/isv-ci-toolkit/tree/master/tools).
 
