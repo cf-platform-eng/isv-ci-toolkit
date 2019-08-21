@@ -9,6 +9,8 @@ BATS_INSTALLED := $(shell command -v bats 2>&1 > /dev/null; echo $$?)
 SHELLCHECK_INSTALLED := $(shell command -v shellcheck 2>&1 > /dev/null; echo $$?)
 
 deps-test:
+	mkdir -p temp
+	curl https://raw.githubusercontent.com/cf-platform-eng/bats-mock/master/src/bats-mock.bash > temp/bats-mock.bash
 ifneq ($(BATS_INSTALLED),0)
   $(warning 'bats' not installed. See https://github.com/bats-core/bats-core)
   MISSING := 1
@@ -20,8 +22,6 @@ endif
 ifdef MISSING
   $(error "Please install missing dependencies")
 endif
-	mkdir -p temp
-	curl https://raw.githubusercontent.com/cf-platform-eng/bats-mock/master/src/bats-mock.bash > temp/bats-mock.bash
 
 tile-path:
 ifndef TILE_PATH
