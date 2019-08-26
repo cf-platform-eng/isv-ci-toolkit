@@ -49,7 +49,7 @@ teardown() {
     [ "$(mock_get_call_args ${mock_om} 4)" == "curl -s -p /api/v0/stemcell_assignments" ]
     # TODO check this outputs to the correct file
     [ "$(mock_get_call_args ${mock_upload_and_assign_stemcells})" == "some-required-stemcell" ]
-    # Also worth adding section(s) to inside build-tile-config.sh
+    # Also worth adding section(s) to inside generate-config-for-tile.sh
     [ "$(mock_get_call_args ${mock_generate_config_for_tile})" == "tile.pivotal config.json" ]
 
     [ "$(mock_get_call_num ${mock_compare_staged_config})" -eq 1 ]
