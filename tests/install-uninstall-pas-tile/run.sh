@@ -9,6 +9,15 @@ if [[ $result -ne 0 ]] ; then
     exit 1
 fi
 
+mrlog section-start --name="config file check"
+tileinspect check-config --tile "/input/tile/${TILE_NAME}" --config "/input/tile-config/${TILE_CONFIG}"
+result=$?
+mrlog section-end --name="config file check" --result=${result}
+if [[ $result -ne 0 ]] ; then
+    echo "config file check failed" >&2
+    exit 1
+fi
+
 mrlog section-start --name="dependencies"
 log-dependencies.sh
 mrlog section-end --name="dependencies" --result=0

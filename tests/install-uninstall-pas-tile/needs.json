@@ -1,17 +1,33 @@
 [{
     "type": "environment_variable",
-    "names": [
-        "OM_USERNAME",
-        "OM_PASSWORD",
-        "OM_TARGET",
-        "PIVNET_TOKEN",
-        "TILE_NAME",
-        "TILE_CONFIG"
-    ]
+    "name": "OM_TARGET",
+    "description": "The OpsManager hostname"
+}, {
+    "type": "environment_variable",
+    "name": "OM_USERNAME",
+    "description": "Username for OpsManager"
+}, {
+    "type": "environment_variable",
+    "name": "OM_PASSWORD",
+    "description": "Password for OpsManager"
+}, {
+    "type": "environment_variable",
+    "name": "PIVNET_TOKEN",
+    "description": "A token (legacy or refresh) for the Pivotal Network for downloading any required stemcells"
+}, {
+    "type": "environment_variable",
+    "name": "TILE_NAME",
+    "description": "The name of the tile"
 }, {
     "type": "file",
-    "path": "/input/tile/*.pivotal"
+    "path": "/input/tile/*.pivotal",
+    "description": "The tile"
+}, {
+    "type": "environment_variable",
+    "name": "TILE_CONFIG",
+    "description": "The name of the tile config file"
 }, {
     "type": "file",
-    "path": "/input/tile-config/*"
+    "path": "/input/tile-config/*",
+    "description": "The tile config file"
 }]

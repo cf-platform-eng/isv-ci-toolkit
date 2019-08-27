@@ -7,6 +7,7 @@ setup() {
     export mock_log_dependencies_sh="$(mock_bin log-dependencies.sh)"
     export mock_mrlog="$(mock_bin mrlog)"
     export mock_needs="$(mock_bin needs)"
+    export mock_tileinspect="$(mock_bin tileinspect)"
     export PATH="${BIN_MOCKS}:${PATH}"
 }
 
@@ -23,14 +24,19 @@ teardown() {
 
     status_equals 0
     [ "$(mock_get_call_num "${mock_needs}")" = "1" ]
+
+    [ "$(mock_get_call_num "${mock_tileinspect}")" = "1" ]
+    [ "$(mock_get_call_args "${mock_tileinspect}" 1)" = "check-config --tile /input/tile/test-tile.pivotal --config /input/tile-config/test-tile.yml" ]
+
     [ "$(mock_get_call_num "${mock_log_dependencies_sh}")" = "1" ]
+
     [ "$(mock_get_call_num "${mock_install_tile_sh}")" = "1" ]
     [ "$(mock_get_call_args "${mock_install_tile_sh}" 1)" = "/input/tile/test-tile.pivotal /input/tile-config/test-tile.yml false" ]
 
     [ "$(mock_get_call_num "${mock_uninstall_tile_sh}")" = "1" ]
     [ "$(mock_get_call_args "${mock_uninstall_tile_sh}" 1)" = "/input/tile/test-tile.pivotal false" ]
 
-    [ "$(mock_get_call_num "${mock_mrlog}")" = "8" ]
+    [ "$(mock_get_call_num "${mock_mrlog}")" = "10" ]
 }
 
 @test "setting USE_FULL_DEPLOY passes that along to the script" {
@@ -41,15 +47,8 @@ teardown() {
     run ${BATS_TEST_DIRNAME}/run.sh
 
     status_equals 0
-    [ "$(mock_get_call_num "${mock_needs}")" = "1" ]
-    [ "$(mock_get_call_num "${mock_log_dependencies_sh}")" = "1" ]
-    [ "$(mock_get_call_num "${mock_install_tile_sh}")" = "1" ]
     [ "$(mock_get_call_args "${mock_install_tile_sh}" 1)" = "/input/tile/test-tile.pivotal /input/tile-config/test-tile.yml true" ]
-
-    [ "$(mock_get_call_num "${mock_uninstall_tile_sh}")" = "1" ]
     [ "$(mock_get_call_args "${mock_uninstall_tile_sh}" 1)" = "/input/tile/test-tile.pivotal true" ]
-
-    [ "$(mock_get_call_num "${mock_mrlog}")" = "8" ]
 }
 
 @test "test exits before installing if needs are not met" {
@@ -59,10 +58,25 @@ teardown() {
 
     status_equals 1
     [ "$(mock_get_call_num "${mock_needs}")" = "1" ]
+    [ "$(mock_get_call_num "${mock_tileinspect}")" = "0" ]
     [ "$(mock_get_call_num "${mock_log_dependencies_sh}")" = "0" ]
     [ "$(mock_get_call_num "${mock_install_tile_sh}")" = "0" ]
     [ "$(mock_get_call_num "${mock_uninstall_tile_sh}")" = "0" ]
     output_equals "needs check failed"
+}
+
+@test "test exits before installing if check-config fails" {
+    mock_set_status "${mock_tileinspect}" 1
+
+    run ${BATS_TEST_DIRNAME}/run.sh
+
+    status_equals 1
+    [ "$(mock_get_call_num "${mock_needs}")" = "1" ]
+    [ "$(mock_get_call_num "${mock_tileinspect}")" = "1" ]
+    [ "$(mock_get_call_num "${mock_log_dependencies_sh}")" = "0" ]
+    [ "$(mock_get_call_num "${mock_install_tile_sh}")" = "0" ]
+    [ "$(mock_get_call_num "${mock_uninstall_tile_sh}")" = "0" ]
+    output_equals "config file check failed"
 }
 
 @test "returns error code when install tile fails" {

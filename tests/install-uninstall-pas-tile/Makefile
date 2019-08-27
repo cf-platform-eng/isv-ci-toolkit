@@ -5,12 +5,14 @@ BASH_SRC := $(shell find . -name "*.sh")
 SRC := $(BASH_SRC) needs.json Dockerfile
 TEST_SRC := $(shell find . -name "*.bats")
 
+temp/bats-mock.bash:
+	mkdir -p temp
+	curl https://raw.githubusercontent.com/cf-platform-eng/bats-mock/master/src/bats-mock.bash > temp/bats-mock.bash
+
 BATS_INSTALLED := $(shell command -v bats 2>&1 > /dev/null; echo $$?)
 SHELLCHECK_INSTALLED := $(shell command -v shellcheck 2>&1 > /dev/null; echo $$?)
 
 deps-test:
-	mkdir -p temp
-	curl https://raw.githubusercontent.com/cf-platform-eng/bats-mock/master/src/bats-mock.bash > temp/bats-mock.bash
 ifneq ($(BATS_INSTALLED),0)
   $(warning 'bats' not installed. See https://github.com/bats-core/bats-core)
   MISSING := 1
@@ -50,7 +52,7 @@ temp/make-tags/lint: $(BASH_SRC)
 
 lint: temp/make-tags/lint
 
-temp/make-tags/test: $(BASH_SRC) $(TEST_SRC)
+temp/make-tags/test: temp/bats-mock.bash $(BASH_SRC) $(TEST_SRC)
 	bats --tap *.bats
 	mkdir -p temp/make-tags && touch temp/make-tags/test
 
@@ -99,11 +101,11 @@ define run-docker-interactive
 	$1 $2
 endef
 
-shell: temp/make-tags/build
+shell: tile-config temp/make-tags/build
 	$(call run-docker-interactive,"/bin/bash")
 
-needs-list:
-	$(call run-docker-interactive,/bin/bash,-c "needs list | jq .")
+needs-list: tile-config
+	$(call run-docker-interactive,/bin/bash,-c "needs list")
 
-needs-check:
-	$(call run-docker-interactive,/bin/bash,-c "needs check | jq .")
+needs-check: tile-config
+	$(call run-docker-interactive,/bin/bash,-c "needs check")
