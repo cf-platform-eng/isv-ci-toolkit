@@ -18,8 +18,8 @@ EOF
     export mock_sleep="$(mock_create)"
     ln -sf "${mock_sleep}" "${BATS_TMPDIR}/bin/sleep"
 
-    export mock_uaac="$(mock_create)"
-    ln -sf "${mock_uaac}" "${BATS_TMPDIR}/bin/uaac"
+    export mock_uaa="$(mock_create)"
+    ln -sf "${mock_uaa}" "${BATS_TMPDIR}/bin/uaa"
 
     chmod a+x "$BATS_TMPDIR/bin"/*
     export PATH="$BATS_TMPDIR/bin:${PATH}"
@@ -68,24 +68,24 @@ teardown() {
     [ "${lines[0]}" = 'Credential file missing "client_secret"' ]
 }
 
-@test "fails to set uaac target" {
-    mock_set_status "${mock_uaac}" 1 1
+@test "fails to set uaa target" {
+    mock_set_status "${mock_uaa}" 1 1
     run ./teardown.sh coolinstallation1234 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
     [ "${lines[0]}" = 'Authenticating with GIPS...' ]
     [ "${lines[1]}" = 'Failed to set UAA target' ]
 }
 
-@test "fails to get uaac client token" {
-    mock_set_status "${mock_uaac}" 1 2
+@test "fails to get uaa client token" {
+    mock_set_status "${mock_uaa}" 1 2
     run ./teardown.sh coolinstallation1234 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
     [ "${lines[0]}" = 'Authenticating with GIPS...' ]
     [ "${lines[1]}" = 'Failed to get UAA client token' ]
 }
 
-@test "fails to get uaac access token" {
-    mock_set_status "${mock_uaac}" 1 3
+@test "fails to get uaa access token" {
+    mock_set_status "${mock_uaa}" 1 3
     run ./teardown.sh coolinstallation1234 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
     [ "${lines[0]}" = 'Authenticating with GIPS...' ]
@@ -93,7 +93,7 @@ teardown() {
 }
 
 @test "fails to submit deletion request" {
-    cat ./test/fixtures/uaac-context.txt | mock_set_output "${mock_uaac}" - 3
+    cat ./test/fixtures/uaa-context.json | mock_set_output "${mock_uaa}" - 3
     mock_set_status "${mock_curl}" 1 1
     run ./teardown.sh coolinstallation1234 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
@@ -103,7 +103,7 @@ teardown() {
 }
 
 @test "fails to get deletion status" {
-    cat ./test/fixtures/uaac-context.txt | mock_set_output "${mock_uaac}" - 3
+    cat ./test/fixtures/uaa-context.json | mock_set_output "${mock_uaa}" - 3
     mock_set_status "${mock_curl}" 1 2
     run ./teardown.sh coolinstallation1234 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
@@ -114,7 +114,7 @@ teardown() {
 }
 
 @test "fails to get deletion status after checking again" {
-    cat ./test/fixtures/uaac-context.txt | mock_set_output "${mock_uaac}" - 3
+    cat ./test/fixtures/uaa-context.json | mock_set_output "${mock_uaa}" - 3
     mock_set_output "${mock_curl}" '{"name": "coolinstallation1234", "paver_job_status": "queued"}' 2
     mock_set_status "${mock_curl}" 1 3
     run ./teardown.sh coolinstallation1234 "$BATS_TMPDIR/input/credentials.json"
@@ -126,7 +126,7 @@ teardown() {
 }
 
 @test "installation deletion fails" {
-    cat ./test/fixtures/uaac-context.txt | mock_set_output "${mock_uaac}" - 3
+    cat ./test/fixtures/uaa-context.json | mock_set_output "${mock_uaa}" - 3
     mock_set_output "${mock_curl}" '{"name": "coolinstallation1234", "paver_job_status": "failed"}' 2
     run ./teardown.sh coolinstallation1234 "$BATS_TMPDIR/input/credentials.json"
     [ "$status" -eq 1 ]
@@ -138,7 +138,7 @@ teardown() {
 }
 
 @test "creates a deletion request, waits for it to finish" {
-    cat ./test/fixtures/uaac-context.txt | mock_set_output "${mock_uaac}" - 3
+    cat ./test/fixtures/uaa-context.json | mock_set_output "${mock_uaa}" - 3
     mock_set_output "${mock_curl}" '{"name": "coolinstallation1234", "paver_job_status": "queued"}' 2
     mock_set_output "${mock_curl}" '{"name": "coolinstallation1234", "paver_job_status": "deleting"}' 3
     mock_set_output "${mock_curl}" 'curl: (22) The requested URL returned error: 404 Not Found' 4
@@ -148,9 +148,9 @@ teardown() {
     [ "$status" -eq 0 ]
 
     # fetches a token from the uaa provided
-    [ "$(mock_get_call_args ${mock_uaac} 1)" == "target gips-prod.login.run.pivotal.io" ]
-    [ "$(mock_get_call_args ${mock_uaac} 2)" == "token client get pete -s super-secret-1" ]
-    [ "$(mock_get_call_args ${mock_uaac} 3)" == "context pete" ]
+    [ "$(mock_get_call_args ${mock_uaa} 1)" == "target gips-prod.login.run.pivotal.io" ]
+    [ "$(mock_get_call_args ${mock_uaa} 2)" == "get-client-credentials-token pete -s super-secret-1" ]
+    [ "$(mock_get_call_args ${mock_uaa} 3)" == "context pete" ]
 
     # makes the request with curl
     [ "$(mock_get_call_args ${mock_curl} 1 | grep -c "Authorization: Bearer eyJWT9a")" -eq 1 ]
@@ -170,7 +170,7 @@ teardown() {
 }
 
 @test "uses an alternative gips address if provided" {
-    cat ./test/fixtures/uaac-context.txt | mock_set_output "${mock_uaac}" - 3
+    cat ./test/fixtures/uaa-context.json | mock_set_output "${mock_uaa}" - 3
     mock_set_output "${mock_curl}" '{
         "name": "coolinstallation1234",
         "paver_job_status": "complete",
@@ -186,7 +186,7 @@ teardown() {
 }
 
 @test "uses an alternative gips uaa address if provided" {
-    cat ./test/fixtures/uaac-context.txt | mock_set_output "${mock_uaac}" - 3
+    cat ./test/fixtures/uaa-context.json | mock_set_output "${mock_uaa}" - 3
     mock_set_output "${mock_curl}" '{
         "name": "coolinstallation1234",
         "paver_job_status": "complete",
@@ -197,6 +197,6 @@ teardown() {
     mock_set_output "${mock_curl}" 'curl: (22) The requested URL returned error: 404 Not Found' 2
     mock_set_status "${mock_curl}" 22 2
     run ./teardown.sh coolinstallation1234 "$BATS_TMPDIR/input/credentials.json" "podium2.example.com" "myuaa.example.net"
-    [ "$(mock_get_call_args ${mock_uaac} 1)" == "target myuaa.example.net" ]
+    [ "$(mock_get_call_args ${mock_uaa} 1)" == "target myuaa.example.net" ]
     [ "$status" -eq 0 ]
 }
