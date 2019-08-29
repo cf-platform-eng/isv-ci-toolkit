@@ -69,17 +69,17 @@ if [[ -z "${SERVICE_ACCOUNT_KEY}" ]] ; then
 fi
 
 echo "Authenticating with GIPS..."
-if ! uaac target "$GIPS_UAA_ADDRESS" > /dev/null ; then
+if ! uaa target "$GIPS_UAA_ADDRESS" > /dev/null ; then
   echo 'Failed to set UAA target'
   exit 1
 fi
 
-if ! uaac token client get "$CLIENT_ID" -s "$CLIENT_SECRET" > /dev/null ; then
+if ! uaa get-client-credentials-token "$CLIENT_ID" -s "$CLIENT_SECRET" > /dev/null ; then
   echo 'Failed to get UAA client token'
   exit 1
 fi
 
-if ! ACCESS_TOKEN=$(uaac context "$CLIENT_ID" | grep access_token | xargs | cut -d" " -f2) ; then
+if ! ACCESS_TOKEN=$(uaa context "$CLIENT_ID" | jq -r .Token.access_token) ; then
   echo 'Failed to get UAA access token'
   exit 1
 fi

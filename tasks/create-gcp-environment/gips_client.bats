@@ -14,7 +14,7 @@ EOF
 
     export mock_curl="$(mock_bin curl)"
     export mock_sleep="$(mock_bin sleep)"
-    export mock_uaac="$(mock_bin uaac)"
+    export mock_uaa="$(mock_bin uaa)"
     export PATH="${BIN_MOCKS}:${PATH}"
 }
 
@@ -80,7 +80,7 @@ teardown() {
 }
 
 @test "fails to set uaac target" {
-    mock_set_status "${mock_uaac}" 1 1
+    mock_set_status "${mock_uaa}" 1 1
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     status_equals 1
     [ "${lines[0]}" = 'Authenticating with GIPS...' ]
@@ -88,7 +88,7 @@ teardown() {
 }
 
 @test "fails to get uaac client token" {
-    mock_set_status "${mock_uaac}" 1 2
+    mock_set_status "${mock_uaa}" 1 2
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     status_equals 1
     [ "${lines[0]}" = 'Authenticating with GIPS...' ]
@@ -96,7 +96,7 @@ teardown() {
 }
 
 @test "fails to get uaac access token" {
-    mock_set_status "${mock_uaac}" 1 3
+    mock_set_status "${mock_uaa}" 1 3
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     status_equals 1
     [ "${lines[0]}" = 'Authenticating with GIPS...' ]
@@ -104,7 +104,7 @@ teardown() {
 }
 
 @test "fails to submit installation request" {
-    cat ./test/fixtures/uaac-context.txt | mock_set_output "${mock_uaac}" - 3
+    cat ./test/fixtures/uaa-context.json | mock_set_output "${mock_uaa}" - 3
     mock_set_status "${mock_curl}" 1 1
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     status_equals 1
@@ -114,7 +114,7 @@ teardown() {
 }
 
 @test "fails to get installation status" {
-    cat ./test/fixtures/uaac-context.txt | mock_set_output "${mock_uaac}" - 3
+    cat ./test/fixtures/uaa-context.json | mock_set_output "${mock_uaa}" - 3
     mock_set_output "${mock_curl}" '{"name": "coolinstallation1234"}' 1
     mock_set_status "${mock_curl}" 1 2
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
@@ -126,7 +126,7 @@ teardown() {
 }
 
 @test "fails to get installation status after checking again" {
-    cat ./test/fixtures/uaac-context.txt | mock_set_output "${mock_uaac}" - 3
+    cat ./test/fixtures/uaa-context.json | mock_set_output "${mock_uaa}" - 3
     mock_set_output "${mock_curl}" '{"name": "coolinstallation1234"}' 1
     mock_set_output "${mock_curl}" '{"name": "coolinstallation1234", "paver_job_status": "queued"}' 2
     mock_set_status "${mock_curl}" 1 3
@@ -139,7 +139,7 @@ teardown() {
 }
 
 @test "installation creation fails" {
-    cat ./test/fixtures/uaac-context.txt | mock_set_output "${mock_uaac}" - 3
+    cat ./test/fixtures/uaa-context.json | mock_set_output "${mock_uaa}" - 3
     mock_set_output "${mock_curl}" '{"name": "coolinstallation1234"}' 1
     mock_set_output "${mock_curl}" '{"name": "coolinstallation1234", "paver_job_status": "failed"}' 2
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
@@ -152,7 +152,7 @@ teardown() {
 }
 
 @test "creates an installation, waits for it to finish and writes the environment.json file to the output directory" {
-    cat ./test/fixtures/uaac-context.txt | mock_set_output "${mock_uaac}" - 3
+    cat ./test/fixtures/uaa-context.json | mock_set_output "${mock_uaa}" - 3
     mock_set_output "${mock_curl}" '{"name": "coolinstallation1234"}' 1
     mock_set_output "${mock_curl}" '{"name": "coolinstallation1234", "paver_job_status": "queued"}' 2
     mock_set_output "${mock_curl}" '{"name": "coolinstallation1234", "paver_job_status": "working"}' 3
@@ -168,9 +168,9 @@ teardown() {
     status_equals 0
 
     # fetches a token from the uaa provided
-    [ "$(mock_get_call_args ${mock_uaac} 1)" == "target gips-prod.login.run.pivotal.io" ]
-    [ "$(mock_get_call_args ${mock_uaac} 2)" == "token client get pete -s super-secret-1" ]
-    [ "$(mock_get_call_args ${mock_uaac} 3)" == "context pete" ]
+    [ "$(mock_get_call_args ${mock_uaa} 1)" == "target gips-prod.login.run.pivotal.io" ]
+    [ "$(mock_get_call_args ${mock_uaa} 2)" == "get-client-credentials-token pete -s super-secret-1" ]
+    [ "$(mock_get_call_args ${mock_uaa} 3)" == "context pete" ]
 
     # makes the request with curl
     [ "$(mock_get_call_args ${mock_curl} 1 | grep -c "Authorization: Bearer eyJWT9a")" -eq 1 ]
@@ -196,7 +196,7 @@ teardown() {
 }
 
 @test "uses an alternative gips address if provided" {
-    cat ./test/fixtures/uaac-context.txt | mock_set_output "${mock_uaac}" - 3
+    cat ./test/fixtures/uaa-context.json | mock_set_output "${mock_uaa}" - 3
     mock_set_output "${mock_curl}" '{
         "name": "coolinstallation1234",
         "paver_job_status": "complete",
@@ -210,7 +210,7 @@ teardown() {
 }
 
 @test "uses an alternative gips uaa address if provided" {
-    cat ./test/fixtures/uaac-context.txt | mock_set_output "${mock_uaac}" - 3
+    cat ./test/fixtures/uaac-context.json | mock_set_output "${mock_uaa}" - 3
     mock_set_output "${mock_curl}" '{
         "name": "coolinstallation1234",
         "paver_job_status": "complete",
@@ -219,6 +219,6 @@ teardown() {
         }
     }'
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json" "podium2.example.com" "myuaa.example.net"
-    [ "$(mock_get_call_args ${mock_uaac} 1)" == "target myuaa.example.net" ]
+    [ "$(mock_get_call_args ${mock_uaa} 1)" == "target myuaa.example.net" ]
     status_equals 0
 }
