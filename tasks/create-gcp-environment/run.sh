@@ -10,5 +10,5 @@ if [[ $result -ne 0 ]] ; then
 fi
 
 mrlog section-start --name="create environment"
-./gips_client.sh "${OPS_MAN_VERSION}" "/input/${CRED_FILE}" "${GIPS_ADDRESS}" "${GIPS_UAA_ADDRESS}"
+./gips_client.sh "${OPS_MAN_VERSION}" "/input/${CRED_FILE}" "${OPTIONAL_OPS_MAN_VERSION}"
 mrlog section-end --name="create environment" --result=$?

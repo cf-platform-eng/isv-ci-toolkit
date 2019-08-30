@@ -28,14 +28,18 @@ teardown() {
     run ./gips_client.sh
     status_equals 1
     [ "${lines[0]}" = "No OpsManager version provided" ]
-    [ "${lines[1]}" = "USAGE: gips_client <OpsManager version> <credential file> [<GIPS address>] [<GIPS UAA address>]" ]
+    [ "${lines[1]}" = "USAGE: gips_client <OpsManager version> <credential file> [<optional OpsManager version>]" ]
     [ "${lines[2]}" = "    OpsManager version - the vesion of the OpsManager that should be created" ]
     [ "${lines[3]}" = "    credential file - JSON file containing credentials.  Must include:" ]
     [ "${lines[4]}" = "        client_id" ]
     [ "${lines[5]}" = "        client_secret" ]
     [ "${lines[6]}" = "        service_account_key" ]
-    [ "${lines[7]}" = "    GIPS address - target podium instance (default: podium.tls.cfapps.io)" ]
-    [ "${lines[8]}" = "    GIPS UAA address - override the authentication endpoint for GIPS (default: gips-prod.login.run.pivotal.io)" ]
+    [ "${lines[7]}" = "    Optional OpsManager version - version of a second opsmanager for upgrade tests (default: none)" ]
+    [ "${lines[8]}" = " " ]
+    [ "${lines[9]}" = "Environment variables:" ]
+    [ "${lines[10]}" = "    GIPS_ADDRESS - target podium instance (default: podium.tls.cfapps.io)" ]
+    [ "${lines[11]}" = "    GIPS_UAA_ADDRESS - override the authentication endpoint for GIPS (default: gips-prod.login.run.pivotal.io)" ]
+    [ "${lines[12]}" = "    PARENT_ZONE - add NS records for pcf environment to this zone (default: isvci)" ]
 }
 
 @test "asks for a credendials file when only one parameter is provided" {
@@ -204,6 +208,10 @@ teardown() {
             "details": "important"
         }
     }'
+
+    export GIPS_ADDRESS="podium2.example.com"
+    export GIPS_UAA_ADDRESS="myuaa.example.net"
+
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json" "podium2.example.com"
     [ "$(mock_get_call_args ${mock_curl} 1 | grep -c "https://podium2.example.com/v1/installs")" -eq 1 ]
     status_equals 0
@@ -218,7 +226,11 @@ teardown() {
             "details": "important"
         }
     }'
-    run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json" "podium2.example.com" "myuaa.example.net"
-    [ "$(mock_get_call_args ${mock_uaa} 1)" == "target myuaa.example.net" ]
+
+    export GIPS_ADDRESS="podium2.example.com"
+    export GIPS_UAA_ADDRESS="myuaa.example.net"
+
+    run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
+    [ "$(mock_get_call_args ${mock_uaac} 1)" == "target myuaa.example.net" ]
     status_equals 0
 }

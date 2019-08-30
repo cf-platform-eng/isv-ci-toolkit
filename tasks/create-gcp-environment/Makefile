@@ -25,6 +25,10 @@ publish:
 run:
 	docker run -it \
 		-e OPS_MAN_VERSION \
+		-e OPTIONAL_OPS_MAN_VERSION \
+		-e PARENT_ZONE \
+		-e DNS_SUFFIX \
+		-e PAVER \
 		-e CRED_FILE=$(shell basename "${CRED_FILE_PATH}") \
 		-e GIPS_ADDRESS \
 		-e GIPS_UAA_ADDRESS \
@@ -35,6 +39,10 @@ run:
 shell:
 	docker run -it \
 		-e OPS_MAN_VERSION \
+		-e OPTIONAL_OPS_MAN_VERSION \
+		-e PARENT_ZONE \
+		-e DNS_SUFFIX \
+		-e PAVER \
 		-e CRED_FILE=$(shell basename "${CRED_FILE_PATH}") \
 		-e GIPS_ADDRESS \
 		-e GIPS_UAA_ADDRESS \
