@@ -97,6 +97,7 @@ define run-docker-interactive
 	-v $(shell dirname "${TILE_PATH}"):/input/tile \
 	-v $(shell dirname "${TILE_CONFIG_PATH}"):/input/tile-config \
 	-v ${PWD}/../../tools:/bin/tools \
+	-v ${PWD}:/test \
 	cfplatformeng/install-uninstall-test-image \
 	$1 $2
 endef
