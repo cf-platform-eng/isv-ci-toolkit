@@ -19,7 +19,9 @@ if [[ $result -ne 0 ]] ; then
 fi
 
 mrlog section-start --name="dependencies"
-log-dependencies.sh
+if [ -f /root/dependencies.log ] ; then
+    cat /root/dependencies.log
+fi
 mrlog section-end --name="dependencies" --result=0
 
 mrlog section-start --name="tile install"

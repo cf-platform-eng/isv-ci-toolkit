@@ -4,7 +4,6 @@ load ../../tools/test-helpers
 setup() {
     export mock_install_tile_sh="$(mock_bin install-tile.sh)"
     export mock_uninstall_tile_sh="$(mock_bin uninstall-tile.sh)"
-    export mock_log_dependencies_sh="$(mock_bin log-dependencies.sh)"
     export mock_mrlog="$(mock_bin mrlog)"
     export mock_needs="$(mock_bin needs)"
     export mock_tileinspect="$(mock_bin tileinspect)"
@@ -27,8 +26,6 @@ teardown() {
 
     [ "$(mock_get_call_num "${mock_tileinspect}")" = "1" ]
     [ "$(mock_get_call_args "${mock_tileinspect}" 1)" = "check-config --tile /input/tile/test-tile.pivotal --config /input/tile-config/test-tile.yml" ]
-
-    [ "$(mock_get_call_num "${mock_log_dependencies_sh}")" = "1" ]
 
     [ "$(mock_get_call_num "${mock_install_tile_sh}")" = "1" ]
     [ "$(mock_get_call_args "${mock_install_tile_sh}" 1)" = "/input/tile/test-tile.pivotal /input/tile-config/test-tile.yml false" ]
@@ -59,7 +56,6 @@ teardown() {
     status_equals 1
     [ "$(mock_get_call_num "${mock_needs}")" = "1" ]
     [ "$(mock_get_call_num "${mock_tileinspect}")" = "0" ]
-    [ "$(mock_get_call_num "${mock_log_dependencies_sh}")" = "0" ]
     [ "$(mock_get_call_num "${mock_install_tile_sh}")" = "0" ]
     [ "$(mock_get_call_num "${mock_uninstall_tile_sh}")" = "0" ]
     output_equals "needs check failed"
@@ -73,7 +69,6 @@ teardown() {
     status_equals 1
     [ "$(mock_get_call_num "${mock_needs}")" = "1" ]
     [ "$(mock_get_call_num "${mock_tileinspect}")" = "1" ]
-    [ "$(mock_get_call_num "${mock_log_dependencies_sh}")" = "0" ]
     [ "$(mock_get_call_num "${mock_install_tile_sh}")" = "0" ]
     [ "$(mock_get_call_num "${mock_uninstall_tile_sh}")" = "0" ]
     output_equals "config file check failed"
