@@ -231,6 +231,6 @@ teardown() {
     export GIPS_UAA_ADDRESS="myuaa.example.net"
 
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
-    [ "$(mock_get_call_args ${mock_uaac} 1)" == "target myuaa.example.net" ]
+    [ "$(mock_get_call_args ${mock_uaa} 1)" == "target myuaa.example.net" ]
     status_equals 0
 }
