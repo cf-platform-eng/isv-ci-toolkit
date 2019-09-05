@@ -34,9 +34,14 @@ install_tile() {
     generate-config-for-tile.sh "${TILE}" "${TILE_CONFIG}" > "${GENERATED_CONFIG_PATH}"
     compare-staged-config.sh "${PRODUCT_NAME}" "${GENERATED_CONFIG_PATH}"
 
-    stemcells="$(om curl --path /api/v0/stemcell_assignments | jq .stemcell_library)"
+    stemcells="$(om curl --path /api/v0/stemcell_assignments | jq -rc .stemcell_library[])"
     # shellcheck disable=SC2091
-    $(echo -e "${stemcells}" | jq -r '.[] | "mrlog dependency --name \(.infrastructure)-\(.hypervisor)-\(.os) --version \(.version)"')
+    for STEMCELL in $stemcells; do
+      FULL_NAME=$(echo $STEMCELL | jq '. | "\(.infrastructure)-\(.hypervisor)-\(.os)"')
+      VERSION="$(echo $STEMCELL | jq '. | (.version)')"
+
+      mrlog dependency --name ${FULL_NAME} --version ${VERSION} --metadata ${STEMCELL}
+    done
 
     upload_and_assign_stemcells.sh "$(om curl -s -p /api/v0/stemcell_assignments | jq -r .stemcell_library[0].infrastructure)"
 
