@@ -8,21 +8,23 @@ Docker is required to run this test.  The test itself is a docker image that run
 
 The following environment variables are necessary to run the process:
 
-- OM_TARGET - url for opsman (ex: `https://pcf.vividlimegreen.cf-app.com`)
-- OM_USERNAME - opsman username
-- OM_PASSWORD - opsman password
-- TILE_PATH - path to tile
-- TILE_CONFIG_PATH - path to tile config file
-- PIVNET_TOKEN - token to download any missing stemcells
+- `OM_TARGET` - OpsManager URL
+- `OM_USERNAME` - OpsManager username
+- `OM_PASSWORD` - OpsManager password
+- `TILE_PATH` - Full path to tile
+- `TILE_CONFIG_PATH` - Full path to configuration file
+- `PIVNET_TOKEN` - Authentication token for Pivotal Network ([how to find](https://network.pivotal.io/docs/api/#how-to-authenticate)). Used in case the test needs to download any missing stemcells.
 
-The following environment variables are used, but not necessary:
+The following environment variables may be used, but not required:
 
-- OM_SKIP_SSL_VALIDATION - if your opsman is using self-signed certs
-- USE_FULL_DEPLOY - if set to `true`, deploy all staged products
+- `OM_SKIP_SSL_VALIDATION` - set to `true` if your OpsManager is using self-signed SSL certificates
+- `USE_FULL_DEPLOY` - if set to `true`, deploy all staged products. Defaults to `false`, which only deploys the tile under test.
 
-NOTE: Using `USE_FULL_DEPLOY` will result in a slower test runtime, but will catch product incompatibilities.
+NOTE: Using `USE_FULL_DEPLOY` will result in a slower test runtime, but may catch incompatibilities with other tiles.
 
 ## Config file
+
+[Tips for building a valid config file](https://github.com/cf-platform-eng/isv-ci-toolkit/blob/master/docs/creating-tile-configs.md)
 
 The configuration file should include the product-properties section:
 
@@ -67,12 +69,11 @@ JSON:
         }
     }
 }
-
 ```
 
 ### Substitution strings
 
-The following substitution strings may be used to reference properties that may vary between test environments
+The following substitution strings may be used to reference properties that might be specific to the test environment
 
 - `{az}` will be replaced with the name of an availability zone in the environment.
 - `{disk_type}` will be replaced with the name of a disk type in the environment.
@@ -80,21 +81,9 @@ The following substitution strings may be used to reference properties that may 
 
 ## Running the test
 
-The test can take 1+ hours to run. You can invoke it with the Makefile or directly through Docker:
+The test can take 1+ hours to run. You can invoke it with Docker or through the Makefile.
 
-### Use with Makefile
-
-Running the test with the Makefile will build locally, check for the required variables, and execute.
-
-To run test after setup and config:
-
-```bash
-make run
-```
-
-### Use the Docker image directly
-
-Running the Docker image directly is useful if you want to run the test inside of a CI system where the image is not built locally.
+### Docker
 
 ```bash
 export OM_USERNAME=...
@@ -115,6 +104,21 @@ docker run \
   -v $(dirname "${TILE_PATH}"):/tile \
   -v $(dirname "${TILE_CONFIG_PATH}"):/tile-config \
   cfplatformeng/install-uninstall-test-image
+```
+
+### Makefile
+
+You can also use the Makefile, which simply calls the same docker command as above
+
+```bash
+export OM_USERNAME=...
+export OM_PASSWORD=...
+export OM_TARGET=...
+export OM_SKIP_SSL_VALIDATION=true|false
+export PIVNET_TOKEN=...
+export TILE_PATH=/path/to/my-tile.pivotal
+export TILE_CONFIG_PATH=/path/to/tile/config.yml
+make run
 ```
 
 ### Output
