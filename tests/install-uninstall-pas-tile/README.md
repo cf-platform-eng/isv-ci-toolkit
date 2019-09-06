@@ -101,8 +101,8 @@ docker run \
   -e PIVNET_TOKEN \
   -e TILE_NAME=$(basename "${TILE_PATH}") \
   -e TILE_CONFIG=$(basename "${TILE_CONFIG_PATH}") \
-  -v $(dirname "${TILE_PATH}"):/tile \
-  -v $(dirname "${TILE_CONFIG_PATH}"):/tile-config \
+  -v $(dirname "${TILE_PATH}"):/input/tile \
+  -v $(dirname "${TILE_CONFIG_PATH}"):/input/tile-config \
   cfplatformeng/install-uninstall-test-image
 ```
 
