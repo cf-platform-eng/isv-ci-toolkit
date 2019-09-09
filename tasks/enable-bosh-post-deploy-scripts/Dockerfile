@@ -1,12 +1,10 @@
-FROM cfplatformeng/toolkit-pas
+FROM cfplatformeng/base-image:latest
 
-CMD [ \
-    "/bin/bash", \
-    "-c", \
-    " \
-    echo \"Enabling BOSH post-deploy scripts in the BOSH director\" && \
-    om -k configure-director --config <(om -k staged-director-config) --ops-file <(echo '- {type: replace, path: /properties-configuration/director_configuration/post_deploy_enabled, value: true}') && \
-    echo \"Applying changes\" && \
-    om -k apply-changes \
-    " \
-    ]
+COPY --from=cfplatformeng/needs:latest /usr/local/bin/needs /usr/local/bin/
+COPY --from=cfplatformeng/om:latest    /usr/local/bin/om /usr/local/bin/
+
+COPY [ "needs.json", "run.sh", "/task/" ]
+RUN chmod a+x /task/run.sh
+WORKDIR /task
+
+CMD ["/bin/bash", "-c", "/task/run.sh"]

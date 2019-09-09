@@ -1,0 +1,31 @@
+[{
+    "type": "environment_variable",
+    "name": "OM_TARGET",
+    "description": "The OpsManager hostname"
+}, {
+    "type": "environment_variable",
+    "name": "OM_USERNAME",
+    "description": "Username for OpsManager"
+}, {
+    "type": "environment_variable",
+    "name": "OM_PASSWORD",
+    "description": "Password for OpsManager"
+}, {
+    "type": "environment_variable",
+    "name": "OM_SKIP_SSL_VALIDATION",
+    "description": "Password for OpsManager",
+    "optional": true
+}, {
+    "type": "file",
+    "path": "/test-input-files/environment.json",
+    "validate": {
+        "jsonschema": {
+            "type": "object",
+            "properties": {
+                "sys_domain": { "type": "string" },
+                "tcp_domain": { "type": "string" },
+                "tcp_router_pool": { "type": "string" }
+            }
+        }
+    }
+}]
