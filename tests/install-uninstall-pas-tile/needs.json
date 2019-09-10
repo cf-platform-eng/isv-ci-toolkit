@@ -12,8 +12,14 @@
     "description": "Password for OpsManager"
 }, {
     "type": "environment_variable",
+    "name": "OM_SKIP_SSL_VALIDATION",
+    "description": "Password for OpsManager",
+    "optional": true
+}, {
+    "type": "environment_variable",
     "name": "PIVNET_TOKEN",
-    "description": "A token (legacy or refresh) for the Pivotal Network for downloading any required stemcells"
+    "description": "A token (legacy or refresh) for the Pivotal Network for downloading any required stemcells",
+    "optional": true
 }, {
     "type": "environment_variable",
     "name": "TILE_NAME",

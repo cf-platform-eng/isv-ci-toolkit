@@ -45,13 +45,13 @@ install_tile() {
 
     upload_and_assign_stemcells.sh "$(om curl -s -p /api/v0/stemcell_assignments | jq -r .stemcell_library[0].infrastructure)"
 
-    if ! om configure-product --config ./config.json ; then
+    if ! om configure-product --config "${GENERATED_CONFIG_PATH}" ; then
         echo "Failed to configure product ${PRODUCT_NAME}" >&2
         echo "If you see an 'x509' error, try setting OM_SKIP_SSL_VALIDATION=true" >&2
         return 1
     fi
 
-    rm config.json
+    rm "${GENERATED_CONFIG_PATH}"
 
     SELECTIVE_DEPLOY_ARG=(" " --product-name "${PRODUCT_NAME}")
     if [ "${USE_FULL_DEPLOY}" == "true" ] ; then

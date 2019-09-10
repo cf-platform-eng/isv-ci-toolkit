@@ -15,6 +15,10 @@ COUNT=$(echo "${UNMET_STEMCELLS}" | jq '. | length')
 if [[ "${COUNT}" = "0" ]]; then
   echo "No stemcells need to be uploaded"
   exit 0
+elif [[ -z "${PIVNET_TOKEN}" ]]; then
+  echo "This test requires stemcells to be downloaded from the Pivotal Network, but no PIVNET_TOKEN was given."
+  echo "Please, re-run this test with a PIVNET_TOKEN defined."
+  exit 1
 fi
 
 stemcellList=()
@@ -26,7 +30,7 @@ for stemcell in "${stemcellList[@]}"; do
   os=$(echo "${stemcell}" | jq -r .os)
   version=$(echo "${stemcell}" | jq -r .version)
   echo "Downloading stemcell ${os} ${version} for ${IAAS} from pivnet..."
-  if ! marman download-stemcell -o "${os}" -v "${version}" -i "${IAAS}" ; then
+  if ! marman download-stemcell --os "${os}" --version "${version}" --iaas "${IAAS}" ; then
     echo "Failed to download stemcell" >&2
     exit 1
   fi
