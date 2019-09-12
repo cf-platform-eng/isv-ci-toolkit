@@ -1,0 +1,9 @@
+[
+    {
+        "type": "environment_variable",
+        "name": "POOL_TYPE"
+    }, {
+        "type": "environment_variable",
+        "name": "TOOLSMITHS_API_TOKEN"
+    }
+]
