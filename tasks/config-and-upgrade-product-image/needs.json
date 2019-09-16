@@ -1,0 +1,30 @@
+[
+    {
+        "type": "environment_variable",
+        "name": "STARTING_PCF_VERSION"
+    },
+    {
+        "type": "environment_variable",
+        "name": "UPGRADED_PCF_VERSION"
+    },
+    {
+        "type": "environment_variable",
+        "name": "PRODUCT_VERSION"
+    },
+    {
+        "type": "environment_variable",
+        "name": "UPGRADED_PRODUCT_VERSION"
+    },
+    {
+        "type": "environment_variable",
+        "name": "PRODUCT_NAME"
+    },
+    {
+        "type": "file",
+        "path": "/input/environment.json"
+    },
+    {
+        "type": "file",
+        "path": "/input/credentials.json"
+    }
+]
