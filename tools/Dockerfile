@@ -1,4 +1,4 @@
-FROM ubuntu:xenial
+FROM ubuntu
 
 COPY ./*.sh /usr/local/bin/
 RUN chmod +x \

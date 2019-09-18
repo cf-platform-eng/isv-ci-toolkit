@@ -7,7 +7,7 @@ RUN if [ -z "${CF_CLI_VER}" ] ; then \
     fi
 RUN tar xzvf `pwd`/cf.tgz --directory=/usr/local/bin cf && rm cf.tgz
 
-FROM ubuntu:xenial
+FROM ubuntu
 LABEL maintainer="Pivotal Platform Engineering ISV-CI Team <cf-isv-dashboard@pivotal.io>"
 
 COPY --from=fetch-cf /usr/local/bin/cf /usr/local/bin

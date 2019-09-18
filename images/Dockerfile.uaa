@@ -8,7 +8,7 @@ RUN if [ -z "${UAA_CLI_VER}" ] ; then \
 RUN mv uaa-linux-amd64-* /usr/local/bin/uaa
 RUN chmod +x /usr/local/bin/uaa
 
-FROM ubuntu:xenial
+FROM ubuntu
 LABEL maintainer="Pivotal Platform Engineering ISV-CI Team <cf-isv-dashboard@pivotal.io>"
 
 COPY --from=fetch-uaa /usr/local/bin/uaa /usr/local/bin

@@ -6,3 +6,5 @@ build-pivnet: Dockerfile.pivnet
 
 build-uaa: Dockerfile.uaa
 	docker build --build-arg UAA_CLI_VER=${UAA_CLI_VER} --tag cfplatformeng/uaa:dev --file Dockerfile.uaa .
+
+build:	build-om build-pivnet

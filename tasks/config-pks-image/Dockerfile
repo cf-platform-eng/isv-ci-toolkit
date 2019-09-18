@@ -1,4 +1,4 @@
-FROM ubuntu:xenial
+FROM ubuntu
 
 RUN apt-get -y update --fix-missing
 
@@ -8,7 +8,8 @@ RUN apt-get -y install \
     jq \
     gettext-base \
     node-semver \
-    vim.tiny
+    vim.tiny \
+    gnupg
 
 # Install om
 RUN wget -q -O - https://raw.githubusercontent.com/starkandwayne/homebrew-cf/master/public.key | apt-key add -
@@ -16,12 +17,11 @@ RUN echo "deb http://apt.starkandwayne.com stable main" | tee /etc/apt/sources.l
 RUN apt-get update && apt-get -y install om
 
 # Copy marman
-COPY temp/marman /usr/local/bin/marman
-RUN chmod +x /usr/local/bin/marman
+COPY --from=cfplatformeng/marman:latest         /usr/local/bin/marman /usr/local/bin/
+
 
 # Copy tileinspect
-COPY temp/tileinspect /usr/local/bin/tileinspect
-RUN chmod +x /usr/local/bin/tileinspect
+COPY --from=cfplatformeng/tileinspect:latest    /usr/local/bin/tileinspect /usr/local/bin/
 
 # Copy scripts
 COPY ./*.sh ./

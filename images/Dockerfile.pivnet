@@ -8,7 +8,7 @@ RUN if [ -z "${PIVNET_CLI_VER}" ] ; then \
 RUN mv pivnet-linux-amd64-* /usr/local/bin/pivnet
 RUN chmod +x /usr/local/bin/pivnet
 
-FROM ubuntu:xenial
+FROM ubuntu
 LABEL maintainer="Pivotal Platform Engineering ISV-CI Team <cf-isv-dashboard@pivotal.io>"
 
 COPY --from=fetch-pivnet /usr/local/bin/pivnet /usr/local/bin
