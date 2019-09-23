@@ -11,12 +11,12 @@ COPY --from=cfplatformeng/isv-ci-toolkit:latest /usr/local/bin/*.sh /usr/local/b
 
 # Log dependency versions
 ARG DEPENDENCIES_FILE=/root/dependencies.log
-RUN mrlog dependency --name marman --version $(marman version | cut -f3 -d" ") >> ${DEPENDENCIES_FILE} && \
-    mrlog dependency --name mrlog --version $(mrlog version | cut -f3 -d" ") >> ${DEPENDENCIES_FILE} && \
-    mrlog dependency --name needs --version $(needs --version) >> ${DEPENDENCIES_FILE} && \
-    mrlog dependency --name om-cli --version $(om version) >> ${DEPENDENCIES_FILE} && \
-    mrlog dependency --name pivnet-cli --version $(pivnet version) >> ${DEPENDENCIES_FILE} && \
-    mrlog dependency --name tileinspect --version $(tileinspect version | cut -d" " -f3) >> ${DEPENDENCIES_FILE}
+RUN mrlog dependency --type binary --name marman --version $(marman version | cut -f3 -d" ") >> ${DEPENDENCIES_FILE} && \
+    mrlog dependency --type binary --name mrlog --version $(mrlog version | cut -f3 -d" ") >> ${DEPENDENCIES_FILE} && \
+    mrlog dependency --type binary --name needs --version $(needs --version) >> ${DEPENDENCIES_FILE} && \
+    mrlog dependency --type binary --name om-cli --version $(om version) >> ${DEPENDENCIES_FILE} && \
+    mrlog dependency --type binary --name pivnet-cli --version $(pivnet version) >> ${DEPENDENCIES_FILE} && \
+    mrlog dependency --type binary --name tileinspect --version $(tileinspect version | cut -d" " -f3) >> ${DEPENDENCIES_FILE}
 
 # Copy files for this test
 COPY [ "needs.json", "run.sh", "/test/" ]
