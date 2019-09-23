@@ -48,7 +48,7 @@ teardown() {
     [ "$(mock_get_call_args ${mock_om} 4)" == "curl -s -p /api/v0/stemcell_assignments" ]
 
     [ "$(mock_get_call_num ${mock_mrlog})" -eq 1 ]
-    [ "$(mock_get_call_args ${mock_mrlog})" == "dependency --name \"google-kvm-ubuntu-xenial\" --version \"315.70\" --metadata {\"version\":\"315.70\",\"os\":\"ubuntu-xenial\",\"infrastructure\":\"google\",\"hypervisor\":\"kvm\"}" ]
+    [ "$(mock_get_call_args ${mock_mrlog})" == "dependency --type stemcell --name \"google-kvm-ubuntu-xenial\" --version \"315.70\" --metadata {\"version\":\"315.70\",\"os\":\"ubuntu-xenial\",\"infrastructure\":\"google\",\"hypervisor\":\"kvm\"}" ]
 
     [ "$(mock_get_call_args ${mock_upload_and_assign_stemcells})" == "some-required-stemcell" ]
     [ "$(mock_get_call_args ${mock_generate_config_for_tile})" == "tile.pivotal config.json" ]
