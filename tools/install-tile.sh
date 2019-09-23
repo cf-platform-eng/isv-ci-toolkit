@@ -40,7 +40,7 @@ install_tile() {
       FULL_NAME=$(echo "$STEMCELL" | jq '. | "\(.infrastructure)-\(.hypervisor)-\(.os)"')
       VERSION="$(echo "$STEMCELL" | jq '. | (.version)')"
 
-      mrlog dependency --name "${FULL_NAME}" --version "${VERSION}" --metadata "${STEMCELL}"
+      mrlog dependency --type stemcell --name "${FULL_NAME}" --version "${VERSION}" --metadata "${STEMCELL}"
     done
 
     upload_and_assign_stemcells.sh "$(om curl -s -p /api/v0/stemcell_assignments | jq -r .stemcell_library[0].infrastructure)"
