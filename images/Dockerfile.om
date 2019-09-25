@@ -8,7 +8,7 @@ RUN if [ -z "${OM_CLI_VER}" ] ; then \
 RUN mv om-linux-* /usr/local/bin/om
 RUN chmod +x /usr/local/bin/om
 
-FROM ubuntu:cosmic
+FROM ubuntu
 LABEL maintainer="Pivotal Platform Engineering ISV-CI Team <cf-isv-dashboard@pivotal.io>"
 
 COPY --from=fetch-om /usr/local/bin/om /usr/local/bin
