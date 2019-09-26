@@ -1,4 +1,4 @@
-FROM ubuntu
+FROM ubuntu:xenial
 LABEL maintainer="Pivotal Platform Engineering ISV-CI Team <cf-isv-dashboard@pivotal.io>"
 
 RUN apt-get update --fix-missing && \
