@@ -58,7 +58,7 @@ teardown() {
     [ "$(mock_get_call_num "${mock_tileinspect}")" = "0" ]
     [ "$(mock_get_call_num "${mock_install_tile_sh}")" = "0" ]
     [ "$(mock_get_call_num "${mock_uninstall_tile_sh}")" = "0" ]
-    output_equals "needs check failed"
+    output_equals "Needs check indicated that the test is not ready to execute"
 }
 
 @test "test exits before installing if check-config fails" {
@@ -71,7 +71,7 @@ teardown() {
     [ "$(mock_get_call_num "${mock_tileinspect}")" = "1" ]
     [ "$(mock_get_call_num "${mock_install_tile_sh}")" = "0" ]
     [ "$(mock_get_call_num "${mock_uninstall_tile_sh}")" = "0" ]
-    output_equals "config file check failed"
+    output_equals "The supplied config file will not work for the tile"
 }
 
 @test "returns error code when install tile fails" {
@@ -80,7 +80,7 @@ teardown() {
     run ${BATS_TEST_DIRNAME}/run.sh
 
     status_equals 1
-    output_equals "install-tile failed"
+    output_equals "Failed to stage, configure, or deploy the tile"
 }
 
 @test "returns error code when uninstall tile fails" {
@@ -89,5 +89,5 @@ teardown() {
     run ${BATS_TEST_DIRNAME}/run.sh
 
     status_equals 1
-    output_equals "uninstall-tile failed"
+    output_equals "Failed to uninstall the tile"
 }
