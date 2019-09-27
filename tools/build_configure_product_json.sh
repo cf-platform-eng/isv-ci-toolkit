@@ -60,6 +60,6 @@ export AZ_NAME
 export SSH_LB
 export WEB_LB
 export WS_LB
-product_configuration="$(./retrieve_tile_configuration.sh "$PRODUCT_FILE" "$PCF_VERSION" "$PRODUCT_VERSION" | envsubst)"
+product_configuration="$(retrieve_tile_configuration.sh "$PRODUCT_FILE" "$PCF_VERSION" "$PRODUCT_VERSION" | envsubst)"
 echo "$product_configuration" | jq .
 exit 0

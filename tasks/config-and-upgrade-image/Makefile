@@ -3,7 +3,7 @@
 SKIP_APPLY_CHANGES ?= false
 SKIP_TILE_UPLOAD ?= false
 
-build: lint test
+build: lint
 	docker build . --tag cfplatformeng/config-and-upgrade-image:latest
 
 run: build

@@ -18,15 +18,11 @@ RUN apt-get update && apt-get install -y gettext-base node-semver
 
 # Copy files for this test
 COPY [ \
-    "build_configure_bosh_json.sh", \
-    "build_configure_product_json.sh", \
     "needs.json", \
-    "retrieve_tile_configuration.sh", \
     "run.sh", \
-    "setup_om.sh", \
-    "upload_and_assign_stemcells.sh", \
     "/task/" \
 ]
+
 RUN chmod a+x /task/*.sh
 WORKDIR /task
 
