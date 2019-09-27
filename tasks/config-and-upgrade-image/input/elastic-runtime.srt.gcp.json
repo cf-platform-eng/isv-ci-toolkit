@@ -101,7 +101,7 @@
   },
   {
     "version_ranges": {
-      "pcf_version": ">=2.5.0 < 2.6.0",
+      "pcf_version": ">=2.5.0 < 2.7.0",
       "tile_version": ">=2.5.0 < 2.6.0"
     },
     "config": {
