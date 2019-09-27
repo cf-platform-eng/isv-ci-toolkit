@@ -11,7 +11,7 @@ Some essential reading:
 
 The `tests` directory contains docker images that execute a test.
 
-The most basic test that can be run is [installing, configuring and then uninstalling](./tests/install-uninstall-pas-tile/README.md) a tile. 
+The most basic test that can be run is [installing, configuring and then uninstalling](./tests/install-uninstall-pas-tile/README.md) a tile.
 
 ## Tasks
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-source ./test_functions.sh
+source ./steps.sh
 if ! needs_check            ; then exit 1 ; fi
 if ! config_file_check      ; then exit 1 ; fi
 if ! log_dependencies       ; then exit 1 ; fi

@@ -19,7 +19,7 @@ RUN mrlog dependency --type binary --name marman --version $(marman version | cu
     mrlog dependency --type binary --name tileinspect --version $(tileinspect version | cut -d" " -f3) >> ${DEPENDENCIES_FILE}
 
 # Copy files for this test
-COPY [ "needs.json", "run.sh", "test_functions.sh", "/test/" ]
+COPY [ "needs.json", "run.sh", "steps.sh", "/test/" ]
 RUN chmod a+x /test/run.sh
 WORKDIR /test
 

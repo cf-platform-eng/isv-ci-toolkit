@@ -7,10 +7,12 @@ This test will upload, install, stage, configure and uninstall a tile on a Pivot
 Here are the steps for running the install-uninstall test.
 
 ### 1. Git the repo, enter the test directory
-```
+
+```bash
 $ git clone git@github.com:cf-platform-eng/isv-ci-toolkit.git
 $ cd isv-ci-toolkit/tests/install-uninstall-pas-tile
 ```
+
 ### 2. Locate the the .pivotal integration that will be tested
 
 The environment variable `TILE_PATH` locates the .pivotal file that contains the integration to test.
@@ -89,7 +91,7 @@ $ export OM_SKIP_SSL_VALIDATION=true
 
 Once the steps above have been completed, its time to run the test.
 
-[Docker](https://www.docker.com/) is required to execute the test. 
+[Docker](https://www.docker.com/) is required to execute the test.
 
 ```bash
 $ docker run \
@@ -108,15 +110,20 @@ $ docker run \
 This will fetch the test image and begin the test execution. Depending on the complexity of the integration, this could take tens of minutes to an hour or two.
 
 ## Advanced Topics
+
 ### Makefile
-There are some make targets to aid running and trouble shooting tests. There are also make targets to test the tools.
+
+There are some make targets to aid running and troubleshooting tests. There are also make targets to test the tools.
 
 ### Requirements
+
 Using the Makefile requires a few tools:
+
 - [BATS](https://github.com/bats-core/bats-core) to test shell scripts
 - [shellcheck](https://github.com/koalaman/shellcheck) to lint shell scripts
 
 ### Running the test
+
 To use the Makefile to run the test (this requires the same environment variables as above):
 
 ```bash
@@ -143,6 +150,18 @@ If you want to debug the execution, you can get a shell in the test container be
 
 ```bash
 $ make shell
+```
+
+Then, source the test functions and now you can run each test step in sequence:
+
+```bash
+root@5cd0c73b7329:/test# source test_functions.sh
+root@5cd0c73b7329:/test# config_file_check
+section-start: 'config file check' MRL:{"type":"section-start","name":"config file check","time":"2019-09-27T15:02:10.1187724Z"}
+The config file appears to be valid
+section-end: 'config file check' result: 0 MRL:{"type":"section-end","name":"config file check","time":"2019-09-27T15:02:10.1397465Z"}
+root@5cd0c73b7329:/test# install_tile
+...
 ```
 
 ## Reference
@@ -223,4 +242,3 @@ The following substitution strings may be used to reference properties that migh
 - `{az}` will be replaced with the name of an availability zone in the environment.
 - `{disk_type}` will be replaced with the name of a disk type in the environment.
 - `{vm_type}` will be replaced with the name of a vm type in the environment.
-
