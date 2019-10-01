@@ -15,8 +15,8 @@ teardown() {
 }
 
 @test "happy path calls all steps" {
-    export TILE_NAME=test-tile.pivotal
-    export TILE_CONFIG=test-tile.yml
+    export TILE_PATH=/input/tile/test-tile.pivotal
+    export TILE_CONFIG_PATH=/input/tile-config/test-tile.yml
     unset USE_FULL_DEPLOY
 
     run ${BATS_TEST_DIRNAME}/run.sh
@@ -37,8 +37,8 @@ teardown() {
 }
 
 @test "setting USE_FULL_DEPLOY passes that along to the script" {
-    export TILE_NAME=test-tile.pivotal
-    export TILE_CONFIG=test-tile.yml
+    export TILE_PATH=/input/tile/test-tile.pivotal
+    export TILE_CONFIG_PATH=/input/tile-config/test-tile.yml
     export USE_FULL_DEPLOY=true
 
     run ${BATS_TEST_DIRNAME}/run.sh

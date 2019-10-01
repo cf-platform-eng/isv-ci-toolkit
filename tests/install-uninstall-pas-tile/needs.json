@@ -22,18 +22,18 @@
     "optional": true
 }, {
     "type": "environment_variable",
-    "name": "TILE_NAME",
-    "description": "The name of the tile"
+    "name": "TILE_PATH",
+    "description": "Path to .pivotal file"
 }, {
     "type": "file",
-    "path": "/input/tile/*.pivotal",
+    "path": "/input/*.pivotal",
     "description": "The tile"
 }, {
     "type": "environment_variable",
-    "name": "TILE_CONFIG",
-    "description": "The name of the tile config file"
+    "name": "TILE_CONFIG_PATH",
+    "description": "Path to tile config file"
 }, {
     "type": "file",
-    "path": "/input/tile-config/*",
+    "path": "/input/*[.json|.yaml]",
     "description": "The tile config file"
 }]

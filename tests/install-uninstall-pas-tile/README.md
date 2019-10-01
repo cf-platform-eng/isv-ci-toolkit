@@ -100,10 +100,10 @@ $ docker run \
   -e OM_TARGET \
   -e OM_SKIP_SSL_VALIDATION \
   -e PIVNET_TOKEN \
-  -e TILE_NAME=$(basename "${TILE_PATH}") \
-  -e TILE_CONFIG=$(basename "${TILE_CONFIG_PATH}") \
-  -v $(dirname "${TILE_PATH}"):/input/tile \
-  -v $(dirname "${TILE_CONFIG_PATH}"):/input/tile-config \
+  -e TILE_PATH=/input/$(shell basename "${TILE_PATH}") \
+  -e TILE_CONFIG_PATH=/input/$(shell basename "${TILE_CONFIG_PATH}") \
+  -v ${TILE_PATH}:/input/$(shell basename "${TILE_PATH}") \
+  -v ${TILE_CONFIG_PATH}:/input/$(shell basename "${TILE_CONFIG_PATH}") \
   cfplatformeng/install-uninstall-test-image
 ```
 

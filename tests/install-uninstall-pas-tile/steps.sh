@@ -15,7 +15,7 @@ function needs_check {
 
 function config_file_check {
     mrlog section-start --name="config file check"
-    tileinspect check-config --tile "/input/tile/${TILE_NAME}" --config "/input/tile-config/${TILE_CONFIG}"
+    tileinspect check-config --tile "${TILE_PATH}" --config "${TILE_CONFIG_PATH}"
     result=$?
     mrlog section-end --name="config file check" --result=${result}
 
@@ -35,7 +35,7 @@ function log_dependencies {
 
 function install_tile {
     mrlog section-start --name="tile install"
-    install-tile.sh "/input/tile/${TILE_NAME}" "/input/tile-config/${TILE_CONFIG}" "${USE_FULL_DEPLOY:-false}"
+    install-tile.sh "${TILE_PATH}" "${TILE_CONFIG_PATH}" "${USE_FULL_DEPLOY:-false}"
     result=$?
     mrlog section-end --name="tile install" --result=$result
     if [[ $result -ne 0 ]] ; then
@@ -46,7 +46,7 @@ function install_tile {
 
 function uninstall_tile {
     mrlog section-start --name="tile uninstall"
-    uninstall-tile.sh "/input/tile/${TILE_NAME}" "${USE_FULL_DEPLOY:-false}"
+    uninstall-tile.sh "${TILE_PATH}" "${USE_FULL_DEPLOY:-false}"
     result=$?
     mrlog section-end --name="tile uninstall" --result=$result
     if [[ $result -ne 0 ]] ; then
