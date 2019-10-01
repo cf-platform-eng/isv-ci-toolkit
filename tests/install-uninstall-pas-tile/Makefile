@@ -76,11 +76,9 @@ run: run-deps logs temp/make-tags/build
 	-e OM_TARGET \
 	-e OM_SKIP_SSL_VALIDATION \
 	-e PIVNET_TOKEN \
-	-e TILE_PATH=/input/$(shell basename "${TILE_PATH}") \
-	-e TILE_CONFIG_PATH=/input/$(shell basename "${TILE_CONFIG_PATH}") \
 	-e USE_FULL_DEPLOY \
-	-v ${TILE_PATH}:/input/$(shell basename "${TILE_PATH}") \
-	-v ${TILE_CONFIG_PATH}:/input/$(shell basename "${TILE_CONFIG_PATH}") \
+	-v ${TILE_PATH}:/input/tile.pivotal \
+	-v ${TILE_CONFIG_PATH}:/input/config.json \
 	-v ${PWD}/../../tools:/bin/tools \
 	cfplatformeng/install-uninstall-test-image 2>&1 | tee ./logs/$(shell date "+%Y.%m.%d-%H.%M.%S").log
 
@@ -91,11 +89,9 @@ define run-docker-interactive
 	-e OM_TARGET \
 	-e OM_SKIP_SSL_VALIDATION \
 	-e PIVNET_TOKEN \
-	-e TILE_PATH=/input/$(shell basename "${TILE_PATH}") \
-	-e TILE_CONFIG_PATH=/input/$(shell basename "${TILE_CONFIG_PATH}") \
 	-e USE_FULL_DEPLOY \
-	-v ${TILE_PATH}:/input/$(shell basename "${TILE_PATH}") \
-	-v ${TILE_CONFIG_PATH}:/input/$(shell basename "${TILE_CONFIG_PATH}") \
+	-v ${TILE_PATH}:/input/tile.pivotal \
+	-v ${TILE_CONFIG_PATH}:/input/config.json \
 	-v ${PWD}/../../tools:/bin/tools \
 	-v ${PWD}:/test \
 	cfplatformeng/install-uninstall-test-image \

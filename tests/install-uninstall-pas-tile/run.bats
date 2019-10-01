@@ -15,8 +15,6 @@ teardown() {
 }
 
 @test "happy path calls all steps" {
-    export TILE_PATH=/input/tile/test-tile.pivotal
-    export TILE_CONFIG_PATH=/input/tile-config/test-tile.yml
     unset USE_FULL_DEPLOY
 
     run ${BATS_TEST_DIRNAME}/run.sh
@@ -25,27 +23,25 @@ teardown() {
     [ "$(mock_get_call_num "${mock_needs}")" = "1" ]
 
     [ "$(mock_get_call_num "${mock_tileinspect}")" = "1" ]
-    [ "$(mock_get_call_args "${mock_tileinspect}" 1)" = "check-config --tile /input/tile/test-tile.pivotal --config /input/tile-config/test-tile.yml" ]
+    [ "$(mock_get_call_args "${mock_tileinspect}" 1)" = "check-config --tile /input/tile.pivotal --config /input/config.json" ]
 
     [ "$(mock_get_call_num "${mock_install_tile_sh}")" = "1" ]
-    [ "$(mock_get_call_args "${mock_install_tile_sh}" 1)" = "/input/tile/test-tile.pivotal /input/tile-config/test-tile.yml false" ]
+    [ "$(mock_get_call_args "${mock_install_tile_sh}" 1)" = "/input/tile.pivotal /input/config.json false" ]
 
     [ "$(mock_get_call_num "${mock_uninstall_tile_sh}")" = "1" ]
-    [ "$(mock_get_call_args "${mock_uninstall_tile_sh}" 1)" = "/input/tile/test-tile.pivotal false" ]
+    [ "$(mock_get_call_args "${mock_uninstall_tile_sh}" 1)" = "/input/tile.pivotal false" ]
 
     [ "$(mock_get_call_num "${mock_mrlog}")" = "10" ]
 }
 
 @test "setting USE_FULL_DEPLOY passes that along to the script" {
-    export TILE_PATH=/input/tile/test-tile.pivotal
-    export TILE_CONFIG_PATH=/input/tile-config/test-tile.yml
     export USE_FULL_DEPLOY=true
 
     run ${BATS_TEST_DIRNAME}/run.sh
 
     status_equals 0
-    [ "$(mock_get_call_args "${mock_install_tile_sh}" 1)" = "/input/tile/test-tile.pivotal /input/tile-config/test-tile.yml true" ]
-    [ "$(mock_get_call_args "${mock_uninstall_tile_sh}" 1)" = "/input/tile/test-tile.pivotal true" ]
+    [ "$(mock_get_call_args "${mock_install_tile_sh}" 1)" = "/input/tile.pivotal /input/config.json true" ]
+    [ "$(mock_get_call_args "${mock_uninstall_tile_sh}" 1)" = "/input/tile.pivotal true" ]
 }
 
 @test "test exits before installing if needs are not met" {
