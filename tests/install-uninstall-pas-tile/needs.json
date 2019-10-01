@@ -21,19 +21,11 @@
     "description": "A token (legacy or refresh) for the Pivotal Network for downloading any required stemcells",
     "optional": true
 }, {
-    "type": "environment_variable",
-    "name": "TILE_PATH",
-    "description": "Path to .pivotal file"
+    "type": "file",
+    "path": "/input/tile.pivotal",
+    "description": "The tile should exit"
 }, {
     "type": "file",
-    "path": "/input/*.pivotal",
-    "description": "The tile"
-}, {
-    "type": "environment_variable",
-    "name": "TILE_CONFIG_PATH",
-    "description": "Path to tile config file"
-}, {
-    "type": "file",
-    "path": "/input/*[.json|.yaml]",
-    "description": "The tile config file"
+    "path": "/input/config.json",
+    "description": "The tile config file should exist"
 }]
