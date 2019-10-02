@@ -30,34 +30,37 @@ product-properties:
     type: string
 EOF
     cat <<EOF > "$BATS_TMPDIR/pete-config.json"
-"product-properties": {
-    ".properties.space": {
-        "type": "string",
-        "value": "test-tile-space"
-    },
-    ".properties.allow_paid_service_plans": {
-        "type": "boolean",
-        "value": false
-    },
-    ".properties.apply_open_security_group": {
-        "type": "boolean",
-        "value": false
-    },
-    ".properties.org": {
-        "type": "string",
-        "value": "test-tile-org"
-    },
-    ".properties.some_availability_zone": {
-        "type": "string",
-        "value": "{az}"
-    },
-    ".properties.some_vm_type": {
-        "type": "string",
-        "value": "{vm_type}"
-    },
-    ".properties.some_disk_type": {
-        "type": "string",
-        "value": "{disk_type}"
+{
+    "product-name": "some tile",
+    "product-properties": {
+        ".properties.space": {
+            "type": "string",
+            "value": "test-tile-space"
+        },
+        ".properties.allow_paid_service_plans": {
+            "type": "boolean",
+            "value": false
+        },
+        ".properties.apply_open_security_group": {
+            "type": "boolean",
+            "value": false
+        },
+        ".properties.org": {
+            "type": "string",
+            "value": "test-tile-org"
+        },
+        ".properties.some_availability_zone": {
+            "type": "string",
+            "value": "{az}"
+        },
+        ".properties.some_vm_type": {
+            "type": "string",
+            "value": "{vm_type}"
+        },
+        ".properties.some_disk_type": {
+            "type": "string",
+            "value": "{disk_type}"
+        }
     }
 }
 EOF
