@@ -1,4 +1,4 @@
-FROM cfplatformeng/base-image:0.0.10
+FROM cfplatformeng/base-image:latest
 
 # Copy binaries from dependent images
 COPY --from=cfplatformeng/marman:latest         /usr/local/bin/marman /usr/local/bin/
