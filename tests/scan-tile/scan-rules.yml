@@ -1,0 +1,232 @@
+---
+version: 7
+rules:
+- rule:
+    or:
+    - files: /metadata/*.yml
+      pattern: ca_certificate
+    - files: /metadata/*.yml
+      pattern: cert_pem
+  level: INFO
+  affects: 1.10+
+  message: >-
+    Since 1.10, PCF supports certificate rotation. This means that multiple certificates
+    may be chained in the ca_certificate property. Please make sure your tile can handle
+    the case where multiple certificates are returned to your tile since all of them are
+    to be considered valid. 
+  id: opsman-cert-rotation
+- rule:
+    files: /metadata/*.yml
+    pattern: metron_agent
+  level: WARNING
+  affects: 1.10+
+  message: >-
+    In 1.10 and beyond, CF's etcd will no longer support insecure (http) connections.
+    If you're using metron, please make sure you use TLS when connecting to etcd.
+  id: metron-etcd-tls
+- rule:
+    files: /metadata/*.yml
+    pattern: ldap_url
+  level: WARNING
+  affects: 1.10+
+  message: >-
+    In 1.10, PCF allows the operator to specify multiple LDAP servers. The URLs for those
+    servers will all appear in the ldap_url property, separated by spaces. Please make sure
+    your tile handles that correctly.
+  id: multiple-ldap-servers
+- rule:
+    files: /metadata/*.yml
+    pattern: cf.etcd_server.ips
+  level: ERROR
+  affects: 1.10+
+  message: >-
+    The cf.etcd_server.ips property was deprecated in PCF 1.10. Until you remove your dependency on this
+    property, your tile will not successfully install on PCF 1.10 and beyond.
+  id: etcd-server-ips-deprecated
+- rule:
+    and:
+    - files: /metadata/*.yml
+      regex: 'apply_open_security_group[^-]*default: True'
+    - files: '*.sh.erb'
+      pattern: 'bind-running-security-group'
+  level: ERROR
+  message: >-
+    In older tile-generator versions, setting the apply_open_security_group property to true would cause the
+    deploy-all errand to create and apply an open security group to the global running
+    security group, enabling full outbound access from all orgs and spaces. Rebuild your tile with a newer
+    version (>= 6.0.0) of tile-generator to fix this issue.
+  id: cve-2017-4975-open-asg
+- rule:
+    files: /metadata/*.yml
+    regex: '\$director\.ip|\$director\.deployment_ip'
+  level: ERROR
+  message: >-
+    The BOSH director can be given a hostname, and the IP address
+    underneath it can change, so the use of $director.ip or
+    $director.deployment_ip is dangerous. Use $director.hostname to
+    refer to the director, which will fall back on the IP address if
+    no hostname is given.
+  id: director-ip-deprecated
+- rule:
+    or:
+    - files: /metadata/*.yml
+      pattern: consul_agent
+    - files: /metadata/*.yml
+      pattern: cf.consul.ips
+  level: WARNING
+  affects: 2.2+
+  message: >-
+    Consul will be removed in PCF 2.2, and be replaced with BOSH DNS.
+    To prepare for this, you must remove your references to consul in
+    the PCF 2.1 timeframe.
+  id: consul-removed
+- rule:
+    or:
+    - files: /tile-generator/version
+      pattern: Version
+    - files: /metadata/*.yml
+      pattern: '- name: deploy-all'
+  level: INFO
+  message: >-
+    This tile uses Tile Generator.
+  id: built-with-tile-generator
+- rule:
+    files: /metadata/*.yml
+    regex: 'run_post_deploy_errand_default:\s+when-changed'
+  level: INFO
+  message: >-
+    In PCF 1.10, a bug caused some errands that are marked to run
+    "when-changed" to not run often enough. Pivotal will address this
+    issue in a patch release in PCF 1.10.
+  id: run-when-changed-bug
+- rule:
+    and:
+    - files: /metadata/*.yml
+      pattern: metron_agent
+    - files: /metadata/*.yml
+      objectpath: int(split($.releases[@.name is "loggregator"][0].version, ".")[0]) < 72
+  level: ERROR
+  affects: 1.12+
+  message: >-
+    The Metron agent in Loggregator versions prior to v72 require etcd for
+    service discovery. With the removal of etcd in PCF 1.12, all tiles must
+    update to a metron agent from Loggregator versions 72 or later.
+  id: metron-agent-pre-v72
+- rule:
+    files: '*release.MF'
+    regex: 'sha1: [a-f0-9]{40}'
+  level: INFO
+  affects: 1.12+
+  message: >-
+    This tile contains a BOSH release that uses SHA-1 hash, which is
+    known to be insecure. Please update your BOSH releases to use a
+    SHA-256 hash instead. Tile Generator will use SHA-256 hashes by
+    default once PCF 1.12 is released (you can provide the --sha2 flag
+    to use SHA-256 before this). Other BOSH releases you include in
+    your tile should also have SHA-256 versions available for your use.
+    NOTE: SHA-256 hashes are not supported in PCF 1.9 and earlier.
+  id: bosh-sha-1
+- rule:
+    or:
+    - files: /metadata/*.yml
+      pattern: .doppler.shared_secret_credentials
+    - files: /metadata/*.yml
+      pattern: .nats.credentials.identity
+    - files: /metadata/*.yml
+      pattern: .nats.credentials.password
+    - files: /metadata/*.yml
+      pattern: .properties.consul_encrypt_key
+  level: ERROR
+  affects: 2.0+
+  message: >-
+    In PCF 2.0, accessors for the properties
+    .doppler.shared_secret_credentials, .nats.credentials.identity,
+    .nats.credentials.password, and .properties.consul_encrypt_key
+    will be removed. The values for these properties can be obtained
+    by consuming BOSH links from their respective releases.
+  id: pcf2.0-deleted-properties
+- rule:
+    files: /metadata/*.yml
+    objectpath: count($.requires_product_versions..*[str("~>") in @.version]) > 0
+  level: WARNING
+  message: >-
+    This tile is using a deprecated comparison operator for product
+    requirements.  It will fail to work properly for PCF 2.0. 
+    Please change requirement to ">=" instead of "~>" if this tile 
+    will function properly on PCF 2.0.
+  id: pcf2.0-deprecated-requires-product
+- rule:
+    files: /metadata/*.yml
+    #Regex explained 'https://regex101.com/r/qyHKe1/6'
+    regex: '\(\(\s*(first_ip|ips|.*\.first_ip|.*\.ips)\s*\)\)'
+  level: ERROR
+  affects: 2.0+
+  message: >-
+    In PCF 2.1, OM 2.1 removed support for IP accessors .ips, and .first_ip, that is,
+    anything in a tile's metadata that does any one of:
+    (( ..othertile.otherjob.first_ip ))
+    (( ..othertile.otherjob.ips ))
+    (( .otherjob.first_ip ))
+    (( .otherjob.ips ))
+    (( first_ip ))
+    (( ips ))
+    To share host information, your tile should use BOSH links and use
+    the latest version of tile-generator.
+  id: pcf2.1-deprecated-ip-accessors
+- rule:
+    or:
+    - files: /metadata/*.yml
+      pattern: meta-buildpack
+    - files: "*.erb"
+      pattern: meta-buildpack
+    - files: "*.erb"
+      pattern: meta_buildpack
+    - files: "*.sh"
+      pattern: meta-buildpack
+  level: WARNING
+  affects: 2.2+
+  message: >-
+    Application lifecycle changes make meta-buildpack hard to support
+    going forward, and many of its uses are now addressed by core features
+    like multi-buildpack support. Please reach out for help identifying
+    an alternate implementation of your use case, so that we can
+    deprecate meta-buildpack without breaking your tile.
+  id: meta-buildpack
+- rule:
+    files: /metadata/*.yml
+    pattern: p-mysql
+  level: WARNING
+  affects: 2.2+
+  message: >-
+    The Pivotal MySQL v1 tile (p-mysql) will be EOGS in October, 2018.
+    MySQL v2.2 (pivotal-mysql) has "feature parity" and continues to
+    improve beyond the feature set available in v1.
+  id: pcf2.2-p-mysql-deprecated
+- rule:
+    files: /metadata/*.yml
+    function:
+      module: scan_tile
+      name: runtime_config_supports_xenial_and_trusty
+  level: WARNING
+  affects: 2.1+
+  message: >-
+    In PCF 2.1+, components can run on both Ubuntu Trusty and Ubuntu Xenial
+    stemcells. You probably want your runtime config jobs to support both
+    of these possible Linux stemcell flavors.
+  id: runtime-config-support-xenial-and-trusty
+- rule:
+    files: /metadata/*.yml
+    objectpath: $.stemcell_criteria.os is 'ubuntu-trusty'
+  level: ERROR
+  message: >-
+    This tile uses an Ubuntu Trusty stemcell. All Trusty stemcells will be
+    out of support by 2019-03-31. Please update your tile to use an Ubuntu
+    Xenial stemcell.
+  id: ubuntu-trusty-stemcell
+- rule:
+    file_exists: /packages/cf_cli.tgz
+  level: WARNING
+  message: >-
+    This tile contains an older version of the CF CLI. Please update to a
+    newer version by updating and re-running tile-generator to avoid issues.
+  id: cf-cli-bosh-package
