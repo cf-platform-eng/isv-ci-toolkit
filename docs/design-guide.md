@@ -65,7 +65,8 @@ Each test image in the ISV-CI toolkit have these things in common:
 
 What pieces are we developing
 
-[ISV integration developer]: ./glossary.md#isv-integration-developer
-[Pre-Canned test-case]: ./glossary.md#pre-canned-test-case
-[Example Test-case]: ./glossary.md#example-test-case
-[Bespoke Test-case]: ./glossary.md#bespoke-test-case
+* [ISV integration developer](./glossary.md#isv-integration-developer)
+* [Pre-Canned test-case](./glossary.md#pre-canned-test-case)
+* [Example Test-case](./glossary.md#example-test-case)
+* [Bespoke Test-case](./glossary.md#bespoke-test-case)
+* [Yeoman test scaffold generator](https://github.com/cf-platform-eng/isv-ci-generator)
