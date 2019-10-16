@@ -166,15 +166,19 @@ teardown() {
     cat ./test/fixtures/uaa-context.json | mock_set_output "${mock_uaa}" - 3
     mock_set_output "${mock_curl}" '[{"name": "prod_gcp_mp"}]' 1
     mock_set_output "${mock_curl}" '{"name": "coolinstallation1234"}' 2
-    mock_set_output "${mock_curl}" '{"name": "coolinstallation1234", "paver_job_status": "failed"}' 3
+    mock_set_output "${mock_curl}" '{"name": "coolinstallation1234", "paver_job_status": "failed", "paver_paving_error_logs": "reason for paving failure"}' 3
+
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
+
     status_equals 1
     output_says 'Authenticating with GIPS...'
     output_says 'Getting the list of pavers...'
     output_says 'Submitting environment request...'
     output_says "Environment is being created \"coolinstallation1234\""
     output_says 'Environment creation failed:'
-    output_says '{"name": "coolinstallation1234", "paver_job_status": "failed"}'
+    output_says 'reason for paving failure'
+
+    [ -f "${TASK_OUTPUT}/environment.json" ]
 }
 
 @test "creates an installation, waits for it to finish and writes the environment.json file to the output directory" {

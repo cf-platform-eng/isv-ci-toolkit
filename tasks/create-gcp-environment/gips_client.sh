@@ -173,13 +173,13 @@ while : ; do
 
   sleep 60
 done
+echo "${installation}" > "${TASK_OUTPUT:-/output}/environment.json"
 
 echo
 if [ "${install_status}" = "failed" ] ; then
   echo 'Environment creation failed:'
-  echo "${installation}"
+  echo "${installation}" | jq -r '.paver_paving_error_logs'
   exit 1
 fi
 
 echo "Environment created!"
-echo "${installation}" > "${TASK_OUTPUT:-/output}/environment.json"
