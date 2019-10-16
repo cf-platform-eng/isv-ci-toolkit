@@ -10,7 +10,7 @@ COPY --from=needs /usr/local/bin/needs /usr/local/bin/
 COPY --from=uaa /usr/local/bin/uaa /usr/local/bin/
 
 # Copy files for this test
-COPY [ "gips_client.sh", "needs.json", "run.sh", "/task/" ]
+COPY [ "gips_client.sh", "needs.json", "run.sh", "steps.sh", "/task/" ]
 RUN chmod a+x /task/gips_client.sh /task/run.sh
 WORKDIR /task
 
