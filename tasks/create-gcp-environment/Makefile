@@ -27,6 +27,7 @@ run:
 		-e OPS_MAN_VERSION \
 		-e OPTIONAL_OPS_MAN_VERSION \
 		-e PARENT_ZONE \
+		-e PIVNET_TOKEN \
 		-e DNS_SUFFIX \
 		-e PAVER \
 		-e CRED_FILE=$(shell basename "${CRED_FILE_PATH}") \
@@ -41,6 +42,7 @@ shell:
 		-e OPS_MAN_VERSION \
 		-e OPTIONAL_OPS_MAN_VERSION \
 		-e PARENT_ZONE \
+		-e PIVNET_TOKEN \
 		-e DNS_SUFFIX \
 		-e PAVER \
 		-e CRED_FILE=$(shell basename "${CRED_FILE_PATH}") \
