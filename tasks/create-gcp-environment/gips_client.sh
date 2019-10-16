@@ -25,7 +25,6 @@ function usage {
   echo "    PARENT_ZONE - add NS records for pcf environment to this zone (default: ${default_parent_zone})"
   echo "    DNS_SUFFIX - suffix to add to environment name when creating DNS records (default: ${default_dns_suffix})"
   echo "    PAVER - which paver to use (default: ${default_paver})"
-
 }
 
 if [[ -z "${OPS_MAN_VERSION}" ]]; then
@@ -132,6 +131,19 @@ read -r -d '' GIPS_INSTALL_REQUEST <<INSTALL
 }
 INSTALL
 set -e
+
+echo "Getting the list of pavers..."
+if ! pavers=$(curl -s -H "Content-Type: application/json" -H "Authorization: Bearer $ACCESS_TOKEN" "https://$GIPS_ADDRESS/v1/pavers") ; then
+  echo "Failed to get the list of pavers"
+  exit 1
+fi
+
+if ! echo "${pavers}" | jq -e --arg paver_name "${PAVER}" '.[] | select(.name == $paver_name) | .name' ; then
+  echo "Not able to use this paver: ${PAVER}"
+  echo "Available pavers are:"
+  echo "${pavers}" | jq -r '.[] | "  " + .name'
+  exit 1
+fi
 
 echo "Submitting environment request..."
 if ! install_request=$(curl -s -H "Content-Type: application/json" -H "Authorization: Bearer $ACCESS_TOKEN" "https://$GIPS_ADDRESS/v1/installs" -d "${GIPS_INSTALL_REQUEST}") ; then
