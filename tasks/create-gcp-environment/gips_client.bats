@@ -41,6 +41,9 @@ teardown() {
     output_says "    GIPS_ADDRESS - target podium instance (default: podium.tls.cfapps.io)"
     output_says "    GIPS_UAA_ADDRESS - override the authentication endpoint for GIPS (default: gips-prod.login.run.pivotal.io)"
     output_says "    PARENT_ZONE - add NS records for pcf environment to this zone (default: isvci)"
+    output_says "    DNS_SUFFIX - suffix to add to environment name when creating DNS records (default: env.isv.ci)"
+    output_says "    PAVER - which paver to use (default: prod_gcp_mp)"
+    output_says "    PIVNET_TOKEN - use this PivNet refresh token for downloading stemcells during paving"
 }
 
 @test "asks for a credendials file when only one parameter is provided" {
@@ -289,4 +292,23 @@ teardown() {
     output_says 'Not able to use this paver: invalid-paver'
     output_says 'Available pavers are:'
     output_says '  prod_gcp_mp'
+}
+
+@test "uses an alternative PivNet token if provided" {
+    cat ./test/fixtures/uaa-context.json | mock_set_output "${mock_uaa}" - 3
+    mock_set_output "${mock_curl}" '[{"name": "prod_gcp_mp"}]' 1
+    mock_set_output "${mock_curl}" '{"name": "coolinstallation1234"}' 2
+    mock_set_output "${mock_curl}" '{
+        "name": "coolinstallation1234",
+        "paver_job_status": "complete",
+        "paver_paving_output": {
+            "details": "important"
+        }
+    }' 3
+
+    export PIVNET_TOKEN="my-pivnet-refresh-token"
+    run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
+
+    [ "$(mock_get_call_args ${mock_curl} 2 | grep -c '"pivnet_refresh_token": "my-pivnet-refresh-token"')" -eq 1 ]
+    status_equals 0
 }

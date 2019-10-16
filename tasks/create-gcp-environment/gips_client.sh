@@ -25,6 +25,7 @@ function usage {
   echo "    PARENT_ZONE - add NS records for pcf environment to this zone (default: ${default_parent_zone})"
   echo "    DNS_SUFFIX - suffix to add to environment name when creating DNS records (default: ${default_dns_suffix})"
   echo "    PAVER - which paver to use (default: ${default_paver})"
+  echo "    PIVNET_TOKEN - use this PivNet refresh token for downloading stemcells during paving"
 }
 
 if [[ -z "${OPS_MAN_VERSION}" ]]; then
@@ -131,6 +132,10 @@ read -r -d '' GIPS_INSTALL_REQUEST <<INSTALL
 }
 INSTALL
 set -e
+
+if [[ -n "${PIVNET_TOKEN}" ]] ; then
+  GIPS_INSTALL_REQUEST=$(echo "${GIPS_INSTALL_REQUEST}" | jq --arg pivnet_token "${PIVNET_TOKEN}" '. | .credentials.pivnet_refresh_token = $pivnet_token')
+fi
 
 echo "Getting the list of pavers..."
 if ! pavers=$(curl -s -H "Content-Type: application/json" -H "Authorization: Bearer $ACCESS_TOKEN" "https://$GIPS_ADDRESS/v1/pavers") ; then
