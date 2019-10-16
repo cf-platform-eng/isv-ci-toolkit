@@ -1,14 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-mrlog section-start --name="needs check"
-needs check
-result=$?
-mrlog section-end --name="needs check" --result=${result}
-if [[ $result -ne 0 ]] ; then
-    echo "needs check failed" >&2
-    exit 1
-fi
-
-mrlog section-start --name="create environment"
-./gips_client.sh "${OPS_MAN_VERSION}" "/input/${CRED_FILE}" "${OPTIONAL_OPS_MAN_VERSION}"
-mrlog section-end --name="create environment" --result=$?
+source ./steps.sh
+if ! needs_check        ; then exit 1 ; fi
+if ! create_environment ; then exit 1 ; fi
