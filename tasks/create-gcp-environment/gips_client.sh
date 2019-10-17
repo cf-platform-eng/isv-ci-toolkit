@@ -143,7 +143,7 @@ if ! pavers=$(curl -s -H "Content-Type: application/json" -H "Authorization: Bea
   exit 1
 fi
 
-if ! echo "${pavers}" | jq -e --arg paver_name "${PAVER}" 'isempty(select(.[].name == $paver_name)) | not' > /dev/null ; then
+if ! echo "${pavers}" | jq -e --arg paver_name "${PAVER}" 'select(.[].name == $paver_name)' > /dev/null ; then
   echo "Not able to use this paver: ${PAVER}"
   echo "Available pavers are:"
   echo "${pavers}" | jq -r '.[] | "  " + .name'
