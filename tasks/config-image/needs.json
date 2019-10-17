@@ -1,19 +1,18 @@
 [
     {
         "type": "environment_variable",
-        "name": "PCF_VERSION"
+        "name": "PCF_VERSION",
+        "description": "Version of the Pivotal Platform"
     },
     {
         "type": "environment_variable",
-        "name": "PIVNET_TOKEN"
+        "name": "PIVNET_TOKEN",
+        "description": "Token for the Pivotal Network, used for downloading stemcells and the PAS SRT tile"
     },
     {
         "type": "environment_variable",
-        "name": "PRODUCT_VERSION"
-    },
-    {
-        "type": "environment_variable",
-        "name": "PRODUCT_NAME"
+        "name": "PRODUCT_VERSION",
+        "description": "Version of the PAS SRT tile to use"
     },
     {
         "type": "environment_variable",

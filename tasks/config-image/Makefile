@@ -11,7 +11,6 @@ run: build
 		-e PCF_VERSION \
 		-e PIVNET_TOKEN \
 		-e PRODUCT_VERSION \
-		-e PRODUCT_NAME \
 		-e SKIP_APPLY_CHANGES=$(SKIP_APPLY_CHANGES) \
 		-e SKIP_TILE_UPLOAD=$(SKIP_TILE_UPLOAD) \
 		-v `pwd`/input:/input \
@@ -22,7 +21,6 @@ shell: build
 		-e PCF_VERSION \
 		-e PIVNET_TOKEN \
 		-e PRODUCT_VERSION \
-		-e PRODUCT_NAME \
 		-e SKIP_APPLY_CHANGES=$(SKIP_APPLY_CHANGES) \
 		-e SKIP_TILE_UPLOAD=$(SKIP_TILE_UPLOAD) \
 		-v `pwd`/input:/input \

@@ -17,7 +17,7 @@ COPY --from=tools /usr/local/bin/*.sh /usr/local/bin/
 RUN apt-get update && apt-get install -y gettext-base node-semver && rm -rf /var/lib/apt/lists/*
 
 # Copy files for this test
-COPY [ "add-cf.yml", "relastic-runtime.srt.azure.json", "elastic-runtime.srt.gcp.json", "needs.json", "run.sh", "steps.sh", "/task/" ]
+COPY [ "add-cf.yml", "elastic-runtime.srt.azure.json", "elastic-runtime.srt.gcp.json", "needs.json", "run.sh", "steps.sh", "/task/" ]
 
 RUN chmod a+x /task/*.sh
 WORKDIR /task
