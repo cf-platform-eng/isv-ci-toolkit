@@ -14,14 +14,10 @@ COPY --from=needs /usr/local/bin/needs /usr/local/bin/
 COPY --from=om /usr/local/bin/om /usr/local/bin/
 COPY --from=tools /usr/local/bin/*.sh /usr/local/bin/
 
-RUN apt-get update && apt-get install -y gettext-base node-semver
+RUN apt-get update && apt-get install -y gettext-base node-semver && rm -rf /var/lib/apt/lists/*
 
 # Copy files for this test
-COPY [ \
-    "needs.json", \
-    "run.sh", \
-    "/task/" \
-]
+COPY [ "add-cf.yml", "relastic-runtime.srt.azure.json", "elastic-runtime.srt.gcp.json", "needs.json", "run.sh", "steps.sh", "/task/" ]
 
 RUN chmod a+x /task/*.sh
 WORKDIR /task

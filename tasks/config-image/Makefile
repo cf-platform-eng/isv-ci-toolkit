@@ -9,6 +9,7 @@ build: lint test
 run: build
 	docker run \
 		-e PCF_VERSION \
+		-e PIVNET_TOKEN \
 		-e PRODUCT_VERSION \
 		-e PRODUCT_NAME \
 		-e SKIP_APPLY_CHANGES=$(SKIP_APPLY_CHANGES) \
@@ -19,6 +20,7 @@ run: build
 shell: build
 	docker run -it \
 		-e PCF_VERSION \
+		-e PIVNET_TOKEN \
 		-e PRODUCT_VERSION \
 		-e PRODUCT_NAME \
 		-e SKIP_APPLY_CHANGES=$(SKIP_APPLY_CHANGES) \
@@ -28,7 +30,6 @@ shell: build
 		bash
 
 lint:
-	shellcheck *.sh
+	shellcheck --external-sources *.sh
 
 test: lint
-	bats --tap *.bats

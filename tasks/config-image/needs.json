@@ -5,11 +5,20 @@
     },
     {
         "type": "environment_variable",
+        "name": "PIVNET_TOKEN"
+    },
+    {
+        "type": "environment_variable",
         "name": "PRODUCT_VERSION"
     },
     {
         "type": "environment_variable",
         "name": "PRODUCT_NAME"
+    },
+    {
+        "type": "environment_variable",
+        "name": "OM_SKIP_SSL_VALIDATION",
+        "optional": true
     },
     {
         "type": "file",
