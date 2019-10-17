@@ -10,7 +10,7 @@ COPY --from=needs /usr/local/bin/needs /usr/local/bin/
 COPY --from=uaa /usr/local/bin/uaa /usr/local/bin/
 
 # Copy files for this test
-COPY [ "needs.json", "run.sh", "teardown.sh", "/task/" ]
+COPY [ "needs.json", "run.sh", "steps.sh", "teardown.sh", "/task/" ]
 RUN chmod a+x /task/run.sh /task/teardown.sh
 WORKDIR /task
 
