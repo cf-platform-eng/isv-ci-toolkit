@@ -16,7 +16,7 @@ function needs_check {
 function create_environment {
     mrlog section-start --name="creating environment"
 
-    ./gips_client.sh "${OPS_MAN_VERSION}" "/input/${CRED_FILE}" "${OPTIONAL_OPS_MAN_VERSION}"
+    ./gips_client.sh "${OPS_MAN_VERSION}" "/input/credentials.json" "${OPTIONAL_OPS_MAN_VERSION}"
     result=$?
     mrlog section-end --name="creating environment" --result=${result}
 

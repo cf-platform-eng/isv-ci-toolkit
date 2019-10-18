@@ -17,6 +17,7 @@ function usage {
   echo "        client_id"
   echo "        client_secret"
   echo "        service_account_key"
+  echo "        dns_zone_service_account_key"
   echo "    Optional OpsManager version - version of a second opsmanager for upgrade tests (default: none)"
   echo " "
   echo "Environment variables:"
@@ -87,6 +88,13 @@ if [[ -z "${SERVICE_ACCOUNT_KEY}" ]] ; then
   exit 1
 fi
 
+DNS_ZONE_SERVICE_ACCOUNT_KEY=$(jq -r ".dns_zone_service_account_key // empty" "$CRED_FILE")
+if [[ -z "${DNS_ZONE_SERVICE_ACCOUNT_KEY}" ]] ; then
+  echo 'Credential file missing "dns_zone_service_account_key"'
+  usage
+  exit 1
+fi
+
 echo "Authenticating with GIPS..."
 if ! uaa target "$GIPS_UAA_ADDRESS" > /dev/null ; then
   echo 'Failed to set UAA target'
@@ -117,7 +125,7 @@ read -r -d '' GIPS_INSTALL_REQUEST <<INSTALL
     "optional_opsman_version": "${OPTIONAL_OPS_MAN_VERSION}",
     "dns_service": {
       "zone_name": "${PARENT_ZONE}",
-      "service_account_key": $SERVICE_ACCOUNT_KEY
+      "service_account_key": $DNS_ZONE_SERVICE_ACCOUNT_KEY
     },
     "region": "us-central1",
     "zones": [

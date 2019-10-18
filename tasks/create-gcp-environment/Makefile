@@ -30,10 +30,9 @@ run:
 		-e PIVNET_TOKEN \
 		-e DNS_SUFFIX \
 		-e PAVER \
-		-e CRED_FILE=$(shell basename "${CRED_FILE_PATH}") \
 		-e GIPS_ADDRESS \
 		-e GIPS_UAA_ADDRESS \
-		-v $(shell dirname "${CRED_FILE_PATH}"):/input \
+		-v ${CRED_FILE_PATH}:/input/credentials.json \
 		-v `pwd`/output:/output \
 		cfplatformeng/create-gcp-environment:latest
 
@@ -45,10 +44,9 @@ shell:
 		-e PIVNET_TOKEN \
 		-e DNS_SUFFIX \
 		-e PAVER \
-		-e CRED_FILE=$(shell basename "${CRED_FILE_PATH}") \
 		-e GIPS_ADDRESS \
 		-e GIPS_UAA_ADDRESS \
-		-v $(shell dirname "${CRED_FILE_PATH}"):/input \
+		-v ${CRED_FILE_PATH}:/input/credentials.json \
 		-v `pwd`/output:/output \
 		cfplatformeng/create-gcp-environment:latest \
 		/bin/bash

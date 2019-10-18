@@ -8,7 +8,8 @@ setup() {
 {
     "client_id": "pete",
     "client_secret": "super-secret-1",
-    "service_account_key": { "status": "secret", "should-i-tell-anyone": false }
+    "service_account_key": { "status": "secret", "dummy-data": "dummy-1" },
+    "dns_zone_service_account_key": { "status": "secret", "dummy-data": "dummy-2" }
 }
 EOF
 
@@ -35,6 +36,7 @@ teardown() {
     output_says "        client_id"
     output_says "        client_secret"
     output_says "        service_account_key"
+    output_says "        dns_zone_service_account_key"
     output_says "    Optional OpsManager version - version of a second opsmanager for upgrade tests (default: none)"
     output_says " "
     output_says "Environment variables:"
@@ -85,6 +87,11 @@ teardown() {
     run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
     status_equals 1
     output_says 'Credential file missing "service_account_key"'
+
+    echo '{"client_id": "pete", "client_secret": "shhh", "service_account_key": {}}' > "$BATS_TMPDIR/input/credentials.json"
+    run ./gips_client.sh 2.6.2 "$BATS_TMPDIR/input/credentials.json"
+    status_equals 1
+    output_says 'Credential file missing "dns_zone_service_account_key"'
 }
 
 @test "fails to set uaac target" {
@@ -208,7 +215,8 @@ teardown() {
     [ "$(mock_get_call_args ${mock_curl} 2 | grep -c "https://podium.tls.cfapps.io/v1/installs")" -eq 1 ]
     [ "$(mock_get_call_args ${mock_curl} 2 | grep -c '"opsman_version": "2.6.2",')" -eq 1 ]
     [ "$(mock_get_call_args ${mock_curl} 2 | grep -c '"service_account_key": {')" -eq 2 ]
-    [ "$(mock_get_call_args ${mock_curl} 2 | grep -c '"should-i-tell-anyone": false')" -eq 2 ]
+    [ "$(mock_get_call_args ${mock_curl} 2 | grep -c '"dummy-data": "dummy-1"')" -eq 1 ]
+    [ "$(mock_get_call_args ${mock_curl} 2 | grep -c '"dummy-data": "dummy-2"')" -eq 1 ]
 
     [ "$(mock_get_call_num ${mock_curl})" = "5" ]
     [ "$(mock_get_call_args ${mock_curl} 3 | grep -c "https://podium.tls.cfapps.io/v1/installs/coolinstallation1234")" -eq 1 ]
