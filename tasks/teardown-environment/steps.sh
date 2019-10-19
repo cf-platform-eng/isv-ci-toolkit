@@ -13,7 +13,7 @@ function needs_check {
     return $result
 }
 
-function create_environment {
+function teardown_environment {
     mrlog section-start --name="teardown environment"
 
     ./teardown.sh "${INSTALLATION_NAME}" "/input/${CRED_FILE}" "${GIPS_ADDRESS}" "${GIPS_UAA_ADDRESS}"
