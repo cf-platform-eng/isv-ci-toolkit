@@ -1,4 +1,12 @@
-temp/make-tags/scan-tile: Pipfile.lock
+PIPENV := $(shell command -v pipenv 2> /dev/null)
+
+pipenv:
+ifndef PIPENV
+	pip install pipenv
+endif
+    $(NOOP)
+
+temp/make-tags/scan-tile: Pipfile.lock pipenv
 	unset PYTHONPATH &&	pipenv sync --dev
 	mkdir -p temp/make-tags
 	touch temp/make-tags/scan-tile
