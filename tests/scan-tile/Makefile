@@ -18,8 +18,8 @@ clean:
 deps: temp/make-tags/scan-tile
 
 test: deps
-	python scan_tile_test.py
-	python scan_tile_integration_test.py
+	pipenv run python scan_tile_test.py
+	pipenv run python scan_tile_integration_test.py
 
 build:
 	docker build . -t cfplatformenv/scan-tile
