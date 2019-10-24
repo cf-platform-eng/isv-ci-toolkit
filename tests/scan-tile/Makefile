@@ -22,7 +22,7 @@ test: deps
 	pipenv run python scan_tile_integration_test.py
 
 build:
-	docker build . -t cfplatformenv/scan-tile
+	docker build . -t cfplatformeng/scan-tile
 
 tile-path:
 ifndef TILE_PATH
@@ -37,9 +37,9 @@ logs:
 run: tile-path logs
 	docker run \
 		-v ${TILE_PATH}:/input/tile.pivotal \
-		cfplatformenv/scan-tile 2>&1 | tee ./logs/$(shell date "+%Y.%m.%d-%H.%M.%S").log
+		cfplatformeng/scan-tile 2>&1 | tee ./logs/$(shell date "+%Y.%m.%d-%H.%M.%S").log
 
 shell: tile-path
 	docker run -it \
 		-v ${TILE_PATH}:/input/tile.pivotal \
-		cfplatformenv/scan-tile bash
+		cfplatformeng/scan-tile bash

@@ -1,10 +1,11 @@
-FROM python:3.7 AS pipfile
+FROM python:3.5-slim AS pipfile
 RUN pip install pipenv
 
 COPY [ "Pipfile", "Pipfile.lock", "/tmp/" ]
 RUN cd /tmp && pipenv lock --requirements > requirements.txt
 
-FROM python:3.7
+FROM cfplatformeng/base-image
+RUN apt-get update && apt-get install -y python3 python3-pip
 
 WORKDIR /test
 
