@@ -54,7 +54,7 @@ def evaluate_rule(tile, rule, file_list):
                 try:
                     with open_embedded_file(name, entry['zfile']) as f:
                         for lineno, line in enumerate(f.readlines(), start=1):
-                            if rule['pattern'] in line.decode():
+                            if rule['pattern'] in line.decode(errors="ignore"):
                                 matches.append({
                                     'file': entry['prefix'] + '/' + name,
                                     'line': line.decode(),
