@@ -1,10 +1,10 @@
-FROM python:3.7-slim AS pipfile
+FROM python:3.7-alpine AS pipfile
 RUN pip install pipenv
 
 COPY [ "Pipfile", "Pipfile.lock", "/tmp/" ]
 RUN cd /tmp && pipenv lock --requirements > requirements.txt
 
-FROM python:3.7-slim
+FROM python:3.7-alpine
 
 WORKDIR /test
 
