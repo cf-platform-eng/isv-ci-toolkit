@@ -10,7 +10,6 @@ import gzip
 import fnmatch
 import yaml
 import re
-import io
 import objectpath
 
 
@@ -60,6 +59,7 @@ def evaluate_rule(tile, rule, file_list):
                                     'line': line.decode(),
                                     'lineno': lineno,
                                 })
+                        f.close()
                 except KeyError:
                     continue
     elif 'regex' in rule:
@@ -67,13 +67,14 @@ def evaluate_rule(tile, rule, file_list):
             if fnmatch.fnmatch('/' + name, rule.get('files', '*')):
                 try:
                     with open_embedded_file(name, entry['zfile']) as f:
-                        content = f.read().decode()
+                        content = f.read().decode(errors="ignore")
                         regex_matches = re.findall(rule['regex'], content)
                         for match in regex_matches:
                             matches.append({
                                 'file': entry['prefix'] + '/' + name,
                                 'line': match,
                             })
+                        f.close()
                 except KeyError:
                     continue
     elif 'objectpath' in rule:
@@ -89,6 +90,7 @@ def evaluate_rule(tile, rule, file_list):
                                 })
                         except StopIteration:
                             pass
+                        f.close()
                 except KeyError:
                     continue
     elif 'file_exists' in rule:
@@ -102,8 +104,9 @@ def evaluate_rule(tile, rule, file_list):
             if fnmatch.fnmatch('/' + name, rule.get('files', '*')):
                 with open_embedded_file(name, entry['zfile']) as f:
                     matcher_module = importlib.import_module(rule['function']['module'])
-                    mather_function = getattr(matcher_module, rule['function']['name'])
-                    matches = mather_function(entry['prefix'] + '/' + name, f)
+                    matcher_function = getattr(matcher_module, rule['function']['name'])
+                    matches = matcher_function(entry['prefix'] + '/' + name, f)
+                    f.close()
     else:
         raise Exception(
             'Incorrect rule in scan-rules.yml:\n' + yaml.safe_dump(rule))
@@ -111,8 +114,7 @@ def evaluate_rule(tile, rule, file_list):
 
 
 def get_metadata(tile):
-    metadata_file = next(path for path in tile.namelist(
-    ) if path.startswith('metadata/') and path.endswith('.yml'))
+    metadata_file = next(path for path in tile.namelist() if path.startswith('metadata/') and path.endswith('.yml'))
     with tile.open(metadata_file) as metadata:
         return yaml.safe_load(metadata.read())
 
@@ -181,9 +183,9 @@ def get_namelist(archive_file):
 
 def open_embedded_file(name, archive_file):
     if isinstance(archive_file, zipfile.ZipFile):
-        return io.BytesIO(archive_file.open(name).read())
+        return archive_file.open(name)
     else:  # tarfile.
-        return io.BytesIO(archive_file.extractfile(name).read())
+        return archive_file.extractfile(name)
 
 
 def all_files(zfile, prefix=''):
@@ -197,7 +199,7 @@ def all_files(zfile, prefix=''):
                 nested_files = all_files(embedded_file, prefix=prefix + '/' + name)
                 file_list.update(nested_files)
             except Exception as e:
-                sys.stderr.write(prefix + '/' + name + ' is not a valid tgz file: {}'.format(e))
+                print('{}/{} is not a valid tgz file: {}'.format(prefix, name, e), file=sys.stderr)
                 continue
         file_list[name] = {'zfile': zfile, 'prefix': prefix}
     return file_list
@@ -254,9 +256,9 @@ def runtime_config_supports_xenial_and_trusty(file_path, file_bytes):
                     })
             elif isinstance(stemcell_inclusion_rules, str):
                 if not is_property_variable_string(stemcell_inclusion_rules):
-                    print >> sys.stderr, stemcell_inclusion_rules, 'is not a valid stemcell inclusion rule'
+                    print(stemcell_inclusion_rules, 'is not a valid stemcell inclusion rule', file=sys.stderr)
             else:
-                print >> sys.stderr, 'unexpected stemcell inclusion rule type'
+                print('unexpected stemcell inclusion rule type', file=sys.stderr)
 
     return matches
 
@@ -266,10 +268,8 @@ if __name__ == '__main__':
         description='Scan a tile for potential issues',
         epilog='Exit code: 0 if no issues found, otherwise 1 and issues are printed.',
     )
-    parser.add_argument(
-        '--metadata', help='print tile metadata as json', action='store_true')
-    parser.add_argument(
-        '--scan', help='yaml file with rules to scan for', nargs=1)
+    parser.add_argument('--metadata', help='print tile metadata as json', action='store_true')
+    parser.add_argument('--scan', help='yaml file with rules to scan for', nargs=1)
     parser.add_argument('--sha', help='sha to include with results', nargs=1)
     parser.add_argument('tile', help='.pivotal file to scan')
     args = parser.parse_args()
