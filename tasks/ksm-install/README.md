@@ -1,24 +1,21 @@
 # ksm-install
 
-**Describe your test Here**
+Given
+* PAS installed on Ops Manager
+* PKS installed on Ops Manager (can be different OM)
+* A Google Cloud key with
+    * Cloud Storage Admin
+    * IAM admin
+* A PKS cluster configuration (could be our own custom config schema OR the PKS schema for a plan)
 
-Currently this test accepts a name in the environment variable `GREETING_NAME`,
-and logs output in the form of:
+This task:
+  * creates a GCS Bucket
+  * creates a SAK that can list, read and create on the bucket
+  * configures and updates the plan 1 cluster on PKS
+  * stages, configures and installs KSM on the PAS
+    * configured with the cluster credentials and the Storage bucket SAK
 
-    `hello <GREETING_NAME>`
 
-For more information see the [ISV-CI Test Toolkit]()
+# TODO
 
-# Running for the first time
-
-If you execute:
-
-`GREETING_NAME="me" make run`
-
-You should see:
-
-```
-section-start greet
-hello my friend
-section-end greet
-```
+* Probably should call this `install-ksm` to be consistent with other tools

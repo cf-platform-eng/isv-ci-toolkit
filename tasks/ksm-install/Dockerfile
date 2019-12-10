@@ -23,8 +23,11 @@ RUN mrlog dependency --type binary --name mrlog --version $(mrlog version | cut 
     mrlog dependency --type binary --name kubectl --version $(kubectl version | sed -e 's/.*\(GitVersion:".*"\), GitCommit:.*/\1/') >> ${DEPENDENCIES_FILE}
 
 # Copy files for this app
-COPY [ "needs.json", "run.sh", "steps.sh", "SERVICE-ACCOUNT.yml", "/test/" ]
-RUN chmod a+x /test/run.sh
-WORKDIR /test
+COPY [ "needs.json", "run.sh", "steps.sh", "SERVICE-ACCOUNT.yml", "/task/" ]
+RUN chmod a+x /task/run.sh
 
-CMD ["/bin/bash", "-c", "/test/run.sh"]
+WORKDIR /task
+
+RUN ["/bin/bash", "-c", "echo \"\nsource /task/steps.sh\n\" >> ~/.bashrc"]
+
+CMD ["/bin/bash", "-c", "/task/run.sh"]
