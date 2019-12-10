@@ -1,0 +1,17 @@
+[
+  {
+    "name": "DEPENDENCIES_FILE",
+    "type": "environment_variable",
+    "description": "location of the dependencies file generated during `docker build`"
+  },
+  {
+    "type": "file",
+    "path": "/input/kubeconfig",
+    "description": "The kubeconfig file should exist"
+  },
+  {
+    "name": "KUBECONFIG",
+    "type": "environment_variable",
+    "description": "Location of kubeconfig file - should be set to /input/kubeconfig"
+  }
+]
