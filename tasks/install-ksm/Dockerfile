@@ -8,7 +8,7 @@ COPY --from=cfplatformeng/mrlog:latest          /usr/local/bin/mrlog /usr/local/
 COPY --from=cfplatformeng/needs:latest          /usr/local/bin/needs /usr/local/bin/
 COPY --from=cfplatformeng/tileinspect:latest    /usr/local/bin/tileinspect /usr/local/bin/
 
-RUN apt-get update && apt-get install -y apt-transport-https
+RUN apt-get update && apt-get install -y apt-transport-https gettext-base
 RUN curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add
 RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
     apt-get update -y && \
@@ -38,6 +38,8 @@ COPY [ "needs.json", "run.sh", "steps.sh", "SERVICE-ACCOUNT.yml", "/task/" ]
 RUN chmod a+x /task/run.sh
 
 WORKDIR /task
+
+ENV KUBECONFIG /input/kubeconfig
 
 RUN ["/bin/bash", "-c", "echo \"\nsource /task/steps.sh\n\" >> ~/.bashrc"]
 

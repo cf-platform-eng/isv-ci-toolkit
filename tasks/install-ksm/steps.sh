@@ -86,10 +86,23 @@ function generate_config_file() {
 
   result=$?
 
+  KUBECONFIG_ACTIVE=$(kubectl config current-context)
+  if [[ -z "$KUBECONFIG_ACTIVE" ]]; then
+    KSM_CLUSTER_CONFIG=$(kubectl config view --raw -o json | jq ".clusters[0]")
+    kubectl config use-context $(echo "$KSM_CLUSTER_CONFIG" | jq .name)
+  else
+    export KSM_CLUSTER_CONFIG=$(kubectl config view --raw -o json | jq ".clusters[] | select(.name | contains(\"$KUBECONFIG_ACTIVE\"))")
+  fi
+
   secret_name=$(kubectl get serviceaccount ksm-admin --namespace=kube-system -o jsonpath='{.secrets[0].name}')
   secret_val=$(kubectl --namespace=kube-system get secret "$secret_name" -o jsonpath='{.data.token}')
 
-  KSM_CLUSTER_TOKEN=$(echo "${secret_val}" | base64 --decode)
+  export KSM_CLUSTER_CA=$(echo "$KSM_CLUSTER_CONFIG" | jq -r '.cluster."certificate-authority-data"')
+  export KSM_CLUSTER_TOKEN=$(echo "${secret_val}" | base64 --decode)
+  KSM_CLUSTER_SERVER=$(echo "$KSM_CLUSTER_CONFIG" | jq -r '.server')
+  export KSM_CLUSTER_SERVER=${KSM_CLUSTER_SERVER#https://}
+
+  cat ksm-config.template.yml | envsubst > ksm-config.yml
 
   mrlog section-end --name="generate tile config" --result=$result
 }
