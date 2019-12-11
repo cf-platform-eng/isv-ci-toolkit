@@ -46,14 +46,12 @@ logs:
 
 run: run-deps logs temp/make-tags/build
 	set -o pipefail; docker run \
-	-e KUBECONFIG=/input/kubeconfig \
-	-v ${KUBECONFIG}:/input/kubeconfig \
+	-v ${PWD}/input:/input \
 	$(IMAGE_NAME) 2>&1 | tee ./logs/$(shell date "+%Y.%m.%d-%H.%M.%S").log
 
 define run-docker-interactive
 	docker run -it \
-	-e KUBECONFIG=/input/kubeconfig \
-	-v ${KUBECONFIG}:/input/kubeconfig \
+	-v ${PWD}/input:/input \
 	-v ${PWD}:/task \
 	$(IMAGE_NAME) \
 	$1 $2
@@ -62,8 +60,8 @@ endef
 shell: temp/make-tags/interactive-build
 	$(call run-docker-interactive,"/bin/bash")
 
-needs-list:
+needs-list: temp/make-tags/interactive-build
 	$(call run-docker-interactive,/bin/bash,-c "needs list")
 
-needs-check:
+needs-check: temp/make-tags/interactive-build
 	$(call run-docker-interactive,/bin/bash,-c "needs check")

@@ -7,11 +7,7 @@
   {
     "type": "file",
     "path": "/input/kubeconfig",
-    "description": "The kubeconfig file should exist"
-  },
-  {
-    "name": "KUBECONFIG",
-    "type": "environment_variable",
-    "description": "Location of kubeconfig file - should be set to /input/kubeconfig"
+    "description": "The kubeconfig file should exist",
+    "optional": true
   }
 ]
