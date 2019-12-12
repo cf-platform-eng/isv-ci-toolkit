@@ -22,6 +22,7 @@ test: deps
 	pipenv run python scan_tile_integration_test.py
 
 build:
+	rm -rf *.pyc
 	docker build . -t cfplatformeng/scan-tile
 
 tile-path:
