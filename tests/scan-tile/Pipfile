@@ -10,6 +10,7 @@ vcrpy-unittest = "*"
 [packages]
 pyyaml = "*"
 objectpath = "*"
+mock = "*"
 
 [requires]
 python_version = "3.7"

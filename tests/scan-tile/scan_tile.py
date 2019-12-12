@@ -8,6 +8,8 @@ import zipfile
 import tarfile
 import gzip
 import fnmatch
+from base64 import b64encode
+
 import yaml
 import re
 import objectpath
@@ -97,7 +99,7 @@ def evaluate_rule(tile, rule, file_list):
         for name, entry in file_list.items():
             if fnmatch.fnmatch('/' + name, rule['file_exists']):
                 matches.append({
-                        'file': entry['prefix'] + '/' + name,
+                    'file': entry['prefix'] + '/' + name,
                 })
     elif 'function' in rule:
         for name, entry in file_list.items():
@@ -113,10 +115,16 @@ def evaluate_rule(tile, rule, file_list):
     return matches
 
 
+IMAGE_ICON = "icon_image"
+
+
 def get_metadata(tile):
     metadata_file = next(path for path in tile.namelist() if path.startswith('metadata/') and path.endswith('.yml'))
     with tile.open(metadata_file) as metadata:
-        return yaml.safe_load(metadata.read())
+        metadata = yaml.safe_load(metadata.read())
+        if type(metadata[IMAGE_ICON]) == bytes:
+            metadata[IMAGE_ICON] = b64encode(metadata[IMAGE_ICON]).decode("ascii")
+        return metadata
 
 
 def get_tile_generator(tile):

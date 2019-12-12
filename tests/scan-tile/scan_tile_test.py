@@ -1,11 +1,13 @@
 #!/usr/bin/env python
-
+import io
 import os
 import unittest
-import scan_tile
-import yaml
 import zipfile
 
+import yaml
+from mock import MagicMock
+
+import scan_tile
 
 trusty_only_metadata = '''---
 runtime_configs:
@@ -88,11 +90,13 @@ class ScanTileTest(unittest.TestCase):
         self.assertEqual(1, len(matches))
 
     def test_runtime_config_xenial_and_trusty(self):
-        matches = scan_tile.runtime_config_supports_xenial_and_trusty('/metadata/test-tile.yml', xenial_and_trusty_metadata)
+        matches = scan_tile.runtime_config_supports_xenial_and_trusty('/metadata/test-tile.yml',
+                                                                      xenial_and_trusty_metadata)
         self.assertEqual(0, len(matches))
 
     def test_runtime_config_property_defined(self):
-        matches = scan_tile.runtime_config_supports_xenial_and_trusty('/metadata/test-tile.yml', property_defined_stemcell_metadata)
+        matches = scan_tile.runtime_config_supports_xenial_and_trusty('/metadata/test-tile.yml',
+                                                                      property_defined_stemcell_metadata)
         self.assertEqual(0, len(matches))
 
 
@@ -115,6 +119,31 @@ class CfCliBoshPackage(unittest.TestCase):
             matches = scan_tile.scan_tile(tile, rules)
         self.assertEqual(0, len(matches))
 
+
+class MetadataParsing(unittest.TestCase):
+    def test_text_icon_image_returned_as_string(self):
+        metadata = io.StringIO(
+            """---
+            icon_image: SGVsbG8hCg==
+            """
+        )
+        tile = MagicMock()
+        tile.namelist.return_value = ["metadata/foo.yml"]
+        tile.open.return_value = metadata
+        metadata = scan_tile.get_metadata(tile)
+        self.assertEqual(metadata['icon_image'], "SGVsbG8hCg==")
+
+    def test_binary_icon_image_returned_as_string(self):
+        metadata = io.StringIO(
+            """---
+            icon_image: !!binary SGVsbG8hCg==
+            """
+        )
+        tile = MagicMock()
+        tile.namelist.return_value = ["metadata/foo.yml"]
+        tile.open.return_value = metadata
+        metadata = scan_tile.get_metadata(tile)
+        self.assertEqual(metadata['icon_image'], "SGVsbG8hCg==")
 
 if __name__ == '__main__':
     unittest.main()
