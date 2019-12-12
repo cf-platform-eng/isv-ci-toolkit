@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -xeo pipefail
+
+creator_sak_path=${1}
+account_prefix=${2}
+project_id="$(cat "${creator_sak_path}" | jq -r .project_id)"
+unique_id=$(head -c50 /dev/random | shasum -a256 | head -c 30)
+# doing all we can to make a unique name, that satisfies the bucket name limit
+unique_account_name=$(echo "${account_prefix}-${unique_id}" | head -c30)
+service_account_email="${unique_account_name}@${project_id}.iam.gserviceaccount.com"
+# set to match the poolsmiths deployment location
+bucket_region=US-CENTRAL1
+
+# --------- Sign in
+gcloud auth activate-service-account --key-file "${creator_sak_path}" --project "${project_id}"
+
+# --------- Create Bucket SA
+gcloud iam service-accounts create "${unique_account_name}" --description "GCP Storage Bucket SAK for ${account_prefix} KSM charts"
+
+# --------- Create Bucket
+
+gsutil mb -p "${project_id}" -l ${bucket_region} -b on "gs://${unique_account_name}/"
+
+## --------- associate SA with bucket
+gsutil iam ch serviceAccount:${service_account_email}:objectAdmin "gs://${unique_account_name}/"

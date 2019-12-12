@@ -6,6 +6,7 @@ ENV OUTPUT_DIR=/input
 # Copy binaries from dependent images
 COPY --from=cfplatformeng/mrlog:latest          /usr/local/bin/mrlog /usr/local/bin/
 COPY --from=cfplatformeng/needs:latest          /usr/local/bin/needs /usr/local/bin/
+COPY --from=cfplatformeng/marman:latest         /usr/local/bin/marman /usr/local/bin/
 COPY --from=cfplatformeng/tileinspect:latest    /usr/local/bin/tileinspect /usr/local/bin/
 
 RUN apt-get update && apt-get install -y apt-transport-https gettext-base
@@ -24,6 +25,7 @@ ENV DEPENDENCIES_FILE=/root/dependencies.log
 RUN mrlog dependency --type binary --name mrlog --version $(mrlog version | cut -f3 -d" ") >> ${DEPENDENCIES_FILE} && \
     mrlog dependency --type binary --name needs --version $(needs --version) >> ${DEPENDENCIES_FILE} && \
     mrlog dependency --type binary --name tileinspect --version $(needs --version) >> ${DEPENDENCIES_FILE} && \
+    mrlog dependency --type binary --name marman --version $(needs --version) >> ${DEPENDENCIES_FILE} && \
     mrlog dependency --type binary --name "Google Cloud SDK" --version $(gcloud version  --format=json | jq -r '."Google Cloud SDK"') >> ${DEPENDENCIES_FILE} && \
     mrlog dependency --type binary --name "gcloud alpha" --version $(gcloud version  --format=json     | jq -r .alpha) >> ${DEPENDENCIES_FILE} && \
     mrlog dependency --type binary --name "gcloud beta" --version $(gcloud version  --format=json      | jq -r .beta) >> ${DEPENDENCIES_FILE} && \

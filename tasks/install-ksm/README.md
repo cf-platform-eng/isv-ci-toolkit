@@ -4,8 +4,11 @@ Given
 * PAS installed on Ops Manager
 * PKS installed on Ops Manager (can be different OM)
 * A Google Cloud key with
-    * Cloud Storage Admin
-    * IAM admin
+  * Compute Viewer
+  * Security Admin
+  * Create Service Accounts
+  * Delete Service Accounts
+  * Storage Admin
 * A PKS cluster configuration (could be our own custom config schema OR the PKS schema for a plan)
 
 This task:

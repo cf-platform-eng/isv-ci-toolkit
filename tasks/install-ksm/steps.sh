@@ -42,6 +42,13 @@ function log_dependencies() {
   mrlog section-end --name="dependencies" --result=0
 }
 
+function install_leftovers() {
+  marman download-release -o genevieve -r leftovers -f .*linux-amd64
+  mv leftovers*linux-amd64 /usr/local/bin/leftovers
+  chmod +x /usr/local/bin/leftovers
+  mrlog dependency --name="leftovers" --version="$(leftovers -v 2>&1)"
+}
+
 function config_file_check() {
   mrlog section-start --name="config file check"
   tileinspect check-config --tile "${TILE_PATH}" --config "${TILE_CONFIG_PATH}"
@@ -64,12 +71,15 @@ function log_existing_dependencies() {
   return $result
 }
 
-function generate_chart_bucket() {
-  mrlog section --name "generate GCS chart bucket"
+function teardown() {
+    mrlog section --name="remove all gcp resources" -- \
+      ./lib/teardown /input/service_account_key.json pas-prefix
 
-  result=$?
-  mrlog section --name "generate GCS chart bucket" --result=$result
-  return $result
+}
+
+function prepare_chart_storage() {
+    mrlog section --name="prepare chart storage" -- \
+      ./lib/prepare_chart_storage /input/service_account_key.json pas-prefix
 }
 
 function generate_service_account() {
