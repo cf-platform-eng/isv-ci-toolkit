@@ -43,4 +43,5 @@ run: tile-path logs
 shell: tile-path
 	docker run -it \
 		-v ${TILE_PATH}:/input/tile.pivotal \
-		cfplatformeng/scan-tile bash
+		-v ${PWD}:/test \
+		cfplatformeng/scan-tile sh
