@@ -14,5 +14,11 @@
     "path": "/input/kubeconfig",
     "description": "The kubeconfig file should exist",
     "optional": true
+  },
+  {
+    "type": "file",
+    "path": "/input/env.json",
+    "description": "The toolsmiths formatted PAS configuration",
+    "optional": true
   }
 ]

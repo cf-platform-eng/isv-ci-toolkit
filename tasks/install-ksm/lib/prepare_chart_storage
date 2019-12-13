@@ -12,15 +12,21 @@ service_account_email="${unique_account_name}@${project_id}.iam.gserviceaccount.
 # set to match the poolsmiths deployment location
 bucket_region=US-CENTRAL1
 
-# --------- Sign in
-gcloud auth activate-service-account --key-file "${creator_sak_path}" --project "${project_id}"
+mrlog section --name "Sign in to creation Service Account" -- \
+  gcloud auth activate-service-account --key-file "${creator_sak_path}" --project "${project_id}"
 
-# --------- Create Bucket SA
-gcloud iam service-accounts create "${unique_account_name}" --description "GCP Storage Bucket SAK for ${account_prefix} KSM charts"
 
-# --------- Create Bucket
+mrlog section --name "Creating Chart Bucket Service account" -- \
+  gcloud iam service-accounts create "${unique_account_name}" --description "GCP Storage Bucket SAK for ${account_prefix} KSM charts"
 
-gsutil mb -p "${project_id}" -l ${bucket_region} -b on "gs://${unique_account_name}/"
+mrlog section --name "Creating Chart Bucket Service Account Key" -- \
+  gcloud iam service-accounts keys create /input/bucket_service_account_key.json \
+    --iam-account "${service_account_email}"
 
-## --------- associate SA with bucket
-gsutil iam ch serviceAccount:${service_account_email}:objectAdmin "gs://${unique_account_name}/"
+mrlog section --name "Creating Chart Bucket" -- \
+  gsutil mb -p "${project_id}" -l ${bucket_region} -b on "gs://${unique_account_name}/"
+
+mrlog section --name "Associating Service Account with Bucket" -- \
+  gsutil iam ch serviceAccount:${service_account_email}:objectAdmin "gs://${unique_account_name}/"
+
+

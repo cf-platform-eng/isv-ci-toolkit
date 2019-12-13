@@ -7,6 +7,7 @@ Given
   * Compute Viewer
   * Security Admin
   * Create Service Accounts
+  * Service Account Key Admin
   * Delete Service Accounts
   * Storage Admin
 * A PKS cluster configuration (could be our own custom config schema OR the PKS schema for a plan)
@@ -17,3 +18,8 @@ This task:
   * configures and updates the plan 1 cluster on PKS
   * stages, configures and installs KSM on the PAS
     * configured with the cluster credentials and the Storage bucket SAK
+
+
+# TODO
+  * use the service account in the KSM install
+  

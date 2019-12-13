@@ -72,14 +72,15 @@ function log_existing_dependencies() {
 }
 
 function teardown() {
-    mrlog section --name="remove all gcp resources" -- \
-      ./lib/teardown /input/service_account_key.json pas-prefix
+  mrlog section --name="remove all gcp resources" -- \
+    ./lib/teardown /input/service_account_key.json "ksm-$(cat /input/env.json | jq -r .name)"
 
 }
 
 function prepare_chart_storage() {
-    mrlog section --name="prepare chart storage" -- \
-      ./lib/prepare_chart_storage /input/service_account_key.json pas-prefix
+  # KSM prefix avoids collision with leftovers and the original PAS if they're hosted within the same project
+  mrlog section --name="prepare chart storage" -- \
+    ./lib/prepare_chart_storage /input/service_account_key.json "ksm-$(cat /input/env.json | jq -r .name)"
 }
 
 function generate_service_account() {
@@ -129,7 +130,7 @@ function generate_config_file() {
 
   export PAS_SUBNET=$(echo "$ENVIRONMENT" | jq -r .ert_subnet)
 
-  cat ksm-config.template.yml | envsubst > ksm-config.yml
+  cat ksm-config.template.yml | envsubst >ksm-config.yml
 
   mrlog section-end --name="generate tile config" --result=$result
 }
