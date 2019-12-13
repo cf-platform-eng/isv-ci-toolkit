@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+set -xeo pipefail
+
+ENVIRONMENT=$(cat /input/env.json)
+
+echo "Reading storage secrets"
+export KSM_STORAGE_ACCESS_KEY_ID="$(cat /input/ksm_bucket_s3_key.json | jq -r .AccessID)"
+export KSM_STORAGE_SECRET_ACCESS_KEY="$(cat /input/ksm_bucket_s3_key.json | jq -r .Secret)"
+
+echo "Pick a context and ensure it's active"
+KUBECONFIG_ACTIVE=$(kubectl config current-context)
+if [[ -z "$KUBECONFIG_ACTIVE" ]]; then
+  export KSM_CLUSTER_CONFIG=$(kubectl config view --raw -o json | jq ".clusters[0]")
+  kubectl config use-context $(echo "$KSM_CLUSTER_CONFIG" | jq .name)
+else
+  export KSM_CLUSTER_CONFIG=$(kubectl config view --raw -o json | jq ".clusters[] | select(.name | contains(\"$KUBECONFIG_ACTIVE\"))")
+fi
+
+
+echo "Apply ksm-admin service account"
+kubectl apply -f SERVICE-ACCOUNT.yml
+
+echo "Generate token for KSM service account"
+secret_name=$(kubectl get serviceaccount ksm-admin --namespace=kube-system -o jsonpath='{.secrets[0].name}')
+secret_val=$(kubectl --namespace=kube-system get secret "$secret_name" -o jsonpath='{.data.token}')
+
+echo "Set KSM Cluster credentials"
+export KSM_CLUSTER_TOKEN=$(echo "${secret_val}" | base64 --decode)
+export KSM_CLUSTER_CA=$(echo "$KSM_CLUSTER_CONFIG" | jq -r '.cluster."certificate-authority-data"')
+
+echo "Generate KSM cluster endpoint and port"
+KSM_CLUSTER_ENDPOINT=$(echo "$KSM_CLUSTER_CONFIG" | jq -r '.cluster.server')
+KSM_CLUSTER_ENDPOINT=${KSM_CLUSTER_ENDPOINT#https://}
+port="$(echo $KSM_CLUSTER_ENDPOINT | sed -e 's,^.*:,:,g' -e 's,.*:\([0-9]*\).*,\1,g' -e 's,[^0-9],,g')"
+export KSM_CLUSTER_ENDPOINT=$(echo "$KSM_CLUSTER_ENDPOINT" | sed 's/:.*//')
+
+if [[ -z "$port" ]]; then
+  export KSM_CLUSTER_PORT=443
+else
+  export KSM_CLUSTER_PORT=8443
+fi
+
+echo "set network settings for KSM tile based on environment"
+export AZ_1=$(echo "$ENVIRONMENT" | jq -r .azs[0])
+export SINGLETON_AZ=$(echo "$ENVIRONMENT" | jq -r .azs[0])
+export AZ_2=$(echo "$ENVIRONMENT" | jq -r .azs[1])
+export AZ_3=$(echo "$ENVIRONMENT" | jq -r .azs[2])
+
+export PAS_SUBNET=$(echo "$ENVIRONMENT" | jq -r .ert_subnet)
+
+echo "Generate the config"
+cat ksm-config.template.yml | envsubst >/input/ksm-config.yml

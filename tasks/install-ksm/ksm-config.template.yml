@@ -19,7 +19,7 @@ product-properties:
   .properties.region:
     value: $KSM_STORAGE_REGION
   .properties.access_key_id:
-    value: $KSM_ACCESS_KEY_ID
+    value: $KSM_STORAGE_ACCESS_KEY_ID
   .properties.secret_access_key:
     value:
       secret: $KSM_STORAGE_SECRET_ACCESS_KEY

@@ -83,56 +83,9 @@ function prepare_chart_storage() {
     ./lib/prepare_chart_storage /input/service_account_key.json "ksm-$(cat /input/env.json | jq -r .name)"
 }
 
-function generate_service_account() {
-  mrlog section-start --name="generate service account"
-
-  kubectl apply -f SERVICE-ACCOUNT.yml
-  result=$?
-
-  mrlog section-end --name="generate service account" --result=$result
-}
-
 function generate_config_file() {
-  mrlog section-start --name="generate tile config"
-
-  result=$?
-
-  ENVIRONMENT=$(cat /input/env.json)
-
-  KUBECONFIG_ACTIVE=$(kubectl config current-context)
-  if [[ -z "$KUBECONFIG_ACTIVE" ]]; then
-    KSM_CLUSTER_CONFIG=$(kubectl config view --raw -o json | jq ".clusters[0]")
-    kubectl config use-context $(echo "$KSM_CLUSTER_CONFIG" | jq .name)
-  else
-    export KSM_CLUSTER_CONFIG=$(kubectl config view --raw -o json | jq ".clusters[] | select(.name | contains(\"$KUBECONFIG_ACTIVE\"))")
-  fi
-
-  secret_name=$(kubectl get serviceaccount ksm-admin --namespace=kube-system -o jsonpath='{.secrets[0].name}')
-  secret_val=$(kubectl --namespace=kube-system get secret "$secret_name" -o jsonpath='{.data.token}')
-
-  export KSM_CLUSTER_CA=$(echo "$KSM_CLUSTER_CONFIG" | jq -r '.cluster."certificate-authority-data"')
-  export KSM_CLUSTER_TOKEN=$(echo "${secret_val}" | base64 --decode)
-
-  KSM_CLUSTER_ENDPOINT=$(echo "$KSM_CLUSTER_CONFIG" | jq -r '.cluster.server')
-  KSM_CLUSTER_ENDPOINT=${KSM_CLUSTER_ENDPOINT#https://}
-  port="$(echo $KSM_CLUSTER_ENDPOINT | sed -e 's,^.*:,:,g' -e 's,.*:\([0-9]*\).*,\1,g' -e 's,[^0-9],,g')"
-  export KSM_CLUSTER_ENDPOINT=$(echo "$KSM_CLUSTER_ENDPOINT" | sed 's/:.*//')
-  if [[ -z "$port" ]]; then
-    export KSM_CLUSTER_PORT=443
-  else
-    export KSM_CLUSTER_PORT=8443
-  fi
-
-  export AZ_1=$(echo "$ENVIRONMENT" | jq -r .azs[0])
-  export SINGLETON_AZ=$(echo "$ENVIRONMENT" | jq -r .azs[0])
-  export AZ_2=$(echo "$ENVIRONMENT" | jq -r .azs[1])
-  export AZ_3=$(echo "$ENVIRONMENT" | jq -r .azs[2])
-
-  export PAS_SUBNET=$(echo "$ENVIRONMENT" | jq -r .ert_subnet)
-
-  cat ksm-config.template.yml | envsubst >ksm-config.yml
-
-  mrlog section-end --name="generate tile config" --result=$result
+  mrlog section --name="generate tile config" -- /
+    ./lib/generate_config_file
 }
 
 function install_tile() {
