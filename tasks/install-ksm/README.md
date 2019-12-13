@@ -7,7 +7,7 @@ Given
   * Compute Viewer
   * Security Admin
   * Create Service Accounts
-  * Service Account Key Admin
+  * Storage HMAC Key Admin
   * Delete Service Accounts
   * Storage Admin
 * A PKS cluster configuration (could be our own custom config schema OR the PKS schema for a plan)
@@ -21,5 +21,6 @@ This task:
 
 
 # TODO
+  * create s3 compatible keys
   * use the service account in the KSM install
   

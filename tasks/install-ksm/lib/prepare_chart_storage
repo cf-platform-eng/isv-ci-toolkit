@@ -15,15 +15,13 @@ bucket_region=US-CENTRAL1
 mrlog section --name "Sign in to creation Service Account" -- \
   gcloud auth activate-service-account --key-file "${creator_sak_path}" --project "${project_id}"
 
+mrlog section --name "Creating KSM Bucket Service account" -- \
+  gcloud iam service-accounts create "${unique_account_name}" --description "GCP Storage Bucket SAK for ${account_prefix} KSM"
 
-mrlog section --name "Creating Chart Bucket Service account" -- \
-  gcloud iam service-accounts create "${unique_account_name}" --description "GCP Storage Bucket SAK for ${account_prefix} KSM charts"
+mrlog section --name "Creating KSM Bucket SA HMAC" -- \
+  bash -c "gsutil hmac create \"${service_account_email}\" | sed -e \"s/Access ID/AccessID/\" | yq -r . > /input/ksm_bucket_s3_key.json"
 
-mrlog section --name "Creating Chart Bucket Service Account Key" -- \
-  gcloud iam service-accounts keys create /input/bucket_service_account_key.json \
-    --iam-account "${service_account_email}"
-
-mrlog section --name "Creating Chart Bucket" -- \
+mrlog section --name "Creating KSM Bucket" -- \
   gsutil mb -p "${project_id}" -l ${bucket_region} -b on "gs://${unique_account_name}/"
 
 mrlog section --name "Associating Service Account with Bucket" -- \
