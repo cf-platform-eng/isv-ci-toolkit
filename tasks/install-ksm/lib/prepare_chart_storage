@@ -10,7 +10,7 @@ unique_id=$(head -c50 /dev/random | shasum -a256 | head -c 30)
 unique_account_name=$(echo "${account_prefix}-${unique_id}" | head -c30)
 service_account_email="${unique_account_name}@${project_id}.iam.gserviceaccount.com"
 # set to match the poolsmiths deployment location
-bucket_region=US-CENTRAL1
+bucket_region=$(cat /input/env.json | jq -r .region)
 
 mrlog section --name "Sign in to creation Service Account" -- \
   gcloud auth activate-service-account --key-file "${creator_sak_path}" --project "${project_id}"
@@ -27,4 +27,5 @@ mrlog section --name "Creating KSM Bucket" -- \
 mrlog section --name "Associating Service Account with Bucket" -- \
   gsutil iam ch serviceAccount:${service_account_email}:objectAdmin "gs://${unique_account_name}/"
 
+echo -n "${unique_account_name}" > /input/ksm_bucket_name.txt
 
