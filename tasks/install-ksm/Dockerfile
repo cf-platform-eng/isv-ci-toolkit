@@ -8,6 +8,8 @@ COPY --from=cfplatformeng/mrlog:latest          /usr/local/bin/mrlog /usr/local/
 COPY --from=cfplatformeng/needs:latest          /usr/local/bin/needs /usr/local/bin/
 COPY --from=cfplatformeng/marman:latest         /usr/local/bin/marman /usr/local/bin/
 COPY --from=cfplatformeng/tileinspect:latest    /usr/local/bin/tileinspect /usr/local/bin/
+COPY --from=cfplatformeng/om:latest             /usr/local/bin/om /usr/local/bin/
+COPY --from=cfplatformeng/isv-ci-toolkit:latest /usr/local/bin/*.sh /usr/local/bin/
 
 RUN apt-get update && apt-get install -y apt-transport-https gettext-base
 RUN curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add
@@ -36,12 +38,13 @@ RUN mrlog dependency --type binary --name mrlog --version $(mrlog version | cut 
     mrlog dependency --type binary --name kubectl --version $( kubectl version  --client -o json | jq -r .clientVersion.gitVersion )>> ${DEPENDENCIES_FILE}
 
 # Copy files for this app
-COPY [ "needs.json", "run.sh", "steps.sh", "SERVICE-ACCOUNT.yml", "/task/" ]
-RUN chmod a+x /task/run.sh
+COPY [ "needs.json", "run.sh", "steps.sh", "SERVICE-ACCOUNT.yml", "ksm-config.template.yml", "/task/"]
+COPY ["lib/*", "/task/lib/" ]
 
 WORKDIR /task
 
 ENV KUBECONFIG /input/kubeconfig
+ENV OM_SKIP_SSL_VALIDATION true
 
 RUN ["/bin/bash", "-c", "echo \"\nsource /task/steps.sh\n\" >> ~/.bashrc"]
 

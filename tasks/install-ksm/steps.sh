@@ -51,7 +51,7 @@ function install_leftovers() {
 
 function config_file_check() {
   mrlog section-start --name="config file check"
-  tileinspect check-config --tile "${TILE_PATH}" --config "${TILE_CONFIG_PATH}"
+  tileinspect check-config --tile /input/ksm*.pivotal --config "/input/ksm-config.yml"
   result=$?
   mrlog section-end --name="config file check" --result=${result}
 
@@ -72,25 +72,36 @@ function log_existing_dependencies() {
 }
 
 function teardown() {
+  # shellcheck disable=SC2002
   mrlog section --name="remove all gcp resources" -- \
-    ./lib/teardown /input/service_account_key.json "ksm-$(cat /input/env.json | jq -r .name)"
+    "$PWD/lib/teardown" /input/service_account_key.json "ksm-$(cat /input/env.json | jq -r .name)"
 
 }
 
 function prepare_chart_storage() {
   # KSM prefix avoids collision with leftovers and the original PAS if they're hosted within the same project
+  # shellcheck disable=SC2002
   mrlog section --name="prepare chart storage" -- \
-    ./lib/prepare_chart_storage /input/service_account_key.json "ksm-$(cat /input/env.json | jq -r .name)"
+    "$PWD/lib/prepare_chart_storage" /input/service_account_key.json "ksm-$(cat /input/env.json | jq -r .name)"
 }
 
 function generate_config_file() {
-  mrlog section --name="generate tile config" -- /
-    ./lib/generate_config_file
+  mrlog section --name="generate tile config" -- \
+    "$PWD/lib/generate_config_file"
 }
 
 function install_tile() {
   mrlog section-start --name="tile install"
-  install-tile.sh "${TILE_PATH}" "${TILE_CONFIG_PATH}" "${USE_FULL_DEPLOY:-false}"
+
+  # shellcheck disable=SC2002 disable=SC2155
+  export OM_TARGET="$(cat /input/env.json | jq -r .ops_manager.url)"
+  # shellcheck disable=SC2002 disable=SC2155
+  export OM_USERNAME="$(cat /input/env.json | jq -r .ops_manager.username)"
+  # shellcheck disable=SC2002 disable=SC2155
+  export OM_PASSWORD="$(cat /input/env.json | jq -r .ops_manager.password)"
+  export OM_SKIP_SSL_VALIDATION=true
+
+  install-tile.sh /input/ksm-*.pivotal "/input/ksm-config.yml" "${USE_FULL_DEPLOY:-false}"
   result=$?
   mrlog section-end --name="tile install" --result=$result
   if [[ $result -ne 0 ]]; then
