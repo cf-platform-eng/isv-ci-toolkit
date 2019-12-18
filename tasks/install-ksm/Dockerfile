@@ -44,7 +44,6 @@ COPY ["lib/*", "/task/lib/" ]
 WORKDIR /task
 
 ENV KUBECONFIG /input/kubeconfig
-ENV OM_SKIP_SSL_VALIDATION true
 
 RUN ["/bin/bash", "-c", "echo \"\nsource /task/steps.sh\n\" >> ~/.bashrc"]
 

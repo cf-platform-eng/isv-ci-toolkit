@@ -17,7 +17,6 @@ else
   export KSM_CLUSTER_CONFIG=$(kubectl config view --raw -o json | jq ".clusters[] | select(.name | contains(\"$KUBECONFIG_ACTIVE\"))")
 fi
 
-
 echo "Apply ksm-admin service account"
 kubectl apply -f SERVICE-ACCOUNT.yml
 
@@ -32,13 +31,14 @@ export KSM_CLUSTER_CA=$(echo "$KSM_CLUSTER_CONFIG" | jq -r '.cluster."certificat
 echo "Generate KSM cluster endpoint and port"
 KSM_CLUSTER_ENDPOINT=$(echo "$KSM_CLUSTER_CONFIG" | jq -r '.cluster.server')
 KSM_CLUSTER_ENDPOINT=${KSM_CLUSTER_ENDPOINT#https://}
-export KSM_CLUSTER_ENDPOINT=$(echo "$KSM_CLUSTER_ENDPOINT" | sed 's/:.*//')
 
 if [[ $KSM_CLUSTER_ENDPOINT == *":" ]]; then
   export KSM_CLUSTER_PORT="$(echo $KSM_CLUSTER_ENDPOINT | sed -e 's,^.*:,:,g' -e 's,.*:\([0-9]*\).*,\1,g' -e 's,[^0-9],,g')"
 else
   export KSM_CLUSTER_PORT=443
 fi
+
+export KSM_CLUSTER_ENDPOINT=$(echo "$KSM_CLUSTER_ENDPOINT" | sed 's/:.*//')
 
 echo "set network settings for KSM tile based on environment"
 export AZ_1=$(echo "$ENVIRONMENT" | jq -r .azs[0])
