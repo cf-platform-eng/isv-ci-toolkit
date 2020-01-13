@@ -31,3 +31,8 @@ RUN apt-get update --fix-missing && \
     pip install yq
 
 WORKDIR /job
+
+# Installed dependencies are not in the CN-JEB spec
+ARG DEPENDENCIES_FILE=/root/dependencies.log
+RUN mrlog dependency --type binary --name mrlog --version $(mrlog version | cut -f3 -d" ") >> ${DEPENDENCIES_FILE} && \
+    mrlog dependency --type binary --name needs --version $(needs --version) >> ${DEPENDENCIES_FILE}
