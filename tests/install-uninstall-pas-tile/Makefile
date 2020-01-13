@@ -1,29 +1,27 @@
-.PHONY: pas-config om-username om-password om-target tile-config
-.PHONY: tile-path tile-config-path clean build run run-deps shell deps-test test lint
+.PHONY: tile-path tile-config-path tile-config
 
-BASH_SRC := $(shell find . -name "*.sh")
-SRC := $(BASH_SRC) needs.json Dockerfile
-TEST_SRC := $(shell find . -name "*.bats")
+SRC := $(shell find . -name "*.sh") needs.json Dockerfile
 
-temp/bats-mock.bash:
-	mkdir -p temp
-	curl https://raw.githubusercontent.com/cf-platform-eng/bats-mock/master/src/bats-mock.bash > temp/bats-mock.bash
+DOCKER_REPO := cfplatformeng
+IMAGE_NAME := tile-install-uninstall
 
-BATS_INSTALLED := $(shell command -v bats 2>&1 > /dev/null; echo $$?)
-SHELLCHECK_INSTALLED := $(shell command -v shellcheck 2>&1 > /dev/null; echo $$?)
+temp/make-tags/build: $(SRC)
+	docker build . --pull --tag $(IMAGE_NAME)
+	mkdir -p temp/make-tags && touch temp/make-tags/build
 
-deps-test:
-ifneq ($(BATS_INSTALLED),0)
-  $(warning 'bats' not installed. See https://github.com/bats-core/bats-core)
-  MISSING := 1
-endif
-ifneq ($(SHELLCHECK_INSTALLED),0)
-  $(warning 'shellcheck' not installed. See https://www.shellcheck.net/)
-  MISSING := 1
-endif
-ifdef MISSING
-  $(error "Please install missing dependencies")
-endif
+temp/make-tags/interactive-build: Dockerfile
+	docker build . --pull --tag $(IMAGE_NAME)
+	mkdir -p temp/make-tags && touch temp/make-tags/interactive-build
+
+build: temp/make-tags/build
+
+clean:
+	rm -rf ./temp
+	rm -rf ./logs
+	docker image rm -f $(IMAGE_NAME)
+
+logs:
+	mkdir -p ./logs
 
 tile-path:
 ifndef TILE_PATH
@@ -39,37 +37,13 @@ else
 	$(NOOP)
 endif
 
-tile-config: tile-path tile-config-path
+runtime-deps: tile-path tile-config-path
 
-clean:
-	rm -rf temp
-	docker image rm -f cfplatformeng/install-uninstall-test-image
-	rm -rf ./logs
+publish: build
+	docker tag $(IMAGE_NAME) $(DOCKER_REPO)/$(IMAGE_NAME):latest
+	docker push $(DOCKER_REPO)/$(IMAGE_NAME):latest
 
-temp/make-tags/lint: $(BASH_SRC)
-	shellcheck *.sh
-	mkdir -p temp/make-tags && touch temp/make-tags/lint
-
-lint: temp/make-tags/lint
-
-temp/make-tags/test: temp/bats-mock.bash $(BASH_SRC) $(TEST_SRC)
-	bats --tap *.bats
-	mkdir -p temp/make-tags && touch temp/make-tags/test
-
-test: deps-test temp/make-tags/lint temp/make-tags/test
-
-temp/make-tags/build: temp/make-tags/lint temp/make-tags/test $(SRC)
-	docker build . --tag cfplatformeng/install-uninstall-test-image
-	mkdir -p temp/make-tags && touch temp/make-tags/build
-
-build: temp/make-tags/build
-
-run-deps: tile-config build
-
-logs:
-	mkdir -p ./logs
-
-run: run-deps logs temp/make-tags/build
+run: runtime-deps build logs
 	docker run \
 	-e OM_USERNAME \
 	-e OM_PASSWORD \
@@ -80,9 +54,9 @@ run: run-deps logs temp/make-tags/build
 	-v ${TILE_PATH}:/input/tile.pivotal \
 	-v ${TILE_CONFIG_PATH}:/input/config.json \
 	-v ${PWD}/../../tools:/bin/tools \
-	cfplatformeng/install-uninstall-test-image 2>&1 | tee ./logs/$(shell date "+%Y.%m.%d-%H.%M.%S").log
+	$(IMAGE_NAME) run 2>&1 | tee ./logs/$(shell date "+%Y.%m.%d-%H.%M.%S").log
 
-define run-docker-interactive
+shell: temp/make-tags/interactive-build
 	docker run -it \
 	-e OM_USERNAME \
 	-e OM_PASSWORD \
@@ -93,16 +67,6 @@ define run-docker-interactive
 	-v ${TILE_PATH}:/input/tile.pivotal \
 	-v ${TILE_CONFIG_PATH}:/input/config.json \
 	-v ${PWD}/../../tools:/bin/tools \
-	-v ${PWD}:/test \
-	cfplatformeng/install-uninstall-test-image \
-	$1 $2
-endef
-
-shell: tile-config temp/make-tags/build
-	$(call run-docker-interactive,"/bin/bash")
-
-needs-list: tile-config
-	$(call run-docker-interactive,/bin/bash,-c "needs list")
-
-needs-check: tile-config
-	$(call run-docker-interactive,/bin/bash,-c "needs check")
+	-v ${PWD}:/job \
+	$(IMAGE_NAME) \
+	shell
