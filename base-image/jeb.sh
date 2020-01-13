@@ -16,7 +16,7 @@ usage() {
 
 case "${command}" in
   run)
-    run.sh
+    ./run.sh
     ;;
   *needs)
     needs list
