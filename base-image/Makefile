@@ -7,7 +7,7 @@ clean:
 #
 # Docker image targets
 #
-temp/make-tags/build: Dockerfile
+temp/make-tags/build: Dockerfile jeb.sh
 	@docker build . --file Dockerfile --tag cfplatformeng/base-image:latest
 	mkdir -p temp/make-tags && touch temp/make-tags/build
 

@@ -36,3 +36,9 @@ WORKDIR /job
 ARG DEPENDENCIES_FILE=/root/dependencies.log
 RUN mrlog dependency --type binary --name mrlog --version $(mrlog version | cut -f3 -d" ") >> ${DEPENDENCIES_FILE} && \
     mrlog dependency --type binary --name needs --version $(needs --version) >> ${DEPENDENCIES_FILE}
+
+COPY [ "jeb.sh", "/root/" ]
+RUN chmod a+x /root/jeb.sh
+
+ENTRYPOINT ["/root/jeb.sh"]
+CMD ["run"]
