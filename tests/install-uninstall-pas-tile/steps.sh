@@ -21,6 +21,8 @@ function config_file_check {
 
     if [[ $result -ne 0 ]] ; then
         echo "The supplied config file will not work for the tile" >&2
+        echo "Config is: " >&2
+        cat "${TILE_CONFIG_PATH}" >&2
     fi
     return $result
 }
