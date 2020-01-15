@@ -53,7 +53,6 @@ run: runtime-deps build logs
 	-e USE_FULL_DEPLOY \
 	-v ${TILE_PATH}:/input/tile.pivotal \
 	-v ${TILE_CONFIG_PATH}:/input/config.json \
-	-v ${PWD}/../../tools:/bin/tools \
 	$(IMAGE_NAME) run 2>&1 | tee ./logs/$(shell date "+%Y.%m.%d-%H.%M.%S").log
 
 shell: temp/make-tags/interactive-build
@@ -66,7 +65,6 @@ shell: temp/make-tags/interactive-build
 	-e USE_FULL_DEPLOY \
 	-v ${TILE_PATH}:/input/tile.pivotal \
 	-v ${TILE_CONFIG_PATH}:/input/config.json \
-	-v ${PWD}/../../tools:/bin/tools \
 	-v ${PWD}:/job \
 	$(IMAGE_NAME) \
 	shell
