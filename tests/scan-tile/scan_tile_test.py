@@ -145,5 +145,48 @@ class MetadataParsing(unittest.TestCase):
         metadata = scan_tile.get_metadata(tile)
         self.assertEqual(metadata['icon_image'], "SGVsbG8hCg==")
 
+
+class NestedFileSearching(unittest.TestCase):
+    def test_empty_tile_does_not_expands(self):
+        this_dir = os.path.dirname(os.path.realpath(__file__))
+        with zipfile.ZipFile(os.path.join(this_dir, 'test-input-files', 'empty.pivotal')) as tile:
+            files = scan_tile.all_files(tile)
+            self.assertEqual(1, len(files))
+            self.assertIsNotNone(files["empty/"]["zfile"])
+            self.assertEqual(files["empty/"]["prefix"], "")
+
+    def test_tile_containing_zipfile_does_not_expand(self):
+        this_dir = os.path.dirname(os.path.realpath(__file__))
+        with zipfile.ZipFile(os.path.join(this_dir, 'test-input-files', 'contains_zipfile.pivotal')) as tile:
+            files = scan_tile.all_files(tile)
+            self.assertEqual(1, len(files))
+            self.assertIsNotNone(files["zipfile.zip"]["zfile"])
+            self.assertEqual(files["zipfile.zip"]["prefix"], "")
+
+    def test_tile_containing_tarfile_does_not_expand(self):
+        this_dir = os.path.dirname(os.path.realpath(__file__))
+        with zipfile.ZipFile(os.path.join(this_dir, 'test-input-files', 'contains_tarfile.pivotal')) as tile:
+            files = scan_tile.all_files(tile)
+            self.assertEqual(1, len(files))
+            self.assertIsNotNone(files["tarfile.tar"]["zfile"])
+            self.assertEqual(files["tarfile.tar"]["prefix"], "")
+
+    def test_tile_containing_tgz_file_does_expand(self):
+        this_dir = os.path.dirname(os.path.realpath(__file__))
+        with zipfile.ZipFile(os.path.join(this_dir, 'test-input-files', 'contains_gzipped_tarfile.pivotal')) as tile:
+            files = scan_tile.all_files(tile)
+            self.assertEqual(2, len(files))
+            self.assertIsNotNone(files["gzipped_tar_file.tgz"]["zfile"])
+            self.assertEqual(files["gzipped_tar_file.tgz"]["prefix"], "")
+            self.assertIsNotNone(files["a_file"]["zfile"])
+            self.assertEqual(files["a_file"]["prefix"], "/gzipped_tar_file.tgz")
+
+    def test_tile_containing_tarfile_that_is_named_tgz_is_skipped(self):
+        this_dir = os.path.dirname(os.path.realpath(__file__))
+        with zipfile.ZipFile(os.path.join(this_dir, 'test-input-files', 'contains_tgz_file_but_is_tarfile.pivotal')) as tile:
+            files = scan_tile.all_files(tile)
+            self.assertEqual(0, len(files))
+
+
 if __name__ == '__main__':
     unittest.main()
