@@ -1,5 +1,5 @@
-ARG MRLOG_VERSION=latest
-ARG NEEDS_VERSION=latest
+ARG MRLOG_VERSION=0.1.2
+ARG NEEDS_VERSION=0.10.1
 
 FROM cfplatformeng/mrlog:${MRLOG_VERSION} as mrlog
 FROM cfplatformeng/needs:${NEEDS_VERSION} as needs
