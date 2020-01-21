@@ -18,3 +18,6 @@ publish: build
 
 run: build
 	docker run -it cfplatformeng/base-image:latest bash
+
+shell: build
+	docker run -it --rm -v ${PWD}:/root cfplatformeng/base-image:latest shell
