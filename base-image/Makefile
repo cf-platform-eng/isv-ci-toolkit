@@ -25,6 +25,6 @@ shell: build
 	docker run -it --rm -v ${PWD}:/root cfplatformeng/base-image:local shell
 
 .PHONY: test
-test: 
+test:
 	go mod download
 	ginkgo -r .
