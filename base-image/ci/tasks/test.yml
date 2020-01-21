@@ -9,6 +9,6 @@ params:
 
 run:
   path: make
-  dir: source
+  dir: source/base-image
   args:
     - test
