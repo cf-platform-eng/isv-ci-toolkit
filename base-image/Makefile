@@ -2,15 +2,6 @@ SHELL = /bin/bash
 
 default: test
 
-GO-VER = go1.13
-
-# #### GO Binary Management ####
-.PHONY: deps-go-binary
-deps-go-binary:
-	echo "Expect: $(GO-VER)" && \
-		echo "Actual: $$(go version)" && \
-	 	go version | grep $(GO-VER) > /dev/null
-
 .PHONY: clean
 clean:
 	rm -rf temp
@@ -34,6 +25,6 @@ shell: build
 	docker run -it --rm -v ${PWD}:/root cfplatformeng/base-image:local shell
 
 .PHONY: test
-test: deps-go-binary
+test: 
 	go mod download
 	ginkgo -r .
