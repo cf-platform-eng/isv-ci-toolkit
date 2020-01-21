@@ -18,7 +18,7 @@ run:
   args:
     - -exc
     - |
-      apk add go
+      apk add go git
       source /docker-lib.sh
       start_docker
       cd source/base-image
