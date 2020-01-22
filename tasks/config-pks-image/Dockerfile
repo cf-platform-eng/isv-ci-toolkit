@@ -1,30 +1,14 @@
-FROM ubuntu
+FROM cfplatformeng/marman:0.3.0      AS marman
+FROM cfplatformeng/om:4.4.1          AS om
+FROM cfplatformeng/tileinspect:0.5.7 AS tileinspect
 
-RUN apt-get -y update --fix-missing
+FROM cfplatformeng/base-image:0.0.23
 
-# Default Tools
-RUN apt-get -y install \
-    wget \
-    jq \
-    gettext-base \
-    node-semver \
-    vim.tiny \
-    gnupg
+RUN apt-get update && apt-get install -y gettext-base gnupg node-semver && rm -rf /var/lib/apt/lists/*
 
-# Install om
-RUN wget -q -O - https://raw.githubusercontent.com/starkandwayne/homebrew-cf/master/public.key | apt-key add -
-RUN echo "deb http://apt.starkandwayne.com stable main" | tee /etc/apt/sources.list.d/starkandwayne.list
-RUN apt-get update && apt-get -y install om
+COPY --from=marman      /usr/local/bin/marman      /usr/local/bin/
+COPY --from=om          /usr/local/bin/om          /usr/local/bin/
+COPY --from=tileinspect /usr/local/bin/tileinspect /usr/local/bin/
 
-# Copy marman
-COPY --from=cfplatformeng/marman:latest         /usr/local/bin/marman /usr/local/bin/
-
-
-# Copy tileinspect
-COPY --from=cfplatformeng/tileinspect:latest    /usr/local/bin/tileinspect /usr/local/bin/
-
-# Copy scripts
-COPY ./*.sh ./
-RUN chmod +x ./*.sh
-
-CMD ["/bin/bash", "-c", "./runner.sh" ]
+COPY ./*.sh {JOB_DIR}/
+RUN chmod a+x ${JOB_DIR}/*.sh
