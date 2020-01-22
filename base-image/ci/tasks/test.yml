@@ -4,7 +4,7 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: amidos/dcind
+    repository: cfplatformeng/dcind-golang-test-image
 
 inputs:
   - name: source
@@ -13,13 +13,13 @@ params:
   CI: true
 
 run:
-  path: /bin/bash
+  path: /bin/sh
 
   args:
     - -exc
     - |
-      apk add go git
       source /docker-lib.sh
       start_docker
+
       cd source/base-image
       make test
