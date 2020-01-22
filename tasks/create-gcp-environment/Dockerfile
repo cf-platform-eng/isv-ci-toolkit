@@ -4,9 +4,6 @@ ARG BASE_IMAGE_VERSION=0.0.23
 FROM cfplatformeng/uaa:${UAA_VERSION} AS uaa
 FROM cfplatformeng/base-image:${BASE_IMAGE_VERSION}
 
-# Copy binaries from dependent images
-COPY --from=mrlog /usr/local/bin/mrlog /usr/local/bin/
-COPY --from=needs /usr/local/bin/needs /usr/local/bin/
 COPY --from=uaa /usr/local/bin/uaa /usr/local/bin/
 
 # Copy files for this test
