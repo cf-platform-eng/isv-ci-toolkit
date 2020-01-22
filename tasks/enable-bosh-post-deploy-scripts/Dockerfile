@@ -1,10 +1,7 @@
-FROM cfplatformeng/base-image:latest
+FROM cfplatformeng/om:4.4.1  AS om
+FROM cfplatformeng/base-image:0.0.23
 
-COPY --from=cfplatformeng/needs:latest /usr/local/bin/needs /usr/local/bin/
-COPY --from=cfplatformeng/om:latest    /usr/local/bin/om /usr/local/bin/
+COPY --from=om /usr/local/bin/om /usr/local/bin/
 
-COPY [ "needs.json", "run.sh", "/task/" ]
-RUN chmod a+x /task/run.sh
-WORKDIR /task
-
-CMD ["/bin/bash", "-c", "/task/run.sh"]
+COPY [ "needs.json", "run.sh", "${JOB_DIR}/" ]
+RUN chmod a+x ${JOB_DIR}/run.sh
