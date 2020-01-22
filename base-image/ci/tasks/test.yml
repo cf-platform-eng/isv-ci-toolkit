@@ -4,7 +4,7 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: cfplatformeng/dcind-golang-test-image
+    repository: cfplatformeng/dcind-golang-feature-test
 
 inputs:
   - name: source
