@@ -1,0 +1,5 @@
+FROM cfplatformeng/marman:0.3.0 AS marman
+FROM amidos/dcind:2.0.0
+
+RUN apk add nodejs
+COPY --from=marman /usr/local/bin/marman /usr/local/bin/
