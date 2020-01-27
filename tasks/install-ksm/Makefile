@@ -1,20 +1,11 @@
 SHELL=/bin/bash
 
-.PHONY: clean build publish run shell needs-list needs-check lint deps-test
+.PHONY: clean build publish run shell needs-list needs-check
 
 DOCKER_REPO := cfplatformeng
 IMAGE_NAME := install-ksm
 BASH_SRC := $(shell find . -name "*.sh")
 SRC := $(BASH_SRC) needs.json Dockerfile
-TEST_SRC := $(shell find . -name "*.bats")
-
-SHELLCHECK_INSTALLED := $(shell command -v shellcheck 2>&1 > /dev/null; echo $$?)
-
-deps-test:
-ifneq ($(SHELLCHECK_INSTALLED),0)
-  $(warning 'shellcheck' not installed. See https://www.shellcheck.net/)
-  $(error "Please install missing dependencies")
-endif
 
 clean:
 	rm -rf temp
