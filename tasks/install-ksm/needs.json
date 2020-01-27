@@ -1,0 +1,24 @@
+[
+  {
+    "name": "DEPENDENCIES_FILE",
+    "type": "environment_variable",
+    "description": "location of the dependencies file generated during `docker build`"
+  },
+  {
+    "type": "file",
+    "path": "/input/service_account_key.json",
+    "description": "A service account key that can create the Bucket and SAK for the Chart Storage Bucket - Recommend IAM Admin and Storage Admin"
+  },
+  {
+    "type": "file",
+    "path": "/input/kubeconfig",
+    "description": "The kubeconfig file should exist",
+    "optional": true
+  },
+  {
+    "type": "file",
+    "path": "/input/env.json",
+    "description": "The toolsmiths formatted PAS configuration",
+    "optional": true
+  }
+]

@@ -1,0 +1,67 @@
+product-name: ksm
+product-properties:
+  .properties.allow_paid_service_plans:
+    value: false
+  .properties.apply_open_security_group:
+    value: false
+  .properties.ca_data:
+    value: $KSM_CLUSTER_CA
+  .properties.token:
+    value: $KSM_CLUSTER_TOKEN
+  .properties.k8s_port:
+    value: $KSM_CLUSTER_PORT
+  .properties.k8s_server:
+    value: $KSM_CLUSTER_ENDPOINT
+  .properties.endpoint:
+    value: $KSM_STORAGE_ENDPOINT
+  .properties.bucket_name:
+    value: $KSM_STORAGE_BUCKET_NAME
+  .properties.region:
+    value: $KSM_STORAGE_REGION
+  .properties.access_key_id:
+    value: $KSM_STORAGE_ACCESS_KEY_ID
+  .properties.secret_access_key:
+    value:
+      secret: $KSM_STORAGE_SECRET_ACCESS_KEY
+  .properties.org:
+    value: ksm-org
+  .properties.skip_ssl_validation:
+    value: false
+  .properties.space:
+    value: ksm-space
+network-properties:
+  network:
+    name: $PAS_SUBNET
+  other_availability_zones:
+  - name: $AZ_1
+  - name: $AZ_2
+  - name: $AZ_3
+  singleton_availability_zone:
+    name: $SINGLETON_AZ
+resource-config:
+  deregistrar:
+    instances: automatic
+    instance_type:
+      id: automatic
+    internet_connected: true
+    max_in_flight: 1
+  ksm:
+    instances: 1
+    persistent_disk:
+      size_mb: automatic
+    instance_type:
+      id: automatic
+    internet_connected: true
+    max_in_flight: 1
+  uaa_crud_delete:
+    instances: automatic
+    instance_type:
+      id: automatic
+    internet_connected: true
+    max_in_flight: 1
+errand-config:
+  deregistrar:
+    pre-delete-state: true
+  uaa_crud_delete:
+    pre-delete-state: true
+
