@@ -16,9 +16,6 @@ ifneq ($(SHELLCHECK_INSTALLED),0)
   $(error "Please install missing dependencies")
 endif
 
-lint: deps-test
-	shellcheck *.sh
-
 clean:
 	rm -rf temp
 	rm -rf logs
@@ -33,7 +30,7 @@ temp/make-tags/interactive-build: Dockerfile
 	docker build . --pull --tag $(IMAGE_NAME)
 	mkdir -p temp/make-tags && touch temp/make-tags/interactive-build
 
-build: lint temp/make-tags/build
+build: temp/make-tags/build
 
 publish: build
 	docker tag $(IMAGE_NAME) $(DOCKER_REPO)/$(IMAGE_NAME):latest
