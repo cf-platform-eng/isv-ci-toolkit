@@ -10,7 +10,7 @@ install_pks_cli           || exit 1
 get_pks_credentials       || exit 1
 generate_ksm_tile_config  || exit 1
 config_file_check         || exit 1
-#install_tile              || exit 1
+install_tile              || exit 1
 
 if [ "${TEARDOWN:-false}" == "true" ]; then
   teardown                || exit 1
