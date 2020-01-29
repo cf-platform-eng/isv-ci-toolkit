@@ -74,22 +74,34 @@ function log_existing_dependencies() {
   return $result
 }
 
-function teardown() {
+function run_leftovers() {
   # shellcheck disable=SC2002
   mrlog section --name="remove all gcp resources" -- \
     "$PWD/lib/teardown" <(echo "${STORAGE_SERVICE_ACCOUNT_KEY}") "ksm-$(cat /input/pas-environment.json | jq -r .name)"
+}
 
+function teardown() {
+  mrlog section-start --name="teardown"
+
+    install_leftovers
+    result=$?
+
+    if [[ $result -eq 0 ]]; then
+      run_leftovers
+      result=$?
+    fi
+
+  mrlog section-end --name="teardown" --result=${result}
+  return $result
 }
 
 function prepare_chart_storage() {
-
-  # KSM prefix avoids collision with leftovers and the original PAS if they're hosted within the same project
-  # shellcheck disable=SC2002
-  mrlog section --name="prepare chart storage" -- \
-    "$PWD/lib/prepare_chart_storage" \
-    "${STORAGE_SERVICE_ACCOUNT_KEY}" \
-    /input/pas-environment.json
-
+      # KSM prefix avoids collision with leftovers and the original PAS if they're hosted within the same project
+      # shellcheck disable=SC2002
+      mrlog section --name="prepare chart storage" -- \
+        "$PWD/lib/prepare_chart_storage" \
+        "${STORAGE_SERVICE_ACCOUNT_KEY}" \
+        /input/pas-environment.json
 }
 
 function install_pks_cli() {
@@ -144,12 +156,6 @@ function install_tile() {
   fi
   mrlog section-end --name="tile install" --result=$result
   return $result
-}
-
-function teardown() {
-  # shellcheck disable=SC2002
-  mrlog section --name="remove all gcp resources" -- \
-    "$PWD/lib/teardown" <(echo "${STORAGE_SERVICE_ACCOUNT_KEY}") "ksm-$(cat /input/pas-environment.json | jq -r .name)"
 }
 
 function uninstall_tile() {

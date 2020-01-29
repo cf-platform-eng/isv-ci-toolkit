@@ -51,6 +51,7 @@ run: runtime-deps logs temp/make-tags/build
 	set -o pipefail; docker run \
 	-e PIVNET_TOKEN \
 	-e STORAGE_SERVICE_ACCOUNT_KEY \
+	-e TEARDOWN \
 	-v ${PKS_ENVIRONMENT_PATH}:/input/pks-environment.json \
 	-v ${PAS_ENVIRONMENT_PATH}:/input/pas-environment.json \
 	$(IMAGE_NAME) run 2>&1 | tee ./logs/$(shell date "+%Y.%m.%d-%H.%M.%S").log
@@ -60,6 +61,7 @@ shell: temp/make-tags/interactive-build
 	docker run -it \
 	-e PIVNET_TOKEN \
 	-e STORAGE_SERVICE_ACCOUNT_KEY \
+	-e TEARDOWN \
 	-v ${PKS_ENVIRONMENT_PATH}:/input/pks-environment.json \
 	-v ${PAS_ENVIRONMENT_PATH}:/input/pas-environment.json \
 	-v ${PWD}:/job \

@@ -18,5 +18,11 @@
     "type": "file",
     "path": "/input/pas-environment.json",
     "description": "A Toolsmiths formatted PAS configuration"
+  },
+  {
+    "type": "environment_variable",
+    "name": "TEARDOWN",
+    "description": "Pass `true` to remove the storage bucket and service account key using the `leftovers` tool",
+    "optional": true
   }
 ]
