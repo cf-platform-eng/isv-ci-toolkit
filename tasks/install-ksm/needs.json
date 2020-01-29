@@ -2,7 +2,7 @@
   {
     "type": "environment_variable",
     "name": "STORAGE_SERVICE_ACCOUNT_KEY",
-    "description": "A GCP service account key that can create the Bucket and SAK for the Chart Storage Bucket - Recommend IAM Admin and Storage Admin"
+    "description": "A GCP service account key that can create the Bucket and SAK for the Chart Storage Bucket - Recommend Service Account Create, Service Account Delete, Storage Admin, Project IAM Admin and Project Editor"
   },
   {
     "type": "environment_variable",
