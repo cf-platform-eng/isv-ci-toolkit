@@ -52,7 +52,7 @@ function install_leftovers() {
 function config_file_check() {
   mrlog section-start --name="config file check"
 
-  tile=( /tmp/ksm-*.pivotal)
+  tile=( /tmp/ksm-*.pivotal )
   tileinspect check-config --tile "${tile[0]}" --config "/tmp/ksm-config.yml"
 
   result=$?
@@ -136,7 +136,8 @@ function install_tile() {
   export OM_SKIP_SSL_VALIDATION=true
 
   tile=( /tmp/ksm-*.pivotal )
-  install-tile.sh "${tile}" "/tmp/ksm-config.yml" "${USE_FULL_DEPLOY:-false}"
+  install-tile.sh "${tile[0]}" "/tmp/ksm-config.yml" "${USE_FULL_DEPLOY:-false}"
+  install-tile.sh "/tmp/ksm-*.pivotal" "/tmp/ksm-config.yml" "${USE_FULL_DEPLOY:-false}"
   result=$?
   if [[ $result -ne 0 ]]; then
     echo "Failed to stage, configure, or deploy the tile" >&2
@@ -153,8 +154,8 @@ function teardown() {
 
 function uninstall_tile() {
   mrlog section-start --name="tile uninstall"
-  tile=( /tmp/ksm-*.pivotal)
-  uninstall-tile.sh "${tile}" "${USE_FULL_DEPLOY:-false}"
+  tile=( /tmp/ksm-*.pivotal )
+  uninstall-tile.sh "${tile[0]}" "${USE_FULL_DEPLOY:-false}"
   result=$?
   mrlog section-end --name="tile uninstall" --result=$result
   if [[ $result -ne 0 ]]; then
