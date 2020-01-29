@@ -1,24 +1,22 @@
 [
   {
-    "name": "DEPENDENCIES_FILE",
     "type": "environment_variable",
-    "description": "location of the dependencies file generated during `docker build`"
+    "name": "STORAGE_SERVICE_ACCOUNT_KEY",
+    "description": "A GCP service account key that can create the Bucket and SAK for the Chart Storage Bucket - Recommend IAM Admin and Storage Admin"
+  },
+  {
+    "type": "environment_variable",
+    "name": "PIVNET_TOKEN",
+    "description": "Pivnet Token that has access to the KSM tile"
   },
   {
     "type": "file",
-    "path": "/input/service_account_key.json",
-    "description": "A service account key that can create the Bucket and SAK for the Chart Storage Bucket - Recommend IAM Admin and Storage Admin"
+    "path": "/input/pks-environment.json",
+    "description": "A Toolsmiths formatted PKS configuration"
   },
   {
     "type": "file",
-    "path": "/input/kubeconfig",
-    "description": "The kubeconfig file should exist",
-    "optional": true
-  },
-  {
-    "type": "file",
-    "path": "/input/env.json",
-    "description": "The toolsmiths formatted PAS configuration",
-    "optional": true
+    "path": "/input/pas-environment.json",
+    "description": "A Toolsmiths formatted PAS configuration"
   }
 ]

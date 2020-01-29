@@ -51,10 +51,13 @@ function install_leftovers() {
 
 function config_file_check() {
   mrlog section-start --name="config file check"
-  tileinspect check-config --tile /input/ksm*.pivotal --config "/input/ksm-config.yml"
-  result=$?
-  mrlog section-end --name="config file check" --result=${result}
 
+  tile=( /tmp/ksm-*.pivotal)
+  tileinspect check-config --tile "${tile[0]}" --config "/tmp/ksm-config.yml"
+
+  result=$?
+
+  mrlog section-end --name="config file check" --result=${result}
   if [[ $result -ne 0 ]]; then
     echo "The supplied config file will not work for the tile" >&2
   fi
@@ -74,45 +77,84 @@ function log_existing_dependencies() {
 function teardown() {
   # shellcheck disable=SC2002
   mrlog section --name="remove all gcp resources" -- \
-    "$PWD/lib/teardown" /input/service_account_key.json "ksm-$(cat /input/env.json | jq -r .name)"
+    "$PWD/lib/teardown" <(echo "${STORAGE_SERVICE_ACCOUNT_KEY}") "ksm-$(cat /input/pas-environment.json | jq -r .name)"
 
 }
 
 function prepare_chart_storage() {
+
   # KSM prefix avoids collision with leftovers and the original PAS if they're hosted within the same project
   # shellcheck disable=SC2002
   mrlog section --name="prepare chart storage" -- \
-    "$PWD/lib/prepare_chart_storage" /input/service_account_key.json "ksm-$(cat /input/env.json | jq -r .name)"
+    "$PWD/lib/prepare_chart_storage" \
+    "${STORAGE_SERVICE_ACCOUNT_KEY}" \
+    /input/pas-environment.json
+
 }
 
-function generate_config_file() {
-  mrlog section --name="generate tile config" -- \
-    "$PWD/lib/generate_config_file"
+function install_pks_cli() {
+  mrlog section --name="Get PKS CLI" -- \
+    "$PWD/lib/install_pks_cli"
+}
+
+function get_pks_credentials() {
+  mrlog section --name="Get PKS credentials" -- \
+    "$PWD/lib/get_pks_credentials"
+}
+
+function download_ksm_tile() {
+  mrlog section-start --name="download ksm tile"
+
+  (
+    mkdir -p "/tmp/" &&
+      cd "/tmp/" &&
+      marman download-tile -s container-services-manager -f ksm-.*\.pivotal
+  )
+
+  result=$?
+  if [[ $result -ne 0 ]]; then
+    echo "Failed to stage, configure, or deploy the tile" >&2
+  fi
+  mrlog section-end --name="download ksm tile" --result=$result
+  return $result
+}
+
+function generate_ksm_tile_config() {
+  mrlog section --name="generate ksm tile config" -- \
+    "$PWD/lib/generate_ksm_tile_config"
 }
 
 function install_tile() {
   mrlog section-start --name="tile install"
 
   # shellcheck disable=SC2002 disable=SC2155
-  export OM_TARGET="$(cat /input/env.json | jq -r .ops_manager.url)"
+  export OM_TARGET="$(cat /input/pas-environment.json | jq -r .ops_manager.url)"
   # shellcheck disable=SC2002 disable=SC2155
-  export OM_USERNAME="$(cat /input/env.json | jq -r .ops_manager.username)"
+  export OM_USERNAME="$(cat /input/pas-environment.json | jq -r .ops_manager.username)"
   # shellcheck disable=SC2002 disable=SC2155
-  export OM_PASSWORD="$(cat /input/env.json | jq -r .ops_manager.password)"
+  export OM_PASSWORD="$(cat /input/pas-environment.json | jq -r .ops_manager.password)"
   export OM_SKIP_SSL_VALIDATION=true
 
-  install-tile.sh /input/ksm-*.pivotal "/input/ksm-config.yml" "${USE_FULL_DEPLOY:-false}"
+  tile=( /tmp/ksm-*.pivotal )
+  install-tile.sh "${tile}" "/tmp/ksm-config.yml" "${USE_FULL_DEPLOY:-false}"
   result=$?
-  mrlog section-end --name="tile install" --result=$result
   if [[ $result -ne 0 ]]; then
     echo "Failed to stage, configure, or deploy the tile" >&2
   fi
+  mrlog section-end --name="tile install" --result=$result
   return $result
+}
+
+function teardown() {
+  # shellcheck disable=SC2002
+  mrlog section --name="remove all gcp resources" -- \
+    "$PWD/lib/teardown" <(echo "${STORAGE_SERVICE_ACCOUNT_KEY}") "ksm-$(cat /input/pas-environment.json | jq -r .name)"
 }
 
 function uninstall_tile() {
   mrlog section-start --name="tile uninstall"
-  uninstall-tile.sh "${TILE_PATH}" "${USE_FULL_DEPLOY:-false}"
+  tile=( /tmp/ksm-*.pivotal)
+  uninstall-tile.sh "${tile}" "${USE_FULL_DEPLOY:-false}"
   result=$?
   mrlog section-end --name="tile uninstall" --result=$result
   if [[ $result -ne 0 ]]; then

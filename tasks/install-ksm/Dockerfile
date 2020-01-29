@@ -7,6 +7,7 @@ ENV OUTPUT_DIR=/input
 COPY --from=cfplatformeng/mrlog:latest          /usr/local/bin/mrlog /usr/local/bin/
 COPY --from=cfplatformeng/needs:latest          /usr/local/bin/needs /usr/local/bin/
 COPY --from=cfplatformeng/marman:latest         /usr/local/bin/marman /usr/local/bin/
+COPY --from=cfplatformeng/pivnet:latest         /usr/local/bin/pivnet /usr/local/bin/
 COPY --from=cfplatformeng/tileinspect:latest    /usr/local/bin/tileinspect /usr/local/bin/
 COPY --from=cfplatformeng/om:latest             /usr/local/bin/om /usr/local/bin/
 COPY --from=cfplatformeng/isv-ci-toolkit:latest /usr/local/bin/*.sh /usr/local/bin/
@@ -26,8 +27,9 @@ ENV DEPENDENCIES_FILE=/root/dependencies.log
 
 RUN mrlog dependency --type binary --name mrlog --version $(mrlog version | cut -f3 -d" ") >> ${DEPENDENCIES_FILE} && \
     mrlog dependency --type binary --name needs --version $(needs --version) >> ${DEPENDENCIES_FILE} && \
-    mrlog dependency --type binary --name tileinspect --version $(needs --version) >> ${DEPENDENCIES_FILE} && \
-    mrlog dependency --type binary --name marman --version $(needs --version) >> ${DEPENDENCIES_FILE} && \
+    mrlog dependency --type binary --name tileinspect --version $(tileinspect version | cut -f3 -d" ") >> ${DEPENDENCIES_FILE} && \
+    mrlog dependency --type binary --name marman --version $(marman version | cut -f3 -d" ") >> ${DEPENDENCIES_FILE} && \
+    mrlog dependency --type binary --name pivnet --version $(pivnet --version) >> ${DEPENDENCIES_FILE} && \
     mrlog dependency --type binary --name "Google Cloud SDK" --version $(gcloud version  --format=json | jq -r '."Google Cloud SDK"') >> ${DEPENDENCIES_FILE} && \
     mrlog dependency --type binary --name "gcloud alpha" --version $(gcloud version  --format=json     | jq -r .alpha) >> ${DEPENDENCIES_FILE} && \
     mrlog dependency --type binary --name "gcloud beta" --version $(gcloud version  --format=json      | jq -r .beta) >> ${DEPENDENCIES_FILE} && \
@@ -38,13 +40,7 @@ RUN mrlog dependency --type binary --name mrlog --version $(mrlog version | cut 
     mrlog dependency --type binary --name kubectl --version $( kubectl version  --client -o json | jq -r .clientVersion.gitVersion )>> ${DEPENDENCIES_FILE}
 
 # Copy files for this app
-COPY [ "needs.json", "run.sh", "steps.sh", "SERVICE-ACCOUNT.yml", "ksm-config.template.yml", "/task/"]
-COPY ["lib/*", "/task/lib/" ]
+COPY [ "needs.json", "run.sh", "steps.sh", "SERVICE-ACCOUNT.yml", "ksm-config.template.yml", "/job/"]
+COPY ["lib/*", "/job/lib/" ]
 
-WORKDIR /task
-
-ENV KUBECONFIG /input/kubeconfig
-
-RUN ["/bin/bash", "-c", "echo \"\nsource /task/steps.sh\n\" >> ~/.bashrc"]
-
-CMD ["/bin/bash", "-c", "/task/run.sh"]
+RUN ["/bin/bash", "-c", "echo \"\nsource /job/steps.sh\n\" >> ~/.bashrc"]

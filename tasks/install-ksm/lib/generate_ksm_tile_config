@@ -2,11 +2,9 @@
 
 set -xeo pipefail
 
-ENVIRONMENT=$(cat /input/env.json)
-
 echo "Reading storage secrets"
-export KSM_STORAGE_ACCESS_KEY_ID="$(cat /input/ksm_bucket_s3_key.json | jq -r .AccessID)"
-export KSM_STORAGE_SECRET_ACCESS_KEY="$(cat /input/ksm_bucket_s3_key.json | jq -r .Secret)"
+export KSM_STORAGE_ACCESS_KEY_ID="$(cat /tmp/ksm_bucket_s3_key.json | jq -r .AccessID)"
+export KSM_STORAGE_SECRET_ACCESS_KEY="$(cat /tmp/ksm_bucket_s3_key.json | jq -r .Secret)"
 
 echo "Pick a context and ensure it's active"
 KUBECONFIG_ACTIVE=$(kubectl config current-context)
@@ -49,13 +47,13 @@ export AZ_3=$(echo "$ENVIRONMENT" | jq -r .azs[2])
 export PAS_SUBNET=$(echo "$ENVIRONMENT" | jq -r .ert_subnet)
 
 echo "set storage credentials"
-export KSM_STORAGE_ACCESS_KEY_ID=$(cat /input/ksm_bucket_s3_key.json | jq -r .AccessID)
-export KSM_STORAGE_SECRET_ACCESS_KEY_ID=$(cat /input/ksm_bucket_s3_key.json | jq -r .Secret)
+export KSM_STORAGE_ACCESS_KEY_ID=$(cat /tmp/ksm_bucket_s3_key.json | jq -r .AccessID)
+export KSM_STORAGE_SECRET_ACCESS_KEY_ID=$(cat /tmp/ksm_bucket_s3_key.json | jq -r .Secret)
 
 echo "set storage endpoint"
 export KSM_STORAGE_ENDPOINT=storage.googleapis.com
-export KSM_STORAGE_REGION=$(cat /input/env.json | jq -r .region)
-export KSM_STORAGE_BUCKET_NAME=$(cat /input/ksm_bucket_name.txt)
+export KSM_STORAGE_REGION=$(cat /input/pas-environment.json | jq -r .region)
+export KSM_STORAGE_BUCKET_NAME=$(cat /tmp/ksm_bucket_name.txt)
 
 echo "Generate the config"
-cat ksm-config.template.yml | envsubst >/input/ksm-config.yml
+cat ksm-config.template.yml | envsubst >/tmp/ksm-config.yml

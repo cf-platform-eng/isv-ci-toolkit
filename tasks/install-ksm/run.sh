@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 
-#export KUBECONFIG=/input/kubeconfig
-
 source ./steps.sh
 
-if ! log_dependencies         ; then exit 1 ; fi
-if ! needs_check              ; then exit 1 ; fi
-if ! install_leftovers        ; then exit 1 ; fi
-if ! prepare_chart_storage    ; then exit 1 ; fi
-if ! generate_config_file     ; then exit 1 ; fi
-if ! config_file_check        ; then exit 1 ; fi
-if ! install_tile             ; then exit 1 ; fi
+log_dependencies          || exit 1
+needs_check               || exit 1
+install_leftovers         || exit 1
+prepare_chart_storage     || exit 1
+download_ksm_tile         || exit 1
+install_pks_cli           || exit 1
+get_pks_credentials       || exit 1
+generate_ksm_tile_config  || exit 1
+config_file_check         || exit 1
+install_tile              || exit 1
+

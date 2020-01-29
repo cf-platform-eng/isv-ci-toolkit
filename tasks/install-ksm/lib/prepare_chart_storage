@@ -2,24 +2,30 @@
 
 set -xeo pipefail
 
-creator_sak_path=${1}
-account_prefix=${2}
-project_id="$(cat "${creator_sak_path}" | jq -r .project_id)"
+storage_creator_sak="${1}"
+pas_environment_config="${2}"
+
+storage_creator_sak_path=/tmp/creator.json
+
+echo "${storage_creator_sak}" > "${storage_creator_sak_path}"
+
+bucket_region=$(cat "${pas_environment_config}" | jq -r .region)
+account_prefix="ksm-$(cat "${pas_environment_config}" | jq -r .name)"
+# set to match the poolsmiths deployment location
+project_id="$(cat "${storage_creator_sak_path}" | jq -r .project_id)"
 unique_id=$(head -c50 /dev/random | shasum -a256 | head -c 30)
 # doing all we can to make a unique name, that satisfies the bucket name limit
 unique_account_name=$(echo "${account_prefix}-${unique_id}" | head -c30)
 service_account_email="${unique_account_name}@${project_id}.iam.gserviceaccount.com"
-# set to match the poolsmiths deployment location
-bucket_region=$(cat /input/env.json | jq -r .region)
 
 mrlog section --name "Sign in to creation Service Account" -- \
-  gcloud auth activate-service-account --key-file "${creator_sak_path}" --project "${project_id}"
+  gcloud auth activate-service-account --key-file "${storage_creator_sak_path}" --project "${project_id}"
 
 mrlog section --name "Creating KSM Bucket Service account" -- \
   gcloud iam service-accounts create "${unique_account_name}" --description "GCP Storage Bucket SAK for ${account_prefix} KSM"
 
 mrlog section --name "Creating KSM Bucket SA HMAC" -- \
-  bash -c "gsutil hmac create \"${service_account_email}\" | sed -e \"s/Access ID/AccessID/\" | yq -r . > /input/ksm_bucket_s3_key.json"
+  bash -c "gsutil hmac create \"${service_account_email}\" | sed -e \"s/Access ID/AccessID/\" | yq -r . > /tmp/ksm_bucket_s3_key.json"
 
 mrlog section --name "Creating KSM Bucket" -- \
   gsutil mb -p "${project_id}" -l ${bucket_region} -b on "gs://${unique_account_name}/"
@@ -27,5 +33,5 @@ mrlog section --name "Creating KSM Bucket" -- \
 mrlog section --name "Associating Service Account with Bucket" -- \
   gsutil iam ch serviceAccount:${service_account_email}:objectAdmin "gs://${unique_account_name}/"
 
-echo -n "${unique_account_name}" > /input/ksm_bucket_name.txt
+echo -n "${unique_account_name}" > /tmp/ksm_bucket_name.txt
 
