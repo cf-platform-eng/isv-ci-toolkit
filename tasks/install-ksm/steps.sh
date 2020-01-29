@@ -52,7 +52,7 @@ function install_leftovers() {
 function config_file_check() {
   mrlog section-start --name="config file check"
 
-  tile=( /tmp/ksm-*.pivotal)
+  tile=( /tmp/ksm-*.pivotal )
   tileinspect check-config --tile "${tile[0]}" --config "/tmp/ksm-config.yml"
 
   result=$?
@@ -74,22 +74,34 @@ function log_existing_dependencies() {
   return $result
 }
 
-function teardown() {
+function run_leftovers() {
   # shellcheck disable=SC2002
   mrlog section --name="remove all gcp resources" -- \
     "$PWD/lib/teardown" <(echo "${STORAGE_SERVICE_ACCOUNT_KEY}") "ksm-$(cat /input/pas-environment.json | jq -r .name)"
+}
 
+function teardown() {
+  mrlog section-start --name="teardown"
+
+    install_leftovers
+    result=$?
+
+    if [[ $result -eq 0 ]]; then
+      run_leftovers
+      result=$?
+    fi
+
+  mrlog section-end --name="teardown" --result=${result}
+  return $result
 }
 
 function prepare_chart_storage() {
-
-  # KSM prefix avoids collision with leftovers and the original PAS if they're hosted within the same project
-  # shellcheck disable=SC2002
-  mrlog section --name="prepare chart storage" -- \
-    "$PWD/lib/prepare_chart_storage" \
-    "${STORAGE_SERVICE_ACCOUNT_KEY}" \
-    /input/pas-environment.json
-
+      # KSM prefix avoids collision with leftovers and the original PAS if they're hosted within the same project
+      # shellcheck disable=SC2002
+      mrlog section --name="prepare chart storage" -- \
+        "$PWD/lib/prepare_chart_storage" \
+        "${STORAGE_SERVICE_ACCOUNT_KEY}" \
+        /input/pas-environment.json
 }
 
 function install_pks_cli() {
@@ -136,7 +148,8 @@ function install_tile() {
   export OM_SKIP_SSL_VALIDATION=true
 
   tile=( /tmp/ksm-*.pivotal )
-  install-tile.sh "${tile}" "/tmp/ksm-config.yml" "${USE_FULL_DEPLOY:-false}"
+  install-tile.sh "${tile[0]}" "/tmp/ksm-config.yml" "${USE_FULL_DEPLOY:-false}"
+  install-tile.sh "/tmp/ksm-*.pivotal" "/tmp/ksm-config.yml" "${USE_FULL_DEPLOY:-false}"
   result=$?
   if [[ $result -ne 0 ]]; then
     echo "Failed to stage, configure, or deploy the tile" >&2
@@ -145,16 +158,10 @@ function install_tile() {
   return $result
 }
 
-function teardown() {
-  # shellcheck disable=SC2002
-  mrlog section --name="remove all gcp resources" -- \
-    "$PWD/lib/teardown" <(echo "${STORAGE_SERVICE_ACCOUNT_KEY}") "ksm-$(cat /input/pas-environment.json | jq -r .name)"
-}
-
 function uninstall_tile() {
   mrlog section-start --name="tile uninstall"
-  tile=( /tmp/ksm-*.pivotal)
-  uninstall-tile.sh "${tile}" "${USE_FULL_DEPLOY:-false}"
+  tile=( /tmp/ksm-*.pivotal )
+  uninstall-tile.sh "${tile[0]}" "${USE_FULL_DEPLOY:-false}"
   result=$?
   mrlog section-end --name="tile uninstall" --result=$result
   if [[ $result -ne 0 ]]; then

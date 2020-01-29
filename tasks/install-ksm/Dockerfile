@@ -5,12 +5,19 @@ ENV OUTPUT_DIR=/input
 
 # Copy binaries from dependent images
 COPY --from=cfplatformeng/mrlog:latest          /usr/local/bin/mrlog /usr/local/bin/
+RUN true
 COPY --from=cfplatformeng/needs:latest          /usr/local/bin/needs /usr/local/bin/
+RUN true
 COPY --from=cfplatformeng/marman:latest         /usr/local/bin/marman /usr/local/bin/
+RUN true
 COPY --from=cfplatformeng/pivnet:latest         /usr/local/bin/pivnet /usr/local/bin/
+RUN true
 COPY --from=cfplatformeng/tileinspect:latest    /usr/local/bin/tileinspect /usr/local/bin/
+RUN true
 COPY --from=cfplatformeng/om:latest             /usr/local/bin/om /usr/local/bin/
+RUN true
 COPY --from=cfplatformeng/isv-ci-toolkit:latest /usr/local/bin/*.sh /usr/local/bin/
+RUN true
 
 RUN apt-get update && apt-get install -y apt-transport-https gettext-base
 RUN curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add
