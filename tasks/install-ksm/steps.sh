@@ -149,7 +149,6 @@ function install_tile() {
 
   tile=( /tmp/ksm-*.pivotal )
   install-tile.sh "${tile[0]}" "/tmp/ksm-config.yml" "${USE_FULL_DEPLOY:-false}"
-  install-tile.sh "/tmp/ksm-*.pivotal" "/tmp/ksm-config.yml" "${USE_FULL_DEPLOY:-false}"
   result=$?
   if [[ $result -ne 0 ]]; then
     echo "Failed to stage, configure, or deploy the tile" >&2
