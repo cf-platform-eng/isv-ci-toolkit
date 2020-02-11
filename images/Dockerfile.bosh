@@ -1,0 +1,16 @@
+FROM cfplatformeng/marman AS fetch-bosh
+ARG BOSH_CLI_VER
+RUN if [ -z "${BOSH_CLI_VER}" ] ; then \
+        marman download-release --owner cloudfoundry --repo bosh-cli --filter "bosh-cli-[.0-9]*-linux-amd64$" ; \
+    else \
+        marman download-release --owner cloudfoundry --repo bosh-cli --filter "bosh-cli-${BOSH_CLI_VER}-linux-amd64$" ; \
+    fi
+RUN mv bosh-cli-* /usr/local/bin/bosh
+RUN chmod +x /usr/local/bin/bosh
+
+FROM ubuntu
+LABEL maintainer="Pivotal Platform Engineering ISV-CI Team <cf-isv-dashboard@pivotal.io>"
+
+COPY --from=fetch-bosh /usr/local/bin/bosh /usr/local/bin
+
+ENTRYPOINT [ "bosh" ]
