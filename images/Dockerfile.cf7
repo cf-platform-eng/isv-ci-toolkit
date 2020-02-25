@@ -1,0 +1,15 @@
+FROM cfplatformeng/base-image:latest AS fetch-cf7
+ARG CF_CLI_VER
+RUN if [ -z "${CF_CLI_VER}" ] ; then \
+        wget --output-document=/cf7.tgz "https://packages.cloudfoundry.org/stable?release=linux64-binary" ; \
+    else \
+        wget --output-document=/cf7.tgz "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=${CF_CLI_VER}" ; \
+    fi
+RUN tar xzvf /cf7.tgz --directory=/usr/local/bin cf7
+
+FROM ubuntu
+LABEL maintainer="Pivotal Platform Engineering ISV-CI Team <cf-isv-dashboard@pivotal.io>"
+
+COPY --from=fetch-cf7 /usr/local/bin/cf7 /usr/local/bin
+
+ENTRYPOINT [ "cf7" ]
