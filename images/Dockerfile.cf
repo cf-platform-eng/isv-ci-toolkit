@@ -1,11 +1,11 @@
 FROM cfplatformeng/base-image:latest AS fetch-cf
 ARG CF_CLI_VER
 RUN if [ -z "${CF_CLI_VER}" ] ; then \
-        wget --output-document=cf.tgz "https://packages.cloudfoundry.org/stable?release=linux64-binary" ; \
+        wget --output-document=/cf.tgz "https://packages.cloudfoundry.org/stable?release=linux64-binary" ; \
     else \
-        wget --output-document=cf.tgz "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=${CF_CLI_VER}" ; \
+        wget --output-document=/cf.tgz "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=${CF_CLI_VER}" ; \
     fi
-RUN tar xzvf `pwd`/cf.tgz --directory=/usr/local/bin cf && rm cf.tgz
+RUN tar xzvf /cf.tgz --directory=/usr/local/bin cf
 
 FROM ubuntu
 LABEL maintainer="Pivotal Platform Engineering ISV-CI Team <cf-isv-dashboard@pivotal.io>"
