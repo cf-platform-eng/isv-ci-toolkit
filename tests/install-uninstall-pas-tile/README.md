@@ -2,34 +2,21 @@
 
 This test will upload, install, stage, configure and uninstall a tile on a Pivotal Cloud Foundry foundation. If at any point a step fails, the test will stop.
 
-## Step by step
+## Running the test
 
-Here are the steps for running the install-uninstall test.
+Here is what you need to run the test:
 
-### 1. Git the repo, enter the test directory
+### 1. Locate the the .pivotal integration that will be tested
 
-```bash
-$ git clone git@github.com:cf-platform-eng/isv-ci-toolkit.git
-$ cd isv-ci-toolkit/tests/install-uninstall-pas-tile
-```
+Locates the .pivotal file that contains the integration to test, and note the absolute path to that file.
 
-### 2. Locate the the .pivotal integration that will be tested
-
-The environment variable `TILE_PATH` locates the .pivotal file that contains the integration to test.
-
-For example, if the .pivotal file is at */home/me/workspace/my-tile.pivotal*:
-
-```bash
-$ export TILE_PATH=/home/me/workspace/my-tile.pivotal
-```
-
-### 3. Create a configuration to test the integration against
+### 2. Create a configuration to test the integration against
 
 The test will configure the integration with the provided settings and run apply changes to make sure the integration configures and installs. It is up to the integration developer to create a configuration appropriate for their integration.
 
 [Tips for building a valid config file](https://github.com/cf-platform-eng/isv-ci-toolkit/blob/master/docs/creating-tile-configs.md)
 
-A properties file follows the form:
+A configuration file will look like this:
 
 ```json
 {
@@ -43,40 +30,32 @@ A properties file follows the form:
 }
 ```
 
-Once a config file has been created, the environment variable `TILE_CONFIG_PATH` locates the file.
+### 3. Get a Pivnet token
 
-For example, if the config file is at */home/me/workspace/my-tile.config*:
-
-```bash
-$ export TILE_CONFIG_PATH=/home/me/workspace/my-tile.config
-```
-
-### 4. Get a Pivnet token
-
-If any pre-requisite resources need to be installed for the test to succeed (stemcells needs to be installed for instance) they will be downloaded from Pivnet and installed. A token is required for download.
+If any pre-requisite resources need to be installed for the test to succeed (e.g. missing stemcells) they will be downloaded from [PivNet](https://network.pivotal.io) and installed. A PivNet token is required for download.
 
 [How to find your Pivnet token](https://network.pivotal.io/docs/api/#how-to-authenticate)
 
-Once the Pivnet token as been acquired, the environment variable `PIVNET_TOKEN` must contain its value.
+Once the PivNet token as been acquired, set the environment variable `PIVNET_TOKEN` with its value.
 
 For example, if the Pivnet token is *a62fd1q7b41a44e19ba05112a13754z2-r*:
 
 ```bash
-$ export PIVNET_TOKEN=a62fd1q7b41a44e19ba05112a13754z2-r
+export PIVNET_TOKEN=a62fd1q7b41a44e19ba05112a13754z2-r
 ```
 
-### 5. OpsManager credentials
+### 4. OpsManager credentials
 
-Finally, an instances of PAS is needed to run the test. Developers may configure their own, or a Pivotal PE team member may provide access to one.
+Finally, an instance of the Pivotal Platform is needed to run the test. You may configure your own, or a Pivotal Platform Engineering team member may provide access to one.
 
-Three pieces of information are needed to identify and authenticate with the PAS environment. The URL of the OpsManager instance, a user name and a password.
+Three pieces of information are needed to identify and authenticate with the platform. The URL of the OpsManager instance, a user name and a password.
 
-For example, if the URL is *https://pcf.hawthorne.cf-app.com*, user name is *pivotalcf*, and password is *o10q4qqfjdc523uv*:
+For example, if the URL is *https://pcf.hawthorne.cf-app.com*, user name is *pivotalcf*, and password is *o10q4qqfjdc523uv*, then set these environment variables:
 
 ```bash
-$ export OM_USERNAME=https://pcf.hawthorne.cf-app.com
-$ export OM_PASSWORD=pivotalcf
-$ export OM_TARGET=o10q4qqfjdc523uv
+export OM_USERNAME=https://pcf.hawthorne.cf-app.com
+export OM_PASSWORD=pivotalcf
+export OM_TARGET=o10q4qqfjdc523uv
 ```
 
 #### Note on skipping SSL Validation
@@ -84,83 +63,26 @@ $ export OM_TARGET=o10q4qqfjdc523uv
 It is very likely that the OpsManager instance uses a self signed SSL certificate. This will result in authentication failures during the test. To avoid these failures, `OM_SKIP_SSL_VALIDATION` should be set to true to skip the SSL validation steps.
 
 ```bash
-$ export OM_SKIP_SSL_VALIDATION=true
+export OM_SKIP_SSL_VALIDATION=true
 ```
 
-### 6 Now run the test!
+### 5 Now run the test!
 
-Once the steps above have been completed, its time to run the test.
-
-[Docker](https://www.docker.com/) is required to execute the test.
+Run the test with the docker image:
 
 ```bash
-$ docker run \
+docker run \
   -e OM_USERNAME \
   -e OM_PASSWORD \
   -e OM_TARGET \
   -e OM_SKIP_SSL_VALIDATION \
   -e PIVNET_TOKEN \
-  -v ${TILE_PATH}:/input/tile.pivotal \
-  -v ${TILE_CONFIG_PATH}:/input/config.json \
+  -v /full/path/to/your/tile.pivotal:/input/tile.pivotal \
+  -v /full/path/to/your/config-file.json:/input/config.json \
   cfplatformeng/install-uninstall-test-image
 ```
 
-This will fetch the test image and begin the test execution. Depending on the complexity of the integration, this could take tens of minutes to an hour or two.
-
-## Advanced Topics
-
-### Makefile
-
-There are some make targets to aid running and troubleshooting tests. There are also make targets to test the tools.
-
-### Requirements
-
-Using the Makefile requires a few tools:
-
-- [BATS](https://github.com/bats-core/bats-core) to test shell scripts
-- [shellcheck](https://github.com/koalaman/shellcheck) to lint shell scripts
-
-### Running the test
-
-To use the Makefile to run the test (this requires the same environment variables as above):
-
-```bash
-$ make run
-```
-
-### Development
-
-The test script is inside of `run.sh`.  Changes there should be tested and reflected in the `run.bats` test file.
-
-This test also utilizes several of the [tool scripts](https://github.com/cf-platform-eng/isv-ci-toolkit/tree/master/tools).
-
-Run the unit tests with:
-
-```bash
-$ make test
-```
-
-To extend the test to add new functionality, consider creating a new docker image that inherits from this one, or copy this one and make your modifications in the copy.
-
-### Troubleshooting
-
-If you want to debug the execution, you can get a shell in the test container before the test executes by using:
-
-```bash
-$ make shell
-```
-
-Then, source the test functions and now you can run each test step in sequence:
-
-```bash
-root@5cd0c73b7329:/test# source test_functions.sh
-root@5cd0c73b7329:/test# config_file_check
-section-start: 'config file check' MRL:{"type":"section-start","name":"config file check","time":"2019-09-27T15:02:10.1187724Z"}
-The config file appears to be valid
-section-end: 'config file check' result: 0 MRL:{"type":"section-end","name":"config file check","time":"2019-09-27T15:02:10.1397465Z"}
-root@5cd0c73b7329:/test# install_tile
-...
-```
+This will fetch the test image and begin the test execution. Depending on the complexity of the integration, this could take several minutes to a few hours.
 
 ## Reference
 
@@ -178,9 +100,6 @@ The following environment variables are necessary to run the process:
 The following environment variables may be used, but not required:
 
 - `OM_SKIP_SSL_VALIDATION` - set to `true` if your OpsManager is using self-signed SSL certificates
-- `USE_FULL_DEPLOY` - if set to `true`, deploy all staged products. Defaults to `false`, which only deploys the integration under test.
-
-NOTE: Using `USE_FULL_DEPLOY` will result in a slower test runtime, but may catch incompatibilities with other integrations.
 
 ### Configuration file
 
