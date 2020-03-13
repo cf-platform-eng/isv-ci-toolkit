@@ -1,8 +1,5 @@
-ARG MRLOG_VERSION=0.1.2
-ARG NEEDS_VERSION=0.10.1
-
-FROM cfplatformeng/mrlog:${MRLOG_VERSION} as mrlog
-FROM cfplatformeng/needs:${NEEDS_VERSION} as needs
+FROM cfplatformeng/mrlog:0.1.2 as mrlog
+FROM cfplatformeng/needs:0.10.1 as needs
 FROM ubuntu
 
 COPY --from=mrlog /usr/local/bin/mrlog /usr/local/bin/
