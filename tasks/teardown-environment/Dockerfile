@@ -1,5 +1,5 @@
 FROM cfplatformeng/uaa:0.10.0 AS uaa
-FROM cfplatformeng/base-image:0.0.27
+FROM cfplatformeng/base-image:0.0.29
 
 COPY --from=uaa /usr/local/bin/uaa /usr/local/bin/
 
