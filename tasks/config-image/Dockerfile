@@ -3,7 +3,7 @@ FROM cfplatformeng/om:4.5.0              AS om
 FROM cfplatformeng/isv-ci-toolkit:0.0.22 AS tools
 
 # Build the test image
-FROM cfplatformeng/base-image:0.0.26
+FROM cfplatformeng/base-image:0.0.29
 
 # Copy binaries from dependent images
 COPY --from=marman /usr/local/bin/marman /usr/local/bin/
