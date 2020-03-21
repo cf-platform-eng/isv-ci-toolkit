@@ -1,4 +1,4 @@
-FROM cfplatformeng/mrlog:0.2.2 as mrlog
+FROM cfplatformeng/mrlog:0.2.3 as mrlog
 FROM cfplatformeng/needs:0.12.2 as needs
 FROM ubuntu
 
