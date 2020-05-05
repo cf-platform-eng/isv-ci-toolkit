@@ -36,7 +36,7 @@ logs:
 	mkdir -p ./logs
 
 run: tile-path logs
-	docker run \
+	set -o pipefail; docker run \
 		-v ${TILE_PATH}:/input/tile.pivotal \
 		cfplatformeng/scan-tile 2>&1 | tee ./logs/$(shell date "+%Y.%m.%d-%H.%M.%S").log
 
