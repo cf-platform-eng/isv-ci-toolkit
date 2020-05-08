@@ -21,11 +21,11 @@ RUN apt-get update --fix-missing && \
         git \
         jq \
         less \
-        python-pip \
+        python3-pip \
         vim.tiny \
         wget && \
     rm -rf /var/lib/apt/lists/* && \
-    pip install yq
+    python3 -m pip install yq
 
 WORKDIR /job
 
