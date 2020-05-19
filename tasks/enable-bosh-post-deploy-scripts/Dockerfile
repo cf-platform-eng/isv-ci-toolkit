@@ -1,6 +1,6 @@
 FROM cfplatformeng/om:4.8.0  AS om
 
-FROM cfplatformeng/base-image:0.0.30
+FROM cfplatformeng/base-image:0.0.33
 ARG DEPENDENCIES_FILE=/root/dependencies.log
 
 COPY --from=om /usr/local/bin/om /usr/local/bin/
