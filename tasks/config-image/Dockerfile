@@ -12,7 +12,7 @@ RUN mrlog dependency --type binary --name marman --version $(marman version | cu
     mrlog dependency --type binary --name om-cli --version $(om version) >> ${DEPENDENCIES_FILE}
 
 RUN apt-get update && \
-    apt-get install -y gettext-base node-semver && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y gettext-base node-semver && \
     rm -rf /var/lib/apt/lists/*
 
 COPY [ "add-cf.yml", "elastic-runtime.srt.azure.json", "elastic-runtime.srt.gcp.json", "needs.json", "run.sh", "steps.sh", "${JOB_DIR}/" ]
