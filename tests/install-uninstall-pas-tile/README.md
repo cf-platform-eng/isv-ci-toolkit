@@ -53,9 +53,9 @@ Three pieces of information are needed to identify and authenticate with the pla
 For example, if the URL is *https://pcf.hawthorne.cf-app.com*, user name is *pivotalcf*, and password is *o10q4qqfjdc523uv*, then set these environment variables:
 
 ```bash
-export OM_USERNAME=https://pcf.hawthorne.cf-app.com
-export OM_PASSWORD=pivotalcf
-export OM_TARGET=o10q4qqfjdc523uv
+export OM_USERNAME=pivotalcf
+export OM_PASSWORD=o10q4qqfjdc523uv
+export OM_TARGET=https://pcf.hawthorne.cf-app.com
 ```
 
 #### Note on skipping SSL Validation
