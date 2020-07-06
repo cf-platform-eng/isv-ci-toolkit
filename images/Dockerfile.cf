@@ -5,7 +5,7 @@ RUN if [ -z "${CF_CLI_VER}" ] ; then \
     else \
         wget --output-document=/cf.tgz "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=${CF_CLI_VER}" ; \
     fi
-RUN tar xzvf /cf.tgz --directory=/usr/local/bin cf
+RUN tar xzvf /cf.tgz --directory=/usr/local/bin --exclude=LICENSE --exclude=NOTICE
 
 FROM ubuntu
 LABEL maintainer="Pivotal Platform Engineering ISV-CI Team <cf-isv-dashboard@pivotal.io>"
