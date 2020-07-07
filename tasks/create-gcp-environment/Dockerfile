@@ -1,6 +1,6 @@
 FROM cfplatformeng/uaa:0.10.0 AS uaa
 
-FROM cfplatformeng/base-image:0.0.34
+FROM cfplatformeng/base-image:0.0.37
 ARG DEPENDENCIES_FILE=/root/dependencies.log
 
 COPY --from=uaa /usr/local/bin/uaa /usr/local/bin/
