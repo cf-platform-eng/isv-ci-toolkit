@@ -14,7 +14,7 @@ Locates the .pivotal file that contains the integration to test, and note the ab
 
 The test will configure the integration with the provided settings and run apply changes to make sure the integration configures and installs. It is up to the integration developer to create a configuration appropriate for their integration.
 
-[Tips for building a valid config file](https://github.com/cf-platform-eng/isv-ci-toolkit/blob/master/docs/creating-tile-configs.md)
+[Tips for building a valid config file](https://github.com/cf-platform-eng/isv-ci-toolkit/blob/main/docs/creating-tile-configs.md)
 
 A configuration file will look like this:
 
@@ -105,7 +105,7 @@ The following environment variables may be used, but not required:
 
 The configuration file may be json or yaml.
 
-[Tips for building a valid config file](https://github.com/cf-platform-eng/isv-ci-toolkit/blob/master/docs/creating-tile-configs.md)
+[Tips for building a valid config file](https://github.com/cf-platform-eng/isv-ci-toolkit/blob/main/docs/creating-tile-configs.md)
 
 The configuration file should include the product-properties section:
 
