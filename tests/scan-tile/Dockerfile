@@ -1,10 +1,10 @@
-FROM python:3.8.3-alpine AS pipfile
+FROM python:3.8.4-alpine AS pipfile
 RUN pip install pipenv
 
 COPY [ "Pipfile", "Pipfile.lock", "/tmp/" ]
 RUN cd /tmp && pipenv lock --requirements > requirements.txt
 
-FROM python:3.8.3-alpine
+FROM python:3.8.4-alpine
 
 WORKDIR /test
 
