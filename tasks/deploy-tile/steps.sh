@@ -29,7 +29,7 @@ function download_tile() {
     -- marman tanzu-network-download --slug "${TILE_SLUG}" --version "${TILE_VERSION}" --file ".pivotal$"
   fi
   echo "Setting link from ${TILE_PATH} -> newly downloaded $(ls *.pivotal)"
-  ln -s "${TILE_PATH}" *.pivotal
+  ln -s *.pivotal "${TILE_PATH}"
 }
 
 function print_config_file() {
