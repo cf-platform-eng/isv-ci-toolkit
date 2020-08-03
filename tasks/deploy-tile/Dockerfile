@@ -10,7 +10,7 @@ ARG DEPENDENCIES_FILE=/root/dependencies.log
 COPY --from=marman /usr/local/bin/marman /usr/local/bin/
 COPY --from=om /usr/local/bin/om /usr/local/bin/
 COPY --from=tileinspect /usr/local/bin/tileinspect /usr/local/bin/
-COPY --from=tools /usr/local/bin/install-tile.sh /usr/local/bin/
+COPY --from=tools /usr/local/bin/*.sh /usr/local/bin/
 
 # Log dependency versions
 RUN mrlog dependency --type binary --name marman --version $(marman version | cut -f3 -d" ") >> ${DEPENDENCIES_FILE} && \
