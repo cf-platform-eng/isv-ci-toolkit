@@ -1,4 +1,4 @@
-FROM cfplatformeng/marman:0.4.2 as marman
+FROM cfplatformeng/marman:0.4.3 as marman
 FROM cfplatformeng/om:6.1.1 AS om
 FROM cfplatformeng/tileinspect:0.5.8 AS tileinspect
 FROM cfplatformeng/isv-ci-toolkit:0.0.23 AS tools
