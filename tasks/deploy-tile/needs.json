@@ -1,0 +1,45 @@
+[{
+    "type": "environment_variable",
+    "name": "OM_TARGET",
+    "description": "The OpsManager hostname"
+}, {
+    "type": "environment_variable",
+    "name": "OM_USERNAME",
+    "description": "Username for OpsManager"
+}, {
+    "type": "environment_variable",
+    "name": "OM_PASSWORD",
+    "description": "Password for OpsManager"
+}, {
+    "type": "environment_variable",
+    "name": "OM_SKIP_SSL_VALIDATION",
+    "description": "Password for OpsManager",
+    "optional": true
+}, {
+    "type": "or",
+    "needs": [{
+        "type": "and",
+        "needs": [{
+            "type": "environment_variable",
+            "name": "PIVNET_TOKEN",
+            "description": "Token for downloading the tile from Tanzu Network"
+        }, {
+            "type": "environment_variable",
+            "name": "TILE_SLUG",
+            "description": "Name of the product to download from Tanzu Network"
+        }, {
+            "type": "environment_variable",
+            "name": "TILE_VERSION",
+            "description": "Version of the product to download from Tanzu Network. If not supplied, will download latest GA.",
+            "optional": true
+        }]
+    }, {
+        "type": "file",
+        "path": "/input/tile.pivotal",
+        "description": "The tile to deploy to the environment"
+    }]
+}, {
+    "type": "file",
+    "path": "/input/config.json",
+    "description": "Configuration file for the product"
+}]
