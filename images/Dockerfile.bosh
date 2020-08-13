@@ -1,9 +1,9 @@
-FROM cfplatformeng/marman AS fetch-bosh
+FROM cfplatformeng/marman:0.4.3 AS fetch-bosh
 ARG BOSH_CLI_VER
 RUN if [ -z "${BOSH_CLI_VER}" ] ; then \
-        marman download-release --owner cloudfoundry --repo bosh-cli --filter "bosh-cli-[.0-9]*-linux-amd64$" ; \
+        marman github-download-release --owner cloudfoundry --repo bosh-cli --filter "bosh-cli-[.0-9]*-linux-amd64$" ; \
     else \
-        marman download-release --owner cloudfoundry --repo bosh-cli --filter "bosh-cli-${BOSH_CLI_VER}-linux-amd64$" ; \
+        marman github-download-release --owner cloudfoundry --repo bosh-cli --filter "bosh-cli-${BOSH_CLI_VER}-linux-amd64$" ; \
     fi
 RUN mv bosh-cli-* /usr/local/bin/bosh
 RUN chmod +x /usr/local/bin/bosh

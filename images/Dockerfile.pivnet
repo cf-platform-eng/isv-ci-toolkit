@@ -1,9 +1,9 @@
-FROM cfplatformeng/marman AS fetch-pivnet
+FROM cfplatformeng/marman:0.4.3 AS fetch-pivnet
 ARG PIVNET_CLI_VER
 RUN if [ -z "${PIVNET_CLI_VER}" ] ; then \
-        marman download-release --owner pivotal-cf --repo pivnet-cli --filter "pivnet-linux-amd64-" ; \
+        marman github-download-release --owner pivotal-cf --repo pivnet-cli --filter "pivnet-linux-amd64-" ; \
     else \
-        marman download-release --owner pivotal-cf --repo pivnet-cli --version "v${PIVNET_CLI_VER}" --filter "pivnet-linux-amd64-${PIVNET_CLI_VER}" ; \
+        marman github-download-release --owner pivotal-cf --repo pivnet-cli --version "v${PIVNET_CLI_VER}" --filter "pivnet-linux-amd64-${PIVNET_CLI_VER}" ; \
     fi
 RUN mv pivnet-linux-amd64-* /usr/local/bin/pivnet
 RUN chmod +x /usr/local/bin/pivnet

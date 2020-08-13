@@ -1,4 +1,4 @@
-FROM cfplatformeng/base-image:latest AS fetch-cf7
+FROM cfplatformeng/base-image AS fetch-cf7
 ARG CF_CLI_VER
 RUN if [ -z "${CF_CLI_VER}" ] ; then \
         wget --output-document=/cf7.tgz "https://packages.cloudfoundry.org/stable?release=linux64-binary" ; \

@@ -43,7 +43,7 @@ function log_dependencies() {
 }
 
 function install_leftovers() {
-  marman download-release -o genevieve -r leftovers -f .*linux-amd64
+  marman github-download-release -o genevieve -r leftovers -f .*linux-amd64
   mv leftovers*linux-amd64 /usr/local/bin/leftovers
   chmod +x /usr/local/bin/leftovers
   mrlog dependency --name="leftovers" --version="$(leftovers -v 2>&1)"
@@ -119,7 +119,7 @@ function download_ksm_tile() {
   (
     mkdir -p "/tmp/" &&
       cd "/tmp/" &&
-      marman download-tile -s container-services-manager -f ksm-.*\.pivotal
+      marman tanzu-network-download -s container-services-manager -f ksm-.*\.pivotal
   )
 
   result=$?
