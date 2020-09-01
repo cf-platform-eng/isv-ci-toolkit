@@ -1,4 +1,4 @@
-FROM cfplatformeng/om:6.1.2  AS om
+FROM cfplatformeng/om:6.2.0  AS om
 FROM cfplatformeng/cf:7.0.2 AS cf
 
 FROM cfplatformeng/base-image:0.0.37
