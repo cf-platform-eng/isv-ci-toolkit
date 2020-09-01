@@ -1,5 +1,5 @@
 FROM cfplatformeng/marman:0.4.3 as marman
-FROM cfplatformeng/om:6.1.2 AS om
+FROM cfplatformeng/om:6.2.0 AS om
 FROM cfplatformeng/tileinspect:0.5.8 AS tileinspect
 FROM cfplatformeng/isv-ci-toolkit:0.0.23 AS tools
 
