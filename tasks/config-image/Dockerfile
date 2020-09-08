@@ -2,7 +2,7 @@ FROM cfplatformeng/marman:0.4.3          AS marman
 FROM cfplatformeng/om:6.2.0              AS om
 FROM cfplatformeng/isv-ci-toolkit:0.0.23 AS tools
 
-FROM cfplatformeng/base-image:0.0.37
+FROM cfplatformeng/base-image:0.0.39
 ARG DEPENDENCIES_FILE=/root/dependencies.log
 
 COPY --from=marman /usr/local/bin/marman /usr/local/bin/
