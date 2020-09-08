@@ -2,7 +2,7 @@ FROM cfplatformeng/marman:0.4.3      AS marman
 FROM cfplatformeng/om:6.2.0          AS om
 FROM cfplatformeng/tileinspect:0.5.8 AS tileinspect
 
-FROM cfplatformeng/base-image:0.0.37
+FROM cfplatformeng/base-image:0.0.39
 
 RUN apt-get update && apt-get install -y gettext-base gnupg node-semver && rm -rf /var/lib/apt/lists/*
 
