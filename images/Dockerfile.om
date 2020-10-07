@@ -1,4 +1,4 @@
-FROM cfplatformeng/marman:0.4.3 AS fetch-om
+FROM cfplatformeng/marman:0.4.4 AS fetch-om
 ARG OM_CLI_VER
 RUN if [ -z "${OM_CLI_VER}" ] ; then \
         marman github-download-release --owner pivotal-cf --repo om --filter "om-linux-[.0-9]*$" ; \
