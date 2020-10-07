@@ -1,5 +1,5 @@
 FROM cfplatformeng/mrlog:0.2.4 as mrlog
-FROM cfplatformeng/needs:0.12.2 as needs
+FROM cfplatformeng/needs:0.12.3 as needs
 FROM ubuntu
 
 COPY --from=mrlog /usr/local/bin/mrlog /usr/local/bin/
