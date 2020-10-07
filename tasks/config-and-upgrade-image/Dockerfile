@@ -1,6 +1,6 @@
 FROM cfplatformeng/marman:0.4.4          AS marman
 FROM cfplatformeng/om:6.3.0              AS om
-FROM cfplatformeng/isv-ci-toolkit:0.0.23 AS tools
+FROM cfplatformeng/isv-ci-toolkit:0.0.24 AS tools
 
 FROM cfplatformeng/base-image:0.0.39
 
