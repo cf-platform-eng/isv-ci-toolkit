@@ -2,7 +2,7 @@ FROM cfplatformeng/marman:0.4.4          AS marman
 FROM cfplatformeng/om:6.4.1              AS om
 FROM cfplatformeng/isv-ci-toolkit:0.0.24 AS tools
 
-FROM cfplatformeng/base-image:0.0.39
+FROM cfplatformeng/base-image:0.0.40
 
 # Copy binaries from dependent images
 COPY --from=marman /usr/local/bin/marman /usr/local/bin/
