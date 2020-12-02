@@ -1,4 +1,4 @@
-FROM cfplatformeng/om:6.5.0  AS om
+FROM cfplatformeng/om:7.1.0  AS om
 
 FROM cfplatformeng/base-image:0.0.41
 ARG DEPENDENCIES_FILE=/root/dependencies.log
