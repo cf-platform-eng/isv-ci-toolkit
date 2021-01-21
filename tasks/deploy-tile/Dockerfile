@@ -3,7 +3,7 @@ FROM cfplatformeng/om:6.5.0 AS om
 FROM cfplatformeng/tileinspect:0.5.10 AS tileinspect
 FROM cfplatformeng/isv-ci-toolkit:0.0.24 AS tools
 
-FROM cfplatformeng/base-image:0.0.41
+FROM cfplatformeng/base-image:0.0.45
 ARG DEPENDENCIES_FILE=/root/dependencies.log
 
 # Copy binaries from dependent images
