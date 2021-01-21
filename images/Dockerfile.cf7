@@ -1,4 +1,8 @@
-FROM cfplatformeng/base-image AS fetch-cf7
+FROM harbor-repo.vmware.com/dockerhub-proxy-cache/library/ubuntu AS fetch-cf7
+RUN  apt-get update \
+  && apt-get install -y wget \
+  && rm -rf /var/lib/apt/lists/*
+
 ARG CF_CLI_VER
 RUN if [ -z "${CF_CLI_VER}" ] ; then \
         wget --output-document=/cf7.tgz "https://packages.cloudfoundry.org/stable?release=linux64-binary" ; \
@@ -7,7 +11,7 @@ RUN if [ -z "${CF_CLI_VER}" ] ; then \
     fi
 RUN tar xzvf /cf7.tgz --directory=/usr/local/bin cf7
 
-FROM ubuntu
+FROM harbor-repo.vmware.com/dockerhub-proxy-cache/library/ubuntu
 LABEL maintainer="Pivotal Platform Engineering ISV-CI Team <cf-isv-dashboard@pivotal.io>"
 
 COPY --from=fetch-cf7 /usr/local/bin/cf7 /usr/local/bin

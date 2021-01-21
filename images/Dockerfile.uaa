@@ -1,4 +1,4 @@
-FROM cfplatformeng/marman:0.4.4 AS fetch-uaa
+FROM harbor-repo.vmware.com/partner_engineering/marman:0.4.4 AS fetch-uaa
 ARG UAA_CLI_VER
 RUN if [ -z "${UAA_CLI_VER}" ] ; then \
         marman github-download-release --owner cloudfoundry-incubator --repo uaa-cli --filter "uaa-linux-amd64-" ; \
@@ -8,7 +8,7 @@ RUN if [ -z "${UAA_CLI_VER}" ] ; then \
 RUN mv uaa-linux-amd64-* /usr/local/bin/uaa
 RUN chmod +x /usr/local/bin/uaa
 
-FROM ubuntu
+FROM harbor-repo.vmware.com/dockerhub-proxy-cache/library/ubuntu
 LABEL maintainer="Pivotal Platform Engineering ISV-CI Team <cf-isv-dashboard@pivotal.io>"
 
 COPY --from=fetch-uaa /usr/local/bin/uaa /usr/local/bin
