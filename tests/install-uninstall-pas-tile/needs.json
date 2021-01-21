@@ -1,0 +1,35 @@
+[{
+    "type": "and",
+    "needs": [{
+            "type": "environment_variable",
+            "name": "OM_TARGET",
+            "description": "The OpsManager hostname"
+        }, {
+            "type": "environment_variable",
+            "name": "OM_USERNAME",
+            "description": "The username for connecting to OpsManager"
+        }, {
+            "type": "environment_variable",
+            "name": "OM_PASSWORD",
+            "description": "The password for connecting to OpsManager"
+        }, {
+            "type": "environment_variable",
+            "name": "OM_SKIP_SSL_VALIDATION",
+            "description": "Should certificate validation be skipped (set to true if using self-signed certificates)",
+            "optional": true
+        }
+    ]
+}, {
+    "type": "environment_variable",
+    "name": "PIVNET_TOKEN",
+    "description": "A token (legacy or refresh) for the Pivotal Network for downloading any missing required stemcells",
+    "optional": true
+}, {
+    "type": "file",
+    "path": "/input/tile.pivotal",
+    "description": "the tile to test"
+}, {
+    "type": "file",
+    "path": "/input/config.json",
+    "description": "The OpsManager configuration properties to apply to the tile"
+}]
