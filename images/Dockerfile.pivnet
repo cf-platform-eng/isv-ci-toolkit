@@ -1,4 +1,4 @@
-FROM harbor-repo.vmware.com/partner_engineering/marman:0.4.4 AS fetch-pivnet
+FROM harbor-repo.vmware.com/partner_engineering/marman AS fetch-pivnet
 ARG PIVNET_CLI_VER
 RUN if [ -z "${PIVNET_CLI_VER}" ] ; then \
         marman github-download-release --owner pivotal-cf --repo pivnet-cli --filter "pivnet-linux-amd64-" ; \
