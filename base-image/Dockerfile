@@ -1,4 +1,4 @@
-FROM harbor-repo.vmware.com/partner_engineering/mrlog:0.2.5 as mrlog
+FROM harbor-repo.vmware.com/partner_engineering/mrlog:0.2.6 as mrlog
 FROM harbor-repo.vmware.com/partner_engineering/needs:0.12.5 as needs
 FROM harbor-repo.vmware.com/dockerhub-proxy-cache/library/ubuntu
 
