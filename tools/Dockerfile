@@ -1,4 +1,4 @@
-FROM ubuntu
+FROM harbor-repo.vmware.com/dockerhub-proxy-cache/library/ubuntu
 
 COPY ./*.sh /usr/local/bin/
 RUN chmod +x \
