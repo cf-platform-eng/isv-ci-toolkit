@@ -1,7 +1,7 @@
 FROM harbor-repo.vmware.com/partner_engineering/marman:0.4.5 as marman
 FROM harbor-repo.vmware.com/partner_engineering/om:7.1.2 AS om
 FROM harbor-repo.vmware.com/partner_engineering/tileinspect:0.5.11 AS tileinspect
-FROM cfplatharbor-repo.vmware.com/partner_engineeringformeng/isv-ci-toolkit:0.0.25 AS tools
+FROM cfplatharbor-repo.vmware.com/partner_engineering/isv-ci-toolkit:0.0.25 AS tools
 
 FROM harbor-repo.vmware.com/partner_engineering/base-image:0.0.47
 ARG DEPENDENCIES_FILE=/root/dependencies.log
