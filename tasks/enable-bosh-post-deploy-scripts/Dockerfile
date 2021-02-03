@@ -1,6 +1,6 @@
-FROM cfplatformeng/om:6.5.0  AS om
+FROM harbor-repo.vmware.com/partner_engineering/om:7.1.2 AS om
 
-FROM cfplatformeng/base-image:0.0.41
+FROM harbor-repo.vmware.com/partner_engineering/base-image:0.0.47
 ARG DEPENDENCIES_FILE=/root/dependencies.log
 
 COPY --from=om /usr/local/bin/om /usr/local/bin/

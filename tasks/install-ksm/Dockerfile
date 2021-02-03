@@ -1,22 +1,22 @@
-FROM cfplatformeng/base-image:latest
+FROM harbor-repo.vmware.com/partner_engineering/base-image:latest
 
 ENV INPUT_DIR=/input
 ENV OUTPUT_DIR=/input
 
 # Copy binaries from dependent images
-COPY --from=cfplatformeng/mrlog:latest          /usr/local/bin/mrlog /usr/local/bin/
+COPY --from=harbor-repo.vmware.com/partner_engineering/mrlog:latest          /usr/local/bin/mrlog /usr/local/bin/
 RUN true
-COPY --from=cfplatformeng/needs:latest          /usr/local/bin/needs /usr/local/bin/
+COPY --from=harbor-repo.vmware.com/partner_engineering/needs:latest          /usr/local/bin/needs /usr/local/bin/
 RUN true
-COPY --from=cfplatformeng/marman:latest         /usr/local/bin/marman /usr/local/bin/
+COPY --from=harbor-repo.vmware.com/partner_engineering/marman:latest         /usr/local/bin/marman /usr/local/bin/
 RUN true
-COPY --from=cfplatformeng/pivnet:latest         /usr/local/bin/pivnet /usr/local/bin/
+COPY --from=harbor-repo.vmware.com/partner_engineering/pivnet:latest         /usr/local/bin/pivnet /usr/local/bin/
 RUN true
-COPY --from=cfplatformeng/tileinspect:latest    /usr/local/bin/tileinspect /usr/local/bin/
+COPY --from=harbor-repo.vmware.com/partner_engineering/tileinspect:latest    /usr/local/bin/tileinspect /usr/local/bin/
 RUN true
-COPY --from=cfplatformeng/om:latest             /usr/local/bin/om /usr/local/bin/
+COPY --from=harbor-repo.vmware.com/partner_engineering/om:latest             /usr/local/bin/om /usr/local/bin/
 RUN true
-COPY --from=cfplatformeng/isv-ci-toolkit:latest /usr/local/bin/*.sh /usr/local/bin/
+COPY --from=harbor-repo.vmware.com/partner_engineering/isv-ci-toolkit:latest /usr/local/bin/*.sh /usr/local/bin/
 RUN true
 
 RUN apt-get update && apt-get install -y apt-transport-https gettext-base

@@ -1,6 +1,6 @@
-FROM cfplatformeng/uaa:0.10.0 AS uaa
+FROM harbor-repo.vmware.com/partner_engineering/uaa:0.10.0 AS uaa
 
-FROM cfplatformeng/base-image:0.0.41
+FROM harbor-repo.vmware.com/partner_engineering/base-image:0.0.47
 ARG DEPENDENCIES_FILE=/root/dependencies.log
 
 COPY --from=uaa /usr/local/bin/uaa /usr/local/bin/

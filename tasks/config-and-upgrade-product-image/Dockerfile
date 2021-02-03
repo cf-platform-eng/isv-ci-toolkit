@@ -1,8 +1,8 @@
-FROM cfplatformeng/marman:0.4.4          AS marman
-FROM cfplatformeng/om:6.5.0              AS om
-FROM cfplatformeng/isv-ci-toolkit:0.0.24 AS tools
+FROM harbor-repo.vmware.com/partner_engineering/marman:0.4.5          AS marman
+FROM harbor-repo.vmware.com/partner_engineering/om:4.1.2              AS om
+FROM harbor-repo.vmware.com/partner_engineering/isv-ci-toolkit:0.0.25 AS tools
 
-FROM cfplatformeng/base-image:0.0.41
+FROM harbor-repo.vmware.com/partner_engineering/base-image:0.0.47
 
 # Copy binaries from dependent images
 COPY --from=marman /usr/local/bin/marman /usr/local/bin/

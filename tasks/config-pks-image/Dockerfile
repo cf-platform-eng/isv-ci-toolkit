@@ -1,8 +1,8 @@
-FROM cfplatformeng/marman:0.4.4      AS marman
-FROM cfplatformeng/om:6.5.0          AS om
-FROM cfplatformeng/tileinspect:0.5.10 AS tileinspect
+FROM harbor-repo.vmware.com/partner_engineering/marman:0.4.5       AS marman
+FROM harbor-repo.vmware.com/partner_engineering/om:7.1.2           AS om
+FROM harbor-repo.vmware.com/partner_engineering/tileinspect:0.5.11 AS tileinspect
 
-FROM cfplatformeng/base-image:0.0.41
+FROM harbor-repo.vmware.com/partner_engineering/base-image:0.0.47
 
 RUN apt-get update && apt-get install -y gettext-base gnupg node-semver && rm -rf /var/lib/apt/lists/*
 
