@@ -1,0 +1,34 @@
+[
+    {
+        "type": "or",
+        "needs": [
+            {
+                "type": "file",
+                "path": "/input/environment.json"
+            },
+            {
+                "type": "and",
+                "needs": [
+                    {
+                        "type": "environment_variable",
+                        "name": "OM_TARGET",
+                        "description": "The OpsManager hostname"
+                    }, {
+                        "type": "environment_variable",
+                        "name": "OM_USERNAME",
+                        "description": "Username for OpsManager"
+                    }, {
+                        "type": "environment_variable",
+                        "name": "OM_PASSWORD",
+                        "description": "Password for OpsManager"
+                    }, {
+                        "type": "environment_variable",
+                        "name": "OM_SKIP_SSL_VALIDATION",
+                        "description": "Password for OpsManager",
+                        "optional": true
+                    }
+                ]
+            }
+        ]
+    }
+]
