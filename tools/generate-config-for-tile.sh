@@ -11,11 +11,11 @@ function gen_tile_config {
     TILE_PATH=$1
     CONFIG_FILE=$2
 
-    if ! PRODUCT_NAME=$(tileinspect metadata -t "${TILE_PATH}" | yq -r .name); then 
+    if ! PRODUCT_NAME=$(tileinspect metadata --tile "${TILE_PATH}" --format json | jq -r .name); then
         echo "Failed to get metadata from ${TILE_PATH}"
         return 1
     fi
-    if ! COUNT_JOB_TYPES=$(tileinspect metadata -t "${TILE_PATH}" | yq -r '.job_types | length'); then 
+    if ! COUNT_JOB_TYPES=$(tileinspect metadata --tile "${TILE_PATH}" --format json | jq -r '.job_types | length'); then
         echo "Failed to get metadata from ${TILE_PATH}"
         return 1
     fi
@@ -52,14 +52,14 @@ function gen_tile_config {
     DISK_NAME=$(echo "${CLOUD_CONFIG}" | jq -r [.cloud_config.disk_types[].name]["${DISK_INDEX}"])
 
     if [ "${COUNT_JOB_TYPES:-0}" -eq "0" ]; then 
-        yq -c --arg productName "${PRODUCT_NAME}" \
+        jq --compact-output --arg productName "${PRODUCT_NAME}" \
             '.["product-name"] = $productName' \
             "${CONFIG_FILE}" \
             | sed "s/{vm_type}/${VM_NAME}/g" \
             | sed "s/{disk_type}/${DISK_NAME}/g" \
             | sed "s/{az}/${AZ0}/g"
     else
-        yq -c --arg productName "${PRODUCT_NAME}" \
+        jq --compact-output --arg productName "${PRODUCT_NAME}" \
             --arg network "${NETWORK}" \
             --arg az "${AZ0}" \
             --argjson azs "${AZS}" \
@@ -71,7 +71,7 @@ function gen_tile_config {
     fi
 }
 
-if [ "$#" -lt 2 ]; then    
+if [ "$#" -lt 2 ]; then
     usage
     exit 1
 fi

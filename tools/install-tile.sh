@@ -14,8 +14,8 @@ install_tile() {
     TILE_CONFIG=$2      # TODO TILE_CONFIG_PATH
     USE_FULL_DEPLOY=$3
 
-    PRODUCT_NAME=$(tileinspect metadata -t "${TILE}" | yq -r .name)
-    PRODUCT_VERSION=$(tileinspect metadata -t "${TILE}" | yq -r .product_version)
+    PRODUCT_NAME=$(tileinspect metadata --tile "${TILE}" --format json | jq -r .name)
+    PRODUCT_VERSION=$(tileinspect metadata --tile "${TILE}" --format json | jq -r .product_version)
 
     GENERATED_CONFIG_PATH="${PWD}/config.json"
 
