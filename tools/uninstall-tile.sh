@@ -13,7 +13,7 @@ uninstall_tile() {
     USE_FULL_DEPLOY=$2
 
     PRODUCT_NAME=$(tileinspect metadata --tile "${TILE}" --format json | jq -r .name)
-    PRODUCT_VERSION=$(tileinspect metadata --tile "${TILE}" --formation json | jq -r .product_version)
+    PRODUCT_VERSION=$(tileinspect metadata --tile "${TILE}" --format json | jq -r .product_version)
 
     if ! om unstage-product --product-name "${PRODUCT_NAME}" ; then 
         echo "Failed to unstage product ${PRODUCT_NAME}" >&2
