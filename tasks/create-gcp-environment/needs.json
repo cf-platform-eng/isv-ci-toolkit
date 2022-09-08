@@ -1,9 +1,0 @@
-[
-    {
-        "type": "environment_variable",
-        "name": "OPS_MAN_VERSION"
-    }, {
-        "type": "file",
-        "path": "/input/credentials.json"
-    }
-]

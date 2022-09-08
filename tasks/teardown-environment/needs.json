@@ -1,9 +1,0 @@
-[
-    {
-        "type": "environment_variable",
-        "name": "INSTALLATION_NAME"
-    }, {
-        "type": "file",
-        "path": "/input/*.json"
-    }
-]
