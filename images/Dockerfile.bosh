@@ -1,4 +1,4 @@
-FROM harbor-repo.vmware.com/partner_engineering/marman AS fetch-bosh
+FROM projects.registry.vmware.com/tanzu_isv_engineering/marman AS fetch-bosh
 ARG BOSH_CLI_VER
 RUN if [ -z "${BOSH_CLI_VER}" ] ; then \
         marman github-download-release --owner cloudfoundry --repo bosh-cli --filter "bosh-cli-[.0-9]*-linux-amd64$" ; \

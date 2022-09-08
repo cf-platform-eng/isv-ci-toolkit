@@ -1,7 +1,7 @@
-FROM harbor-repo.vmware.com/partner_engineering/om:7.1.2 AS om
-FROM harbor-repo.vmware.com/partner_engineering/cf:7.2.0 AS cf
+FROM projects.registry.vmware.com/tanzu_isv_engineering/om:7.1.2 AS om
+FROM projects.registry.vmware.com/tanzu_isv_engineering/cf:7.2.0 AS cf
 
-FROM harbor-repo.vmware.com/partner_engineering/base-image:0.0.47
+FROM projects.registry.vmware.com/tanzu_isv_engineering/base-image:0.0.47
 ARG DEPENDENCIES_FILE=/root/dependencies.log
 
 COPY --from=cf /usr/local/bin/cf /usr/local/bin/

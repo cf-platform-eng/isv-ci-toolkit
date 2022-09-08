@@ -1,4 +1,4 @@
-FROM harbor-repo.vmware.com/partner_engineering/marman AS fetch-leftovers
+FROM projects.registry.vmware.com/tanzu_isv_engineering/marman AS fetch-leftovers
 ARG LEFTOVERS_VER
 RUN if [ -z "${LEFTOVERS_VER}" ] ; then \
         marman github-download-release --owner genevieve --repo leftovers --filter "leftovers-v[.0-9]*-linux-amd64$" ; \

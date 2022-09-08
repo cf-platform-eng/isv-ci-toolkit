@@ -1,0 +1,259 @@
+---
+resource_types:
+  - name: pivnet
+    type: docker-image
+    source:
+      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/pivotalcf/pivnet-resource
+      tag: latest-final
+      username: ((harbor.username))
+      password: ((harbor.token))
+
+  - name: pull-request
+    type: docker-image
+    source:
+      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/teliaoss/github-pr-resource
+      username: ((harbor.username))
+      password: ((harbor.token))
+
+resources:
+  - name: python
+    type: docker-image
+    source:
+      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/library/python
+      tag: 3.9
+      username: ((harbor.username))
+      password: ((harbor.token))
+
+  - name: dcind
+    type: docker-image
+    source:
+      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/amidos/dcind
+      username: ((harbor.username))
+      password: ((harbor.token))
+
+  - name: source
+    type: git
+    source:
+      uri: git@github.com:cf-platform-eng/isv-ci-toolkit.git
+      paths:
+        - tests/scan-tile
+      private_key: ((github.private_key))
+
+  - name: scan-tile
+    type: docker-image
+    source:
+      repository: harbor-repo.vmware.com/partner_engineering/scan-tile
+      username: ((harbor.username))
+      password: ((harbor.token))
+
+  - name: scan-tile-acceptance
+    type: docker-image
+    source:
+      repository: harbor-repo.vmware.com/partner_engineering/scan-tile
+      tag: acceptance
+      username: ((harbor.username))
+      password: ((harbor.token))
+
+  - name: scan-tile-production
+    type: docker-image
+    source:
+      repository: projects.registry.vmware.com/tanzu_isv_engineering/scan-tile
+      tag: production
+      username: ((harbor-public.username))
+      password: ((harbor-public.token))
+
+  - name: version
+    type: semver
+    source:
+      driver: git
+      uri: git@github.com:cf-platform-eng/isv-ci-versions.git
+      branch: main
+      file: scan-tile-image
+      private_key: ((github.private_key))
+
+  - name: test-tile
+    type: pivnet
+    source:
+      api_token: ((pivnet_token))
+      product_slug: z-pe-test-pas-tile
+
+  - name: pull-requests
+    type: pull-request
+    source:
+      repository: cf-platform-eng/isv-ci-toolkit
+      access_token: ((github.access_token))
+      paths:
+        - tests/scan-tile/*
+
+jobs:
+  - name: test
+    plan:
+      - in_parallel:
+          - get: python
+          - get: source
+            trigger: true
+      - task: run-tests
+        image: python
+        config:
+          platform: linux
+          inputs:
+            - name: source
+          run:
+            path: make
+            dir: source/tests/scan-tile
+            args:
+              - test
+
+  - name: build
+    serial_groups: [version]  
+    plan:
+      - in_parallel:
+        - get: source
+          trigger: true
+          passed:
+            - test
+        - get: version
+          params: { pre: rc }
+      - put: version
+        inputs: detect
+        params: { file: version/version }
+      - put: scan-tile
+        inputs: detect
+        params:
+          build: source/tests/scan-tile
+          tag_as_latest: true
+          tag_file: version/version
+
+  - name: test-scan-tile
+    plan:
+      - in_parallel:
+        - get: test-tile
+        - get: scan-tile
+          params:
+            save: true
+          passed:
+            - build
+          trigger: true
+        - get: version
+          params: { bump: final }
+        - get: dcind
+      - task: run-test
+        privileged: true
+        image: dcind
+        config:
+          platform: linux
+          inputs:
+            - name: scan-tile
+            - name: test-tile
+          run:
+            path: bash
+            args:
+              - -exc
+              - |
+                apk add jq
+                source /docker-lib.sh
+                start_docker
+
+                docker load -i scan-tile/image
+                IMAGE_TAG="$(cat scan-tile/repository):$(cat scan-tile/tag)"
+                docker tag "$(cat scan-tile/image-id)" "${IMAGE_TAG}"
+
+                docker run -v $(pwd)/$(ls test-tile/*.pivotal):/input/tile.pivotal "${IMAGE_TAG}" | jq .
+                if [ ${PIPESTATUS[0]} -ne 0 ] ; then
+                  exit ${PIPESTATUS[0]}
+                fi
+
+      - put: scan-tile
+        inputs: detect
+        params:
+          load: scan-tile
+          tag_as_latest: false
+          cache: false  
+          tag_file: version/version
+      - put: version
+        inputs: detect
+        params: { bump: patch }
+
+  - name: release-acceptance
+    plan:
+      - in_parallel:
+        - get: scan-tile
+          params:
+            save: true
+          passed:
+            - test-scan-tile
+          trigger: true
+      - put: scan-tile-acceptance
+        inputs: detect
+        params:
+          load: scan-tile
+          tag_as_latest: false
+
+  - name: release-production
+    plan:
+      - in_parallel:
+        - get: scan-tile
+          params:
+            save: true
+          passed:
+            - release-acceptance
+      - put: scan-tile-production
+        inputs: detect
+        params:
+          load: scan-tile
+          tag_as_latest: true
+
+  - name: bump-major-version
+    serial_groups: [version]
+    plan:
+      - put: version
+        inputs: detect
+        params:
+          bump: major
+
+  - name: bump-minor-version
+    serial_groups: [version]
+    plan:
+      - put: version
+        inputs: detect
+        params:
+          bump: minor
+
+  - name: test-pull-request
+    serial: true
+    plan:
+      - in_parallel:
+        - get: python
+        - get: source
+          resource: pull-requests
+          trigger: true
+          version: every
+          params:
+            integration_tool: rebase
+      - put: pull-requests
+        inputs: detect
+        params:
+          path: source
+          status: pending
+      - task: run-tests
+        image: python
+        config:
+          platform: linux
+          inputs:
+            - name: source
+          run:
+            path: make
+            dir: source/tests/scan-tile
+            args:
+              - test
+        on_failure:
+          put: pull-requests
+          inputs: detect
+          params:
+            path: source
+            status: failure
+      - put: pull-requests
+        inputs: detect
+        params:
+          path: source
+          status: success

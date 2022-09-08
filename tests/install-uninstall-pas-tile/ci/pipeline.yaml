@@ -1,0 +1,690 @@
+---
+resource_types:
+  - name: pcf-pool
+    type: docker-image
+    source:
+      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/cftoolsmiths/toolsmiths-envs-resource
+      username: ((harbor.username))
+      password: ((harbor.token))
+
+resources:
+  - name: source
+    type: git
+    source:
+      paths:
+        - tests/install-uninstall-pas-tile/*
+        - tests/install-uninstall-pas-tile/**/*
+      uri: git@github.com:cf-platform-eng/isv-ci-toolkit.git
+      private_key: ((github.private_key))
+
+  - name: install-uninstall-test-image
+    type: docker-image
+    icon: docker
+    source:
+      repository: harbor-repo.vmware.com/partner_engineering/install-uninstall-test-image
+      username: ((harbor.username))
+      password: ((harbor.token))
+
+  - name: install-uninstall-test-image-acceptance
+    type: docker-image
+    icon: docker
+    source:
+      repository: harbor-repo.vmware.com/partner_engineering/install-uninstall-test-image
+      username: ((harbor.username))
+      password: ((harbor.token))
+      tag: acceptance
+
+  - name: install-uninstall-test-image-production
+    type: docker-image
+    icon: docker
+    source:
+      repository: projects.registry.vmware.com/tanzu_isv_engineering/install-uninstall-test-image
+      username: ((harbor-public.username))
+      password: ((harbor-public.token))
+      tag: production
+
+  - name: runtime-config-only-tile-source
+    type: git
+    icon: github
+    source:
+      uri: git@github.com:cf-platform-eng/test-pas-tiles.git
+      private_key: ((github.private_key))
+      paths:
+        - runtime-config-only
+
+  - name: app-only-tile-source
+    type: git
+    icon: github
+    source:
+      uri: git@github.com:cf-platform-eng/test-pas-tiles.git
+      private_key: ((github.private_key))
+      paths:
+        - app-only
+
+  - name: bosh-release-tile-source
+    type: git
+    icon: github
+    source:
+      uri: git@github.com:cf-platform-eng/pcf-examples.git
+      private_key: ((github.private_key))
+
+  - name: pas-pool
+    type: pcf-pool
+    source:
+      api_token: ((toolsmiths_api_token))
+      hostname: environments.toolsmiths.cf-app.com
+      pool_name: us_2_13
+
+  - name: tile-generator
+    type: docker-image
+    icon: docker
+    source:
+      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/cfplatformeng/tile-generator
+      username: ((harbor.username))
+      password: ((harbor.token))
+      tag: latest
+
+  - name: version
+    type: semver
+    source:
+      driver: git
+      uri: git@github.com:cf-platform-eng/isv-ci-versions.git
+      branch: main
+      file: install-uninstall-pas-tile-image
+      private_key: ((github.private_key))      
+
+  - name: dcind
+    type: docker-image
+    icon: docker
+    source:
+      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/amidos/dcind
+      username: ((harbor.username))
+      password: ((harbor.token))
+
+  - name: custom-test-image
+    type: docker-image
+    icon: docker
+    source:
+      repository: harbor-repo.vmware.com/partner_engineering/z-pe-test-pas-tile-install-test
+      username: ((harbor.username))
+      password: ((harbor.token))
+
+  - name: custom-test-source
+    type: git
+    icon: github
+    source:
+      uri: git@github.com:cf-platform-eng/test-pas-tiles.git
+      private_key: ((github.private_key))
+      paths:
+        - app-only/install-test
+
+jobs:
+  - name: build
+    serial_groups: [version]
+    plan:
+      - in_parallel:
+        - get: source
+          trigger: true
+        - get: version
+          params: { pre: rc }
+      - put: install-uninstall-test-image
+        inputs: detect
+        params:
+          build: source/tests/install-uninstall-pas-tile
+          tag_as_latest: true
+          tag_file: version/version
+      - put: version
+        inputs: detect
+        params: { file: version/version }
+
+  - name: test-with-app-only-tile
+    plan:
+      - in_parallel:
+        - get: dcind
+        - get: tile-generator
+        - get: app-only-tile-source
+          trigger: true
+        - get: install-uninstall-test-image
+          passed:
+            - build
+          trigger: true
+          params: {save: true}
+      - task: build-app-only-tile
+        image: tile-generator
+        config:
+          platform: linux
+          inputs:
+            - name: app-only-tile-source
+          run:
+            path: sh
+            args:
+              - -exc
+              - |
+                cat > tile-config/config.json <<EOL
+                {
+                    "product-properties": {
+                        ".properties.space": {
+                            "type": "string",
+                            "value": "test-tile-space"
+                        },
+                        ".properties.allow_paid_service_plans": {
+                            "type": "boolean",
+                            "value": false
+                        },
+                        ".properties.apply_open_security_group": {
+                            "type": "boolean",
+                            "value": false
+                        },
+                        ".properties.org": {
+                            "type": "string",
+                            "value": "test-tile-org"
+                        }
+                    }
+                }
+                EOL
+                echo "Saved configuration file:"
+                cat tile-config/config.json
+
+                cd app-only-tile-source/app-only
+
+                echo "Building tile..."
+                tile build
+                cp product/*.pivotal ../../tile
+                echo "Tile built:"
+                ls ../../tile
+          outputs:
+            - name: tile
+            - name: tile-config
+      # claim is in series to make sure we dont claim envs we cant use
+      - put: pas-pool
+        inputs: detect
+        params:
+          action: claim
+        # tags:
+        #   - cf-isv-dashboard-shared-vsphere
+      - task: run-tests
+        image: dcind
+        privileged: true
+        config:
+          params:
+            PIVNET_TOKEN: ((pivnet_token))
+          platform: linux
+          inputs:
+            - name: pas-pool
+            - name: install-uninstall-test-image
+            - name: tile
+            - name: tile-config
+          outputs:
+            - name: logs
+          run:
+            path: bash
+            args:
+              - -exc
+              - |
+                apk add jq
+                source /docker-lib.sh
+                start_docker
+
+                docker load -i install-uninstall-test-image/image
+                IMAGE_TAG="$(cat install-uninstall-test-image/repository):$(cat install-uninstall-test-image/tag)"
+                docker tag "$(cat install-uninstall-test-image/image-id)" "${IMAGE_TAG}"
+
+                export OM_TARGET=$(cat pas-pool/metadata | jq -r ".ops_manager.url")
+                export OM_USERNAME=$(cat pas-pool/metadata | jq -r ".ops_manager.username")
+                export OM_PASSWORD=$(cat pas-pool/metadata | jq -r ".ops_manager.password")
+                export OM_SKIP_SSL_VALIDATION=true
+
+                TILE_PATH=$(ls tile/*.pivotal)
+                TILE_CONFIG_PATH=tile-config/config.json
+                docker run \
+                  -e OM_USERNAME \
+                  -e OM_PASSWORD \
+                  -e OM_TARGET \
+                  -e OM_SKIP_SSL_VALIDATION \
+                  -e USE_SELECTIVE_DEPLOY \
+                  -e PIVNET_TOKEN \
+                  -v $(pwd)/$(ls tile/*.pivotal):/input/tile.pivotal \
+                  -v $(pwd)/tile-config/config.json:/input/config.json \
+                  "${IMAGE_TAG}" 2>&1 | tee logs/test.log
+                if [ ${PIPESTATUS[0]} -ne 0 ] ; then
+                    exit 1
+                fi
+
+        ensure:
+          put: pas-pool
+          inputs: detect
+          params:
+            action: unclaim
+            env_file: pas-pool/metadata
+
+  - name: test-with-bosh-release-tile
+    plan:
+      - in_parallel:
+        - get: dcind
+        - get: tile-generator
+        - get: bosh-release-tile-source
+          trigger: true
+        - get: install-uninstall-test-image
+          passed:
+            - build
+          trigger: true
+          params: {save: true}
+      - task: build-tile
+        image: tile-generator
+        config:
+          platform: linux
+          inputs:
+            - name: bosh-release-tile-source
+          run:
+            path: sh
+            args:
+              - -exc
+              - |
+                apt-get update && apt-get -y install zip
+
+                cat > tile-config/config.json <<EOL
+                {
+                    "product-properties": {
+                        ".properties.space": {
+                            "type": "string",
+                            "value": "test-tile-space"
+                        },
+                        ".properties.allow_paid_service_plans": {
+                            "type": "boolean",
+                            "value": false
+                        },
+                        ".properties.apply_open_security_group": {
+                            "type": "boolean",
+                            "value": false
+                        },
+                        ".properties.org": {
+                            "type": "string",
+                            "value": "test-tile-org"
+                        }
+                    }
+                }
+                EOL
+                echo "Saved configuration file:"
+                cat tile-config/config.json
+
+                cd bosh-release-tile-source/tile-for-bosh-simple
+
+                echo "Building tile..."
+                ./package.sh
+
+                cp product/*.pivotal ../../tile
+                echo "Tile built:"
+                ls ../../tile
+          outputs:
+            - name: tile
+            - name: tile-config
+      # claim is in series to make sure we dont claim envs we cant use
+      - put: pas-pool
+        inputs: detect
+        params:
+          action: claim
+        # tags:
+        #   - cf-isv-dashboard-shared-vsphere
+      - task: run-tests
+        image: dcind
+        privileged: true
+        config:
+          params:
+            PIVNET_TOKEN: ((pivnet_token))
+          platform: linux
+          inputs:
+            - name: pas-pool
+            - name: install-uninstall-test-image
+            - name: tile
+            - name: tile-config
+          outputs:
+            - name: logs
+          run:
+            path: bash
+            args:
+              - -exc
+              - |
+                apk add jq
+                source /docker-lib.sh
+                start_docker
+
+                docker load -i install-uninstall-test-image/image
+                IMAGE_TAG="$(cat install-uninstall-test-image/repository):$(cat install-uninstall-test-image/tag)"
+                docker tag "$(cat install-uninstall-test-image/image-id)" "${IMAGE_TAG}"
+
+                export OM_TARGET=$(cat pas-pool/metadata | jq -r ".ops_manager.url")
+                export OM_USERNAME=$(cat pas-pool/metadata | jq -r ".ops_manager.username")
+                export OM_PASSWORD=$(cat pas-pool/metadata | jq -r ".ops_manager.password")
+                export OM_SKIP_SSL_VALIDATION=true
+
+                TILE_PATH=$(ls tile/*.pivotal)
+                TILE_CONFIG_PATH=tile-config/config.json
+                docker run \
+                  -e OM_USERNAME \
+                  -e OM_PASSWORD \
+                  -e OM_TARGET \
+                  -e OM_SKIP_SSL_VALIDATION \
+                  -e USE_SELECTIVE_DEPLOY \
+                  -e PIVNET_TOKEN \
+                  -v $(pwd)/$(ls tile/*.pivotal):/input/tile.pivotal \
+                  -v $(pwd)/tile-config/config.json:/input/config.json \
+                  "${IMAGE_TAG}" 2>&1 | tee logs/test.log
+                if [ ${PIPESTATUS[0]} -ne 0 ] ; then
+                    exit 1
+                fi
+        ensure:
+          put: pas-pool
+          inputs: detect
+          params:
+            action: unclaim
+            env_file: pas-pool/metadata
+          # tags:
+          #   - cf-isv-dashboard-shared-vsphere
+
+  - name: test-with-selective-deploy
+    plan:
+      - in_parallel:
+        - get: dcind
+        - get: tile-generator
+        - get: app-only-tile-source
+          trigger: true
+        - get: install-uninstall-test-image
+          passed:
+            - build
+          trigger: true
+          params: {save: true}
+      - task: build-app-only-tile
+        image: tile-generator
+        config:
+          platform: linux
+          inputs:
+            - name: app-only-tile-source
+          run:
+            path: sh
+            args:
+              - -exc
+              - |
+                cat > tile-config/config.json <<EOL
+                {
+                    "product-properties": {
+                        ".properties.space": {
+                            "type": "string",
+                            "value": "test-tile-space"
+                        },
+                        ".properties.allow_paid_service_plans": {
+                            "type": "boolean",
+                            "value": false
+                        },
+                        ".properties.apply_open_security_group": {
+                            "type": "boolean",
+                            "value": false
+                        },
+                        ".properties.org": {
+                            "type": "string",
+                            "value": "test-tile-org"
+                        }
+                    }
+                }
+                EOL
+                echo "Saved configuration file:"
+                cat tile-config/config.json
+
+                cd app-only-tile-source/app-only
+
+                echo "Building tile..."
+                tile build
+                cp product/*.pivotal ../../tile
+                echo "Tile built:"
+                ls ../../tile
+          outputs:
+            - name: tile
+            - name: tile-config
+      # claim is in series to make sure we dont claim envs we cant use
+      - put: pas-pool
+        inputs: detect
+        params:
+          action: claim
+        # tags:
+        #   - cf-isv-dashboard-shared-vsphere
+      - task: run-tests
+        image: dcind
+        privileged: true
+        config:
+          params:
+            PIVNET_TOKEN: ((pivnet_token))
+          platform: linux
+          inputs:
+            - name: pas-pool
+            - name: install-uninstall-test-image
+            - name: tile
+            - name: tile-config
+          outputs:
+            - name: logs
+          run:
+            path: bash
+            args:
+              - -exc
+              - |
+                apk add jq
+                source /docker-lib.sh
+                start_docker
+
+                docker load -i install-uninstall-test-image/image
+                IMAGE_TAG="$(cat install-uninstall-test-image/repository):$(cat install-uninstall-test-image/tag)"
+                docker tag "$(cat install-uninstall-test-image/image-id)" "${IMAGE_TAG}"
+
+                export OM_TARGET=$(cat pas-pool/metadata | jq -r ".ops_manager.url")
+                export OM_USERNAME=$(cat pas-pool/metadata | jq -r ".ops_manager.username")
+                export OM_PASSWORD=$(cat pas-pool/metadata | jq -r ".ops_manager.password")
+                export OM_SKIP_SSL_VALIDATION=true
+                export USE_SELECTIVE_DEPLOY=true
+
+                TILE_PATH=$(ls tile/*.pivotal)
+                TILE_CONFIG_PATH=tile-config/config.json
+                docker run \
+                  -e OM_USERNAME \
+                  -e OM_PASSWORD \
+                  -e OM_TARGET \
+                  -e OM_SKIP_SSL_VALIDATION \
+                  -e USE_SELECTIVE_DEPLOY \
+                  -e PIVNET_TOKEN \
+                  -v $(pwd)/$(ls tile/*.pivotal):/input/tile.pivotal \
+                  -v $(pwd)/tile-config/config.json:/input/config.json \
+                  "${IMAGE_TAG}" 2>&1 | tee logs/test.log
+                if [ ${PIPESTATUS[0]} -ne 0 ] ; then
+                    exit 1
+                fi
+        ensure:
+          put: pas-pool
+          inputs: detect
+          params:
+            action: unclaim
+            env_file: pas-pool/metadata
+          # tags:
+          #   - cf-isv-dashboard-shared-vsphere
+
+  - name: test-with-runtime-config-tile
+    plan:
+      - in_parallel:
+        - get: dcind
+        - get: tile-generator
+        - get: runtime-config-only-tile-source
+          trigger: true
+        - get: install-uninstall-test-image
+          trigger: true
+          passed:
+            - build
+          params:
+            save: true
+      - task: build-runtime-config-only-tile
+        image: tile-generator
+        config:
+          platform: linux
+          inputs:
+            - name: runtime-config-only-tile-source
+          run:
+            path: sh
+            args:
+              - -exc
+              - |
+                cat > tile-config/config.json <<EOL
+                {
+                  "product-properties": {
+                    ".properties.login_message": {
+                      "value": "Welcome to a VM with this add-on!"
+                    }
+                  }
+                }
+                EOL
+                echo "Saved configuration file:"
+                cat tile-config/config.json
+                cd runtime-config-only-tile-source/runtime-config-only
+
+                echo "Building tile..."
+                wget --output-document=resources/os-conf-release-21.0.0.tgz https://bosh.io/d/github.com/cloudfoundry/os-conf-release?v=21.0.0
+                tile build
+                cp product/*.pivotal ../..//tile
+                echo "Tile built:"
+                ls ../../tile
+          outputs:
+            - name: tile
+            - name: tile-config
+
+      # claim is in series to make sure we dont claim envs we cant use
+      - put: pas-pool
+        inputs: detect
+        params:
+          action: claim
+        # tags:
+        #   - cf-isv-dashboard-shared-vsphere
+
+      - task: run-test
+        image: dcind
+        privileged: true
+        config:
+          params:
+            PIVNET_TOKEN: ((pivnet_token))
+          platform: linux
+          inputs:
+            - name: pas-pool
+            - name: install-uninstall-test-image
+            - name: tile
+            - name: tile-config
+          outputs:
+            - name: logs
+          run:
+            path: bash
+            args:
+              - -exc
+              - |
+                apk add jq
+                source /docker-lib.sh
+                start_docker
+
+                docker load -i install-uninstall-test-image/image
+                IMAGE_TAG="$(cat install-uninstall-test-image/repository):$(cat install-uninstall-test-image/tag)"
+                docker tag "$(cat install-uninstall-test-image/image-id)" "${IMAGE_TAG}"
+
+                export OM_TARGET=$(cat pas-pool/metadata | jq -r ".ops_manager.url")
+                export OM_USERNAME=$(cat pas-pool/metadata | jq -r ".ops_manager.username")
+                export OM_PASSWORD=$(cat pas-pool/metadata | jq -r ".ops_manager.password")
+                export OM_SKIP_SSL_VALIDATION=true
+
+                TILE_PATH=$(ls tile/*.pivotal)
+                TILE_CONFIG_PATH=tile-config/config.json
+                docker run \
+                  -e OM_USERNAME \
+                  -e OM_PASSWORD \
+                  -e OM_TARGET \
+                  -e OM_SKIP_SSL_VALIDATION \
+                  -e USE_SELECTIVE_DEPLOY \
+                  -e PIVNET_TOKEN \
+                  -v $(pwd)/$(ls tile/*.pivotal):/input/tile.pivotal \
+                  -v $(pwd)/tile-config/config.json:/input/config.json \
+                  "${IMAGE_TAG}" 2>&1 | tee logs/test.log
+                if [ ${PIPESTATUS[0]} -ne 0 ] ; then
+                    exit 1
+                fi
+        ensure:
+          put: pas-pool
+          inputs: detect
+          params:
+            action: unclaim
+            env_file: pas-pool/metadata
+          # tags:
+          #   - cf-isv-dashboard-shared-vsphere
+
+  - name: release-acceptance
+    serial_groups: [version]
+    plan:
+      - in_parallel:
+        - get: install-uninstall-test-image
+          trigger: true
+          params:
+            save: true
+          passed:
+            - test-with-app-only-tile
+            - test-with-selective-deploy
+            - test-with-bosh-release-tile
+            - test-with-runtime-config-tile
+        - get: version
+          params: { bump: final }
+      - put: install-uninstall-test-image-acceptance
+        inputs: detect
+        params:
+          load: install-uninstall-test-image
+          tag_as_latest: false
+          tag_file: version/version
+      - put: install-uninstall-test-image-acceptance
+        inputs: detect
+        params:
+          load: install-uninstall-test-image
+          tag_as_latest: false
+      - put: version
+        inputs: detect
+        params: { bump: patch }
+
+  - name: promote
+    plan:
+      - in_parallel:
+        - get: install-uninstall-test-image
+          params:
+            save: true
+          passed:
+            - release-acceptance
+      - put: install-uninstall-test-image-production
+        inputs: detect
+        params:
+          load: install-uninstall-test-image
+          tag_as_latest: false
+
+  - name: make-custom-test-image
+    plan:
+      - in_parallel:
+        - get: custom-test-source
+          trigger: true
+        - get: install-uninstall-test-image-acceptance
+          trigger: true
+          passed:
+            - release-acceptance
+      - put: custom-test-image
+        inputs: detect
+        params:
+          build: custom-test-source/app-only/install-test
+          tag_as_latest: true
+
+  - name: bump-major-version
+    serial_groups: [version]
+    plan:
+      - put: version
+        inputs: detect
+        params:
+          bump: major
+
+  - name: bump-minor-version
+    serial_groups: [version]
+    plan:
+      - put: version
+        inputs: detect
+        params:
+          bump: minor

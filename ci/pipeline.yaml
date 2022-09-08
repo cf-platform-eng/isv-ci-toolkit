@@ -1,0 +1,460 @@
+resources:
+  - name: ci-source
+    type: git
+    source:
+      uri: git@github.com:cf-platform-eng/isv-dashboard-ci.git
+      private_key: ((github.private_key))
+
+  - name: base-image-source
+    type: git
+    source:
+      paths:
+        - base-image/*
+        - base-image/**/*
+      uri: git@github.com:cf-platform-eng/isv-ci-toolkit.git
+      private_key: ((github.private_key))
+
+  - name: base-image
+    type: docker-image
+    source:
+      repository: projects.registry.vmware.com/tanzu_isv_engineering/base-image
+      username: ((harbor-public.username))
+      password: ((harbor-public.token))
+      tag: latest
+
+  - name: enable-apps-manager-source
+    type: git
+    source:
+      paths:
+        - tasks/enable-apps-manager/*
+      uri: git@github.com:cf-platform-eng/isv-ci-toolkit.git
+      private_key: ((github.private_key))
+
+  - name: enable-apps-manager
+    type: docker-image
+    source:
+      repository: projects.registry.vmware.com/tanzu_isv_engineering/enable-apps-manager
+      username: ((harbor-public.username))
+      password: ((harbor-public.token))
+      tag: latest
+
+  - name: enable-bosh-post-deploy-scripts-source
+    type: git
+    source:
+      paths:
+        - tasks/enable-bosh-post-deploy-scripts/Dockerfile
+      uri: git@github.com:cf-platform-eng/isv-ci-toolkit.git
+      private_key: ((github.private_key))
+
+  - name: enable-bosh-post-deploy-scripts
+    type: docker-image
+    source:
+      repository: projects.registry.vmware.com/tanzu_isv_engineering/enable-bosh-post-deploy-scripts
+      username: ((harbor-public.username))
+      password: ((harbor-public.token))
+      tag: latest
+
+  - name: enable-tcp-routing-source
+    type: git
+    source:
+      paths:
+        - tasks/enable-tcp-routing/*
+      uri: git@github.com:cf-platform-eng/isv-ci-toolkit.git
+      private_key: ((github.private_key))
+
+  - name: enable-tcp-routing
+    type: docker-image
+    source:
+      repository: projects.registry.vmware.com/tanzu_isv_engineering/enable-tcp-routing
+      username: ((harbor-public.username))
+      password: ((harbor-public.token))
+      tag: latest
+
+  - name: toolkit-source
+    type: git
+    source:
+      uri: git@github.com:cf-platform-eng/isv-ci-toolkit.git
+      private_key: ((github.private_key))
+
+  - name: toolkit-tools-source
+    type: git
+    source:
+      paths:
+        - tools/*
+      uri: git@github.com:cf-platform-eng/isv-ci-toolkit.git
+      private_key: ((github.private_key))
+
+  - name: toolkit-image
+    type: docker-image
+    source:
+      repository: projects.registry.vmware.com/tanzu_isv_engineering/isv-ci-toolkit
+      username: ((harbor-public.username))
+      password: ((harbor-public.token))
+      tag: latest
+
+  - name: toolkit-version
+    type: semver
+    source:
+      driver: git
+      uri: git@github.com:cf-platform-eng/isv-ci-versions.git
+      branch: main
+      file: isv-ci-toolkit
+      private_key: ((github.private_key))
+
+  - name: base-image-version
+    type: semver
+    source:
+      driver: git
+      uri: git@github.com:cf-platform-eng/isv-ci-versions.git
+      branch: main
+      file: base-image
+      private_key: ((github.private_key))
+
+  - name: alpine
+    type: registry-image
+    icon: docker
+    source:
+      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/library/alpine
+      tag: 3
+      username: ((harbor.username))
+      password: ((harbor.token))
+
+  - name: bosh
+    type: github-release
+    source:
+        owner: cloudfoundry
+        repository: bosh-cli
+        access_token: ((github.access_token))
+
+  - name: bosh-docker-image
+    type: docker-image
+    source:
+      repository: projects.registry.vmware.com/tanzu_isv_engineering/bosh
+      username: ((harbor-public.username))
+      password: ((harbor-public.token))
+      tag: latest
+
+  - name: cf
+    type: github-release
+    source:
+        owner: cloudfoundry
+        repository: cli
+        access_token: ((github.access_token))
+
+  - name: cf-docker-image
+    type: docker-image
+    source:
+      repository: projects.registry.vmware.com/tanzu_isv_engineering/cf
+      username: ((harbor-public.username))
+      password: ((harbor-public.token))
+      tag: latest
+
+  - name: leftovers
+    type: github-release
+    source:
+        owner: genevieve
+        repository: leftovers
+        access_token: ((github.access_token))
+
+  - name: leftovers-docker-image
+    type: docker-image
+    source:
+      repository: harbor-repo.vmware.com/partner_engineering/leftovers
+      username: ((harbor.username))
+      password: ((harbor.token))
+      tag: latest
+
+  - name: om
+    type: github-release
+    source:
+        owner: pivotal-cf
+        repository: om
+        access_token: ((github.access_token))
+
+  - name: om-docker-image
+    type: docker-image
+    source:
+      repository: projects.registry.vmware.com/tanzu_isv_engineering/om
+      username: ((harbor-public.username))
+      password: ((harbor-public.token))
+      tag: latest
+
+  - name: pivnet
+    type: github-release
+    source:
+        owner: pivotal-cf
+        repository: pivnet-cli
+        access_token: ((github.access_token))
+
+  - name: uaa
+    type: github-release
+    source:
+        owner: cloudfoundry-incubator
+        repository: uaa-cli
+        access_token: ((github.access_token))
+
+  - name: pivnet-docker-image
+    type: docker-image
+    source:
+      repository: projects.registry.vmware.com/tanzu_isv_engineering/pivnet
+      username: ((harbor-public.username))
+      password: ((harbor-public.token))
+      tag: latest
+
+  - name: uaa-docker-image
+    type: docker-image
+    source:
+      repository: projects.registry.vmware.com/tanzu_isv_engineering/uaa
+      username: ((harbor-public.username))
+      password: ((harbor-public.token))
+      tag: latest
+
+jobs:
+  - name: build-base-image
+    serial_groups: [base-image-version]
+    plan:
+      - in_parallel:
+        - get: base-image-source
+          trigger: true
+      - get: base-image-version
+        params:
+          bump: patch
+      - put: base-image
+        inputs: detect
+        params:
+          build: base-image-source/base-image
+          cache: false
+          dockerfile: base-image-source/base-image/Dockerfile
+          tag_file: base-image-version/version
+          tag_as_latest: true
+      - put: base-image-version
+        inputs: detect
+        params:
+          file: base-image-version/version
+
+  - name: build-enable-apps-manager
+    plan:
+      - get: source
+        resource: enable-apps-manager-source
+        trigger: true
+      - put: enable-apps-manager
+        inputs: detect
+        params:
+          build: source/tasks/enable-apps-manager
+          tag_as_latest: false
+
+  - name: build-enable-bosh-post-deploy-scripts
+    plan:
+      - get: source
+        resource: enable-bosh-post-deploy-scripts-source
+        trigger: true
+      - put: enable-bosh-post-deploy-scripts
+        inputs: detect
+        params:
+          build: source/tasks/enable-bosh-post-deploy-scripts
+          tag_as_latest: false
+
+  - name: build-enable-tcp-routing
+    plan:
+      - get: source
+        resource: enable-tcp-routing-source
+        trigger: true
+      - put: enable-tcp-routing
+        inputs: detect
+        params:
+          build: source/tasks/enable-tcp-routing
+          cache: false # Ensure we pick up the config.yml file
+          tag_as_latest: false
+
+  - name: build-toolkit-image
+    serial_groups: [toolkit-version]
+    plan:
+      - in_parallel:
+        - get: toolkit-tools-source
+          # passed:
+          #   - test-toolkit
+          trigger: true
+        - get: toolkit-version
+          params:
+            bump: patch
+      - put: toolkit-image
+        inputs: detect
+        params:
+          build: toolkit-tools-source/tools
+          cache: false
+          tag_as_latest: false
+          tag_file: toolkit-version/version
+      - put: toolkit-version
+        inputs: detect
+        params:
+          file: toolkit-version/version
+
+  - name: build-bosh-image
+    plan:
+      - in_parallel:
+        - get: alpine
+        - get: toolkit-source
+        - get: ci-source
+        - get: bosh
+          trigger: true
+      - task: make-build-args-file
+        image: alpine
+        file: ci-source/tasks/build-docker-args.yml
+        input_mapping: { src: bosh }
+        params: { ENV_VAR: BOSH_CLI_VER }
+      - put: bosh-docker-image
+        inputs: detect
+        params:
+          build: toolkit-source/images
+          build_args_file: build-args/args.json
+          dockerfile: toolkit-source/images/Dockerfile.bosh
+          tag_as_latest: false
+          tag_file: bosh/version
+          cache: false
+
+  - name: build-cf-image
+    plan:
+      - in_parallel:
+        - get: alpine
+        - get: toolkit-source
+        - get: ci-source        
+        - get: cf
+          trigger: true
+      - task: make-build-args-file
+        image: alpine
+        file: ci-source/tasks/build-docker-args.yml
+        input_mapping: { src: cf }
+        params: { ENV_VAR: CF_CLI_VER }
+      - put: cf-docker-image
+        inputs: detect
+        params:
+          build: toolkit-source/images
+          build_args_file: build-args/args.json
+          dockerfile: toolkit-source/images/Dockerfile.cf
+          tag_as_latest: false
+          tag_file: cf/version
+          cache: false
+
+  - name: build-leftovers-image
+    plan:
+      - in_parallel:
+        - get: alpine
+        - get: toolkit-source
+        - get: ci-source
+        - get: leftovers
+          trigger: true
+      - task: make-build-args-file
+        image: alpine
+        file: ci-source/tasks/build-docker-args.yml
+        input_mapping: { src: leftovers }
+        params: { ENV_VAR: LEFTOVERS_VER }
+      - put: leftovers-docker-image
+        inputs: detect
+        params:
+          build: toolkit-source/images
+          build_args_file: build-args/args.json
+          dockerfile: toolkit-source/images/Dockerfile.leftovers
+          tag_as_latest: false
+          tag_file: leftovers/version
+          cache: false
+
+  - name: build-om-image
+    plan:
+      - in_parallel:
+        - get: alpine
+        - get: toolkit-source
+        - get: ci-source
+        - get: om
+          trigger: true
+      - task: make-build-args-file
+        image: alpine
+        file: ci-source/tasks/build-docker-args.yml
+        input_mapping: { src: om }
+        params: { ENV_VAR: OM_CLI_VER }
+      - put: om-docker-image
+        inputs: detect
+        params:
+          build: toolkit-source/images
+          build_args_file: build-args/args.json
+          dockerfile: toolkit-source/images/Dockerfile.om
+          tag_as_latest: false
+          tag_file: om/version
+          cache: false
+
+  - name: build-pivnet-image
+    plan:
+      - in_parallel:
+        - get: alpine
+        - get: ci-source
+        - get: toolkit-source
+        - get: pivnet
+          trigger: true
+      - task: make-build-args-file
+        image: alpine
+        file: ci-source/tasks/build-docker-args.yml
+        input_mapping: { src: pivnet }
+        params: { ENV_VAR: PIVNET_CLI_VER }
+      - put: pivnet-docker-image
+        inputs: detect
+        params:
+          build: toolkit-source/images
+          build_args_file: build-args/args.json
+          dockerfile: toolkit-source/images/Dockerfile.pivnet
+          tag_as_latest: false
+          tag_file: pivnet/version
+          cache: false
+
+  - name: build-uaa-image
+    plan:
+      - in_parallel:
+        - get: alpine
+        - get: toolkit-source
+        - get: ci-source
+        - get: uaa
+          trigger: true
+      - task: make-build-args-file
+        image: alpine
+        file: ci-source/tasks/build-docker-args.yml
+        input_mapping: { src: uaa }
+        params: { ENV_VAR: UAA_CLI_VER }
+      - put: uaa-docker-image
+        inputs: detect
+        params:
+          build: toolkit-source/images
+          build_args_file: build-args/args.json
+          dockerfile: toolkit-source/images/Dockerfile.uaa
+          tag_as_latest: false
+          tag_file: uaa/version
+          cache: false
+
+  - name: bump-toolkit-major-version
+    serial_groups: [toolkit-version]
+    plan:
+      - put: toolkit-version
+        inputs: detect
+        params:
+          bump: major
+
+  - name: bump-toolkit-minor-version
+    serial_groups: [toolkit-version]
+    plan:
+      - put: toolkit-version
+        inputs: detect
+        params:
+          bump: minor
+
+  - name: bump-base-image-major-version
+    serial_groups: [base-image-version]
+    plan:
+      - put: base-image-version
+        inputs: detect
+        params:
+          bump: major
+
+  - name: bump-base-image-minor-version
+    serial_groups: [base-image-version]
+    plan:
+      - put: base-image-version
+        inputs: detect
+        params:
+          bump: minor
