@@ -1,4 +1,4 @@
-FROM projects.registry.vmware.com/tanzu_isv_engineering/om:7.1.2 AS om
+FROM projects.registry.vmware.com/tanzu_isv_engineering/om:7.7.0 AS om
 
 FROM projects.registry.vmware.com/tanzu_isv_engineering/base-image:0.0.47
 ARG DEPENDENCIES_FILE=/root/dependencies.log
