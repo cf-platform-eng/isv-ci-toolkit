@@ -1,9 +1,9 @@
 FROM projects.registry.vmware.com/tanzu_isv_engineering/marman AS fetch-om
 ARG OM_CLI_VER
 RUN if [ -z "${OM_CLI_VER}" ] ; then \
-        marman github-download-release --owner pivotal-cf --repo om --filter "om-linux-[.0-9]*$" ; \
+        marman github-download-release --owner pivotal-cf --repo om --filter "om-linux-amd64-[.0-9]*$" ; \
     else \
-        marman github-download-release --owner pivotal-cf --repo om --version "${OM_CLI_VER}" --filter "om-linux-${OM_CLI_VER}$" ; \
+        marman github-download-release --owner pivotal-cf --repo om --version "${OM_CLI_VER}" --filter "om-linux-amd64-${OM_CLI_VER}$" ; \
     fi
 RUN mv om-linux-* /usr/local/bin/om
 RUN chmod +x /usr/local/bin/om
