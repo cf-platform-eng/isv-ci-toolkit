@@ -5,7 +5,7 @@ FROM projects.registry.vmware.com/tanzu_isv_engineering/tileinspect:0.5.15 as ti
 FROM projects.registry.vmware.com/tanzu_isv_engineering/cf:8.5.0 as cf
 FROM projects.registry.vmware.com/tanzu_isv_engineering/isv-ci-toolkit:0.0.30 as toolkit
 
-FROM projects.registry.vmware.com/tanzu_isv_engineering/base-image:0.0.61
+FROM projects.registry.vmware.com/tanzu_isv_engineering/base-image:0.0.62
 ARG DEPENDENCIES_FILE=/root/dependencies.log
 
 # Copy binaries from dependent images
