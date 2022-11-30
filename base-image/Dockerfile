@@ -1,6 +1,6 @@
 FROM projects.registry.vmware.com/tanzu_isv_engineering/mrlog:0.2.9 as mrlog
 FROM projects.registry.vmware.com/tanzu_isv_engineering/needs:0.12.12 as needs
-FROM harbor-repo.vmware.com/dockerhub-proxy-cache/library/ubuntu
+FROM harbor-repo.vmware.com/dockerhub-proxy-cache/library/ubuntu:20.04
 
 COPY --from=mrlog /usr/local/bin/mrlog /usr/local/bin/
 
