@@ -21,17 +21,17 @@ resources:
     type: docker-image
     icon: docker
     source:
-      repository: harbor-repo.vmware.com/partner_engineering/install-uninstall-test-image
-      username: ((harbor.username))
-      password: ((harbor.token))
+      repository: projects.registry.vmware.com/tanzu_isv_engineering/install-uninstall-test-image
+      username: ((harbor-public.username))
+      password: ((harbor-public.token))
 
   - name: install-uninstall-test-image-acceptance
     type: docker-image
     icon: docker
     source:
-      repository: harbor-repo.vmware.com/partner_engineering/install-uninstall-test-image
-      username: ((harbor.username))
-      password: ((harbor.token))
+      repository: projects.registry.vmware.com/tanzu_isv_engineering/install-uninstall-test-image
+      username: ((harbor-public.username))
+      password: ((harbor-public.token))
       tag: acceptance
 
   - name: install-uninstall-test-image-production
@@ -635,11 +635,6 @@ jobs:
           load: install-uninstall-test-image
           tag_as_latest: false
           tag_file: version/version
-      - put: install-uninstall-test-image-acceptance
-        inputs: detect
-        params:
-          load: install-uninstall-test-image
-          tag_as_latest: false
       - put: version
         inputs: detect
         params: { bump: patch }
