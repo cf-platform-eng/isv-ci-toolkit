@@ -6,5 +6,5 @@ require (
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/bunniesandbeatings/goerkin v0.1.4-beta
 	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/gomega v1.24.2
+	github.com/onsi/gomega v1.27.4
 )
