@@ -82,6 +82,7 @@ resources:
     source:
       repository: cf-platform-eng/isv-ci-toolkit
       access_token: ((github.access_token))
+      disable_forks: true
       paths:
         - tests/scan-tile/*
 
