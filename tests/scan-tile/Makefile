@@ -18,10 +18,12 @@ clean:
 deps: temp/make-tags/scan-tile
 
 test: deps
+        echo "Running as $(whoami)"
 	pipenv run python scan_tile_test.py
 	pipenv run python scan_tile_integration_test.py
 
 build:
+        echo "Running as $(whoami)"
 	rm -rf *.pyc
 	docker build . -t cfplatformeng/scan-tile
 
