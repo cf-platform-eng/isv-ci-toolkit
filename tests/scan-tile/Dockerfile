@@ -1,10 +1,10 @@
-FROM harbor-repo.vmware.com/dockerhub-proxy-cache/library/python:3.9.1-alpine AS pipfile
+FROM mirror.gcr.io/python:3.9.1-alpine AS pipfile
 RUN pip install pipenv
 
 COPY [ "Pipfile", "Pipfile.lock", "/tmp/" ]
 RUN cd /tmp && pipenv requirements > requirements.txt
 
-FROM harbor-repo.vmware.com/dockerhub-proxy-cache/library/python:3.9.1-alpine
+FROM mirror.gcr.io/python:3.9.1-alpine
 
 WORKDIR /test
 

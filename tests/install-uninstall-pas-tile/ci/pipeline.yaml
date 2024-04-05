@@ -1,11 +1,11 @@
 ---
 resource_types:
   - name: pcf-pool
-    type: docker-image
+    type: registry-image
     source:
-      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/cftoolsmiths/toolsmiths-envs-resource
-      username: ((harbor.username))
-      password: ((harbor.token))
+      repository: mirror.gcr.io/cftoolsmiths/toolsmiths-envs-resource
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
 
 resources:
   - name: source
@@ -21,26 +21,26 @@ resources:
     type: docker-image
     icon: docker
     source:
-      repository: projects.registry.vmware.com/tanzu_isv_engineering/install-uninstall-test-image
-      username: ((harbor-public.username))
-      password: ((harbor-public.token))
+      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/install-uninstall-test-image
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
 
   - name: install-uninstall-test-image-acceptance
     type: docker-image
     icon: docker
     source:
-      repository: projects.registry.vmware.com/tanzu_isv_engineering/install-uninstall-test-image
-      username: ((harbor-public.username))
-      password: ((harbor-public.token))
+      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/install-uninstall-test-image
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
       tag: acceptance
 
   - name: install-uninstall-test-image-production
     type: docker-image
     icon: docker
     source:
-      repository: projects.registry.vmware.com/tanzu_isv_engineering/install-uninstall-test-image
-      username: ((harbor-public.username))
-      password: ((harbor-public.token))
+      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/install-uninstall-test-image
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
       tag: production
 
   - name: runtime-config-only-tile-source
@@ -76,12 +76,12 @@ resources:
       pool_name: us_2_13
 
   - name: tile-generator
-    type: docker-image
+    type: registry-image
     icon: docker
     source:
-      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/cfplatformeng/tile-generator
-      username: ((harbor.username))
-      password: ((harbor.token))
+      repository: mirror.gcr.io/cfplatformeng/tile-generator
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
       tag: latest
 
   - name: version
@@ -94,20 +94,20 @@ resources:
       private_key: ((github.private_key))      
 
   - name: dcind
-    type: docker-image
+    type: registry-image
     icon: docker
     source:
-      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/amidos/dcind
-      username: ((harbor.username))
-      password: ((harbor.token))
+      repository: mirror.gcr.io/amidos/dcind
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
 
   - name: custom-test-image
     type: docker-image
     icon: docker
     source:
-      repository: harbor-repo.vmware.com/partner_engineering/z-pe-test-pas-tile-install-test
-      username: ((harbor.username))
-      password: ((harbor.token))
+      repository: us-west1-docker.pkg.dev/isv-tile-partners/partner-engineering/z-pe-test-pas-tile-install-test
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
 
   - name: custom-test-source
     type: git
