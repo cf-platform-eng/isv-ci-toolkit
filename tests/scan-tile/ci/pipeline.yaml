@@ -1,35 +1,35 @@
 ---
 resource_types:
   - name: pivnet
-    type: docker-image
+    type: registry-image
     source:
-      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/pivotalcf/pivnet-resource
+      repository: mirror.gcr.io/pivotalcf/pivnet-resource
       tag: latest-final
-      username: ((harbor.username))
-      password: ((harbor.token))
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
 
   - name: pull-request
-    type: docker-image
+    type: registry-image
     source:
-      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/teliaoss/github-pr-resource
-      username: ((harbor.username))
-      password: ((harbor.token))
+      repository: mirror.gcr.io/teliaoss/github-pr-resource
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
 
 resources:
   - name: python
-    type: docker-image
+    type: registry-image
     source:
-      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/library/python
+      repository: mirror.gcr.io/python
       tag: 3.9
-      username: ((harbor.username))
-      password: ((harbor.token))
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
 
   - name: dcind
-    type: docker-image
+    type: registry-image
     source:
-      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/amidos/dcind
-      username: ((harbor.username))
-      password: ((harbor.token))
+      repository: mirror.gcr.io/amidos/dcind
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
 
   - name: source
     type: git
@@ -42,25 +42,25 @@ resources:
   - name: scan-tile
     type: docker-image
     source:
-      repository: harbor-repo.vmware.com/partner_engineering/scan-tile
-      username: ((harbor.username))
-      password: ((harbor.token))
+      repository: us-west1-docker.pkg.dev/isv-tile-partners/partner-engineering/scan-tile
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
 
   - name: scan-tile-acceptance
     type: docker-image
     source:
-      repository: harbor-repo.vmware.com/partner_engineering/scan-tile
+      repository: us-west1-docker.pkg.dev/isv-tile-partners/partner-engineering/scan-tile
       tag: acceptance
-      username: ((harbor.username))
-      password: ((harbor.token))
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
 
   - name: scan-tile-production
     type: docker-image
     source:
-      repository: projects.registry.vmware.com/tanzu_isv_engineering/scan-tile
+      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/scan-tile
       tag: production
-      username: ((harbor-public.username))
-      password: ((harbor-public.token))
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
 
   - name: version
     type: semver

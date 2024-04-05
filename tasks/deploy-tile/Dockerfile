@@ -1,9 +1,9 @@
-FROM projects.registry.vmware.com/tanzu_isv_engineering/marman:0.4.5 as marman
-FROM projects.registry.vmware.com/tanzu_isv_engineering/om:7.7.0 AS om
-FROM projects.registry.vmware.com/tanzu_isv_engineering/tileinspect:0.5.11 AS tileinspect
-FROM projects.registry.vmware.com/tanzu_isv_engineering/isv-ci-toolkit:0.0.25 AS tools
+FROM us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/marman:0.4.5 as marman
+FROM us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/om:7.7.0 AS om
+FROM us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/tileinspect:0.5.11 AS tileinspect
+FROM us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/isv-ci-toolkit:0.0.25 AS tools
 
-FROM projects.registry.vmware.com/tanzu_isv_engineering/base-image:0.0.53
+FROM us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/base-image:0.0.53
 ARG DEPENDENCIES_FILE=/root/dependencies.log
 
 # Copy binaries from dependent images

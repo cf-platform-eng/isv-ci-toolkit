@@ -17,9 +17,9 @@ resources:
   - name: base-image
     type: docker-image
     source:
-      repository: projects.registry.vmware.com/tanzu_isv_engineering/base-image
-      username: ((harbor-public.username))
-      password: ((harbor-public.token))
+      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/base-image
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
       tag: latest
 
   - name: enable-apps-manager-source
@@ -33,9 +33,9 @@ resources:
   - name: enable-apps-manager
     type: docker-image
     source:
-      repository: projects.registry.vmware.com/tanzu_isv_engineering/enable-apps-manager
-      username: ((harbor-public.username))
-      password: ((harbor-public.token))
+      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/enable-apps-manager
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
       tag: latest
 
   - name: enable-bosh-post-deploy-scripts-source
@@ -49,9 +49,9 @@ resources:
   - name: enable-bosh-post-deploy-scripts
     type: docker-image
     source:
-      repository: projects.registry.vmware.com/tanzu_isv_engineering/enable-bosh-post-deploy-scripts
-      username: ((harbor-public.username))
-      password: ((harbor-public.token))
+      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/enable-bosh-post-deploy-scripts
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
       tag: latest
 
   - name: enable-tcp-routing-source
@@ -65,9 +65,9 @@ resources:
   - name: enable-tcp-routing
     type: docker-image
     source:
-      repository: projects.registry.vmware.com/tanzu_isv_engineering/enable-tcp-routing
-      username: ((harbor-public.username))
-      password: ((harbor-public.token))
+      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/enable-tcp-routing
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
       tag: latest
 
   - name: toolkit-source
@@ -87,9 +87,9 @@ resources:
   - name: toolkit-image
     type: docker-image
     source:
-      repository: projects.registry.vmware.com/tanzu_isv_engineering/isv-ci-toolkit
-      username: ((harbor-public.username))
-      password: ((harbor-public.token))
+      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/isv-ci-toolkit
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
       tag: latest
 
   - name: toolkit-version
@@ -114,10 +114,10 @@ resources:
     type: registry-image
     icon: docker
     source:
-      repository: harbor-repo.vmware.com/dockerhub-proxy-cache/library/alpine
+      repository: mirror.gcr.io/alpine
       tag: 3
-      username: ((harbor.username))
-      password: ((harbor.token))
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
 
   - name: bosh
     type: github-release
@@ -129,9 +129,9 @@ resources:
   - name: bosh-docker-image
     type: docker-image
     source:
-      repository: projects.registry.vmware.com/tanzu_isv_engineering/bosh
-      username: ((harbor-public.username))
-      password: ((harbor-public.token))
+      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/bosh
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
       tag: latest
 
   - name: cf
@@ -144,9 +144,9 @@ resources:
   - name: cf-docker-image
     type: docker-image
     source:
-      repository: projects.registry.vmware.com/tanzu_isv_engineering/cf
-      username: ((harbor-public.username))
-      password: ((harbor-public.token))
+      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/cf
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
       tag: latest
 
   - name: leftovers
@@ -159,9 +159,9 @@ resources:
   - name: leftovers-docker-image
     type: docker-image
     source:
-      repository: harbor-repo.vmware.com/partner_engineering/leftovers
-      username: ((harbor.username))
-      password: ((harbor.token))
+      repository: us-west1-docker.pkg.dev/isv-tile-partners/partner-engineering/leftovers
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
       tag: latest
 
   - name: om
@@ -174,9 +174,9 @@ resources:
   - name: om-docker-image
     type: docker-image
     source:
-      repository: projects.registry.vmware.com/tanzu_isv_engineering/om
-      username: ((harbor-public.username))
-      password: ((harbor-public.token))
+      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/om
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
       tag: latest
 
   - name: pivnet
@@ -196,17 +196,17 @@ resources:
   - name: pivnet-docker-image
     type: docker-image
     source:
-      repository: projects.registry.vmware.com/tanzu_isv_engineering/pivnet
-      username: ((harbor-public.username))
-      password: ((harbor-public.token))
+      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/pivnet
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
       tag: latest
 
   - name: uaa-docker-image
     type: docker-image
     source:
-      repository: projects.registry.vmware.com/tanzu_isv_engineering/uaa
-      username: ((harbor-public.username))
-      password: ((harbor-public.token))
+      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/uaa
+      username: _json_key
+      password: ((gcp_artifact_registry.service_account_key))
       tag: latest
 
 jobs:

@@ -1,4 +1,4 @@
-FROM projects.registry.vmware.com/tanzu_isv_engineering/marman AS fetch-pivnet
+FROM us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/marman AS fetch-pivnet
 ARG PIVNET_CLI_VER
 RUN if [ -z "${PIVNET_CLI_VER}" ] ; then \
         marman github-download-release --owner pivotal-cf --repo pivnet-cli --filter "pivnet-linux-amd64-" ; \
@@ -8,7 +8,7 @@ RUN if [ -z "${PIVNET_CLI_VER}" ] ; then \
 RUN mv pivnet-linux-amd64-* /usr/local/bin/pivnet
 RUN chmod +x /usr/local/bin/pivnet
 
-FROM harbor-repo.vmware.com/dockerhub-proxy-cache/library/ubuntu
+FROM mirror.gcr.io/ubuntu
 LABEL maintainer="Pivotal Platform Engineering ISV-CI Team <cf-isv-dashboard@pivotal.io>"
 
 COPY --from=fetch-pivnet /usr/local/bin/pivnet /usr/local/bin
