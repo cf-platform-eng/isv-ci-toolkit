@@ -1,5 +1,5 @@
 FROM us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/om:7.7.0 AS om
-FROM us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/cf:8.4.0 AS cf
+FROM us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/cf:8.7.10 AS cf
 
 FROM us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/base-image:0.0.53
 ARG DEPENDENCIES_FILE=/root/dependencies.log
