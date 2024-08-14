@@ -66,10 +66,11 @@ resources:
     type: semver
     source:
       driver: git
-      uri: git@((git.org_url)/isv-ci-versions.git
+      uri: ((github.org_url)/isv-ci-versions.git
       branch: main
       file: scan-tile-image
-      private_key: ((github.private_key))
+      username: ((github.username))
+      password: ((github.broadcom_github_personal_access_token))
 
   - name: test-tile
     type: pivnet
