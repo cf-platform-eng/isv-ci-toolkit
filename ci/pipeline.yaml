@@ -96,7 +96,7 @@ resources:
     type: semver
     source:
       driver: git
-      uri: git@github.com:cf-platform-eng/isv-ci-versions.git
+      uri: git@((git.org_url)/isv-ci-versions.git
       branch: main
       file: isv-ci-toolkit
       private_key: ((github.private_key))
@@ -105,7 +105,7 @@ resources:
     type: semver
     source:
       driver: git
-      uri: git@github.com:cf-platform-eng/isv-ci-versions.git
+      uri: git@((git.org_url)/isv-ci-versions.git
       branch: main
       file: base-image
       private_key: ((github.private_key))
