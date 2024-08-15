@@ -88,10 +88,11 @@ resources:
     type: semver
     source:
       driver: git
-      uri: git@github.com:cf-platform-eng/isv-ci-versions.git
+      uri: ((github.org_url))/isv-ci-versions.git
       branch: main
       file: install-uninstall-pas-tile-image
-      private_key: ((github.private_key))      
+      username: ((github.username))
+      password: ((github.broadcom_github_personal_access_token))
 
   - name: dcind
     type: registry-image
