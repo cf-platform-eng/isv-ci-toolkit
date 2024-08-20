@@ -62,11 +62,11 @@ resources:
       username: _json_key
       password: ((gcp_artifact_registry.service_account_key))
 
-  - name: version
+  - name: versions
     type: semver
     source:
       driver: git
-      uri: ((github.org_url)/isv-ci-versions.git
+      uri: ((github.org_url))/isv-ci-versions.git
       branch: main
       file: scan-tile-image
       username: ((github.username))
