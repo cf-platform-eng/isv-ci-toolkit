@@ -2,8 +2,9 @@ resources:
   - name: ci-source
     type: git
     source:
-      uri: git@github.com:cf-platform-eng/isv-dashboard-ci.git
-      private_key: ((github.private_key))
+      uri: ((github.org_url))/isv-dashboard-ci.git
+      username: ((github.username))
+      password: ((github.broadcom_github_personal_access_token))
 
   - name: base-image-source
     type: git
