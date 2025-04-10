@@ -1,6 +1,6 @@
-FROM us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/mrlog:0.2.9 as mrlog
-FROM us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/needs:0.12.12 as needs
-FROM mirror.gcr.io/ubuntu:20.04
+FROM tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/mrlog:0.2.9 as mrlog
+FROM tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/needs:0.12.12 as needs
+FROM tas-ecosystem-docker-virtual.usw1.packages.broadcom.com/ubuntu:20.04
 
 COPY --from=mrlog /usr/local/bin/mrlog /usr/local/bin/
 

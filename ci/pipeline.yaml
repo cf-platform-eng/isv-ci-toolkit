@@ -6,6 +6,16 @@ resources:
       username: ((github.username))
       password: ((github.broadcom_github_personal_access_token))
 
+  - name: oci-build-task
+    type: registry-image
+    check_every: 4h
+    icon: oci
+    source:
+      repository: ((artifactory.registry_mirror))/concourse/oci-build-task
+      tag: 0.11.1
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
+
   - name: base-image-source
     type: git
     source:
@@ -219,17 +229,38 @@ jobs:
       - in_parallel:
         - get: base-image-source
           trigger: true
+      - get: oci-build-task
+        attempts: 3
       - get: base-image-version
         params:
           bump: patch
-      - put: base-image
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: source
+            - name: python
+          outputs:
+            - name: image
+          params:
+            CONTEXT: source
+            DOCKERFILE: source/Dockerfile
+            IMAGE_ARG_base_image: python/image.tar
+          run:
+            path: build
+        output_mapping:
+          image: base-image-out
+      - file: base-image-version/version
+        load_var: image_version
+      - put: image
         inputs: detect
+        attempts: 3
         params:
-          build: base-image-source/base-image
-          cache: false
-          dockerfile: base-image-source/base-image/Dockerfile
-          tag_file: base-image-version/version
-          tag_as_latest: true
+          image: base-image-out/image.tar
+          version: ((.:image_version))
+          bump_aliases: true
       - put: base-image-version
         inputs: detect
         params:
