@@ -431,6 +431,48 @@ jobs:
           bump_aliases: true
 
   - name: build-toolkit-image
+    plan:
+      - in_parallel:
+          - get: source
+            resource: toolkit-tools-source
+            trigger: true
+          - get: ubuntu-image
+            params:
+              format: oci
+          - get: toolkit-version
+            params:
+              bump: patch
+      - file: toolkit-version/version
+        load_var: image_version
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: ubuntu-image
+          outputs:
+            - name: image
+          params:
+            CONTEXT: source/tools
+            DOCKERFILE: source/tools/Dockerfile
+            IMAGE_ARG_ubuntu_image: ubuntu-image/image.tar
+          run:
+            path: build
+        output_mapping:
+          image: toolkit-tools-image-out
+      - put: toolkit-tools-image
+        inputs: detect
+        params:
+          image: toolkit-tools-image-out/image.tar
+          version: ((.:image_version))
+          bump_aliases: true
+      - put: toolkit-version
+        inputs: detect
+        params:
+          file: toolkit-version/version
+
+  - name: build-toolkit-image
     serial_groups: [toolkit-version]
     plan:
       - in_parallel:

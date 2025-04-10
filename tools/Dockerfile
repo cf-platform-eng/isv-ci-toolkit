@@ -1,4 +1,5 @@
-FROM mirror.gcr.io/ubuntu
+ARG ubuntu_image=tas-ecosystem-docker-virtual.usw1.packages.broadcom.com/ubuntu
+FROM ${ubuntu_image}
 
 COPY ./*.sh /usr/local/bin/
 RUN chmod +x \
