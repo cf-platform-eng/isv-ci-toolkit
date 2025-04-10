@@ -31,7 +31,15 @@ resources:
       repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/base-image
       username: ((artifactory.production_username))
       password: ((artifactory.production_password))
-      tag: latest
+      tag: 0.0.53
+
+  - name: om-image
+    type: registry-image
+    source:
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/om-image
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
+      tag: 7.7.0
 
   - name: enable-apps-manager-source
     type: git
@@ -42,11 +50,11 @@ resources:
       private_key: ((github.private_key))
 
   - name: enable-apps-manager
-    type: docker-image
+    type: registry-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/enable-apps-manager
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/enable-apps-manager
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: latest
 
   - name: enable-bosh-post-deploy-scripts-source
@@ -308,14 +316,40 @@ jobs:
 
   - name: build-enable-apps-manager
     plan:
-      - get: source
-        resource: enable-apps-manager-source
-        trigger: true
+      - in_parallel:
+        - get: source
+          resource: enable-apps-manager-source
+          trigger: true
+        - get: base-image
+          params:
+            format: oci
+        - get: om-image
+          params:
+            format: oci
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: base-image
+            - name: om-image
+          outputs:
+            - name: image
+          params:
+            CONTEXT: source/tasks/enable-apps-manager
+            DOCKERFILE: source/tasks/enable-apps-manager/Dockerfile
+            IMAGE_ARG_base_image: base-image/image.tar
+            IMAGE_ARG_om_image: om-image/image.tar
+          run:
+            path: build
+        output_mapping:
+          image: enable-apps-manager-image-out
       - put: enable-apps-manager
         inputs: detect
         params:
-          build: source/tasks/enable-apps-manager
-          tag_as_latest: false
+          image: enable-apps-manager-image-out/image.tar
+          bump_aliases: true
 
   - name: build-enable-bosh-post-deploy-scripts
     plan:
