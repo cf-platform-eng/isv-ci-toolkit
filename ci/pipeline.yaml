@@ -222,6 +222,33 @@ resources:
       password: ((gcp_artifact_registry.service_account_key))
       tag: latest
 
+  - name: ubuntu-image
+    type: registry-image
+    icon: oci
+    source:
+      repository: ((artifactory.registry_mirror))/ubuntu
+      tag: 20.04
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
+
+  - name: mrlog-image
+    type: registry-image
+    icon: oci
+    source:
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/mrlog
+      tag: 0.2.9
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
+
+  - name: needs-image
+    type: registry-image
+    icon: oci
+    source:
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/needs
+      tag: 0.12.12
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
+
 jobs:
   - name: build-base-image
     serial_groups: [base-image-version]
@@ -229,6 +256,15 @@ jobs:
       - in_parallel:
         - get: base-image-source
           trigger: true
+        - get: ubuntu-image
+          params:
+            format: oci
+        - get: mrlog-image
+          params:
+            format: oci
+        - get: needs-image
+          params:
+            format: oci
       - get: oci-build-task
         attempts: 3
       - get: base-image-version
@@ -240,14 +276,18 @@ jobs:
         config:
           platform: linux
           inputs:
-            - name: source
-            - name: python
+            - name: base-image-source
+            - name: ubuntu-image
+            - name: mrlog-image
+            - name: needs-image
           outputs:
             - name: image
           params:
-            CONTEXT: source
-            DOCKERFILE: source/Dockerfile
-            IMAGE_ARG_base_image: python/image.tar
+            CONTEXT: base-image-source/base-image
+            DOCKERFILE: base-image-source/base-image/Dockerfile
+            IMAGE_ARG_ubuntu_image: ubuntu-image/image.tar
+            IMAGE_ARG_mrlog_image: mrlog-image/image.tar
+            IMAGE_ARG_needs_image: needs-image/image.tar
           run:
             path: build
         output_mapping:
