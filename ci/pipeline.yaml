@@ -66,11 +66,11 @@ resources:
       private_key: ((github.private_key))
 
   - name: enable-bosh-post-deploy-scripts
-    type: docker-image
+    type: registry-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/enable-bosh-post-deploy-scripts
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/enable-bosh-post-deploy-scripts
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: latest
 
   - name: enable-tcp-routing-source
@@ -353,14 +353,40 @@ jobs:
 
   - name: build-enable-bosh-post-deploy-scripts
     plan:
-      - get: source
-        resource: enable-bosh-post-deploy-scripts-source
-        trigger: true
+      - in_parallel:
+          - get: source
+            resource: enable-bosh-post-deploy-scripts-source
+            trigger: true
+          - get: base-image
+            params:
+              format: oci
+          - get: om-image
+            params:
+              format: oci
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: base-image
+            - name: om-image
+          outputs:
+            - name: image
+          params:
+            CONTEXT: source/tasks/enable-bosh-post-deploy-scripts
+            DOCKERFILE: source/tasks/enable-bosh-post-deploy-scripts/Dockerfile
+            IMAGE_ARG_base_image: base-image/image.tar
+            IMAGE_ARG_om_image: om-image/image.tar
+          run:
+            path: build
+        output_mapping:
+          image: enable-bosh-post-deploy-scripts-image-out
       - put: enable-bosh-post-deploy-scripts
         inputs: detect
         params:
-          build: source/tasks/enable-bosh-post-deploy-scripts
-          tag_as_latest: false
+          image: enable-bosh-post-deploy-scripts-image-out/image.tar
+          bump_aliases: true
 
   - name: build-enable-tcp-routing
     plan:
