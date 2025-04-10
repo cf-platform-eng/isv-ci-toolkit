@@ -26,11 +26,11 @@ resources:
       private_key: ((github.private_key))
 
   - name: base-image
-    type: docker-image
+    type: registry-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/base-image
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/base-image
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: latest
 
   - name: enable-apps-manager-source
@@ -254,7 +254,7 @@ jobs:
           image: base-image-out
       - file: base-image-version/version
         load_var: image_version
-      - put: image
+      - put: base-image
         inputs: detect
         attempts: 3
         params:
