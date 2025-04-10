@@ -1,7 +1,11 @@
-FROM us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/om:7.7.0 AS om
-FROM us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/cf:8.7.10 AS cf
+ARG om_image=tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/om:7.7.0 AS om
+ARG cf_image=tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/cf:8.7.10 AS cf
+ARG base_image=tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/base-image:0.0.53
 
-FROM us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/base-image:0.0.53
+FROM ${om_image} as om
+FROM ${cf_image} as cf
+FROM ${base_image}
+
 ARG DEPENDENCIES_FILE=/root/dependencies.log
 
 COPY --from=cf /usr/local/bin/cf /usr/local/bin/

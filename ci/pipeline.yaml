@@ -162,12 +162,12 @@ resources:
         repository: cli
         access_token: ((github.access_token))
 
-  - name: cf-docker-image
-    type: docker-image
+  - name: cf-image
+    type: registry-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/cf
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/cf
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: latest
 
   - name: leftovers
@@ -390,15 +390,45 @@ jobs:
 
   - name: build-enable-tcp-routing
     plan:
-      - get: source
-        resource: enable-tcp-routing-source
-        trigger: true
+      - in_parallel:
+          - get: source
+            resource: enable-tcp-routing-source
+            trigger: true
+          - get: base-image
+            params:
+              format: oci
+          - get: om-image
+            params:
+              format: oci
+          - get: cf-image
+            params:
+              format: oci
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: base-image
+            - name: om-image
+            - name: cf-image
+          outputs:
+            - name: image
+          params:
+            CONTEXT: source/tasks/enable-tcp-routing
+            DOCKERFILE: source/tasks/enable-tcp-routing/Dockerfile
+            IMAGE_ARG_base_image: base-image/image.tar
+            IMAGE_ARG_om_image: om-image/image.tar
+            IMAGE_ARG_cf_image: cf-image/image.tar
+          run:
+            path: build
+        output_mapping:
+          image: enable-tcp-routing-image-out
       - put: enable-tcp-routing
         inputs: detect
         params:
-          build: source/tasks/enable-tcp-routing
-          cache: false # Ensure we pick up the config.yml file
-          tag_as_latest: false
+          image: enable-tcp-routing-image-out/image.tar
+          bump_aliases: true
 
   - name: build-toolkit-image
     serial_groups: [toolkit-version]
