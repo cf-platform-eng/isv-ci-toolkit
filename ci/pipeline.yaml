@@ -131,15 +131,6 @@ resources:
       username: ((github.username))
       password: ((github.broadcom_github_personal_access_token))
 
-  - name: alpine
-    type: registry-image
-    icon: docker
-    source:
-      repository: mirror.gcr.io/alpine
-      tag: 3
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
-
   - name: bosh
     type: github-release
     source:
