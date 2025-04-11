@@ -519,25 +519,39 @@ jobs:
   - name: build-cf-image
     plan:
       - in_parallel:
-        - get: alpine
-        - get: toolkit-source
-        - get: ci-source        
-        - get: cf
-          trigger: true
-      - task: make-build-args-file
-        image: alpine
-        file: ci-source/tasks/build-docker-args.yml
-        input_mapping: { src: cf }
-        params: { ENV_VAR: CF_CLI_VER }
-      - put: cf-docker-image
+          - get: ubuntu-image
+          - get: source
+            resource: toolkit-source
+          - get: cf
+            trigger: true
+      - file: cf/version
+        load_var: cf_version
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: source
+            - name: ubuntu-image
+          outputs:
+            - name: image
+          params:
+            CONTEXT: source/images
+            DOCKERFILE: source/images/Dockerfile.cf
+            IMAGE_ARG_ubuntu_image: ubuntu-image/image.tar
+            IMAGE_ARG_CF_CLI_VER: ((.:cf_version))
+          run:
+            path: build
+        output_mapping:
+          image: cf-image-out
+      - put: cf-image
         inputs: detect
         params:
-          build: toolkit-source/images
-          build_args_file: build-args/args.json
-          dockerfile: toolkit-source/images/Dockerfile.cf
-          tag_as_latest: false
-          tag_file: cf/version
-          cache: false
+          image: cf-image-out/image.tar
+          #! TODO: check that we push the intended images
+          version: ((.:cf_version))
+          bump_aliases: true
 
   - name: build-leftovers-image
     plan:

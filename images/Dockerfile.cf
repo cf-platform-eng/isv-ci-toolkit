@@ -1,4 +1,6 @@
-FROM mirror.gcr.io/ubuntu AS fetch-cf
+ARG ubuntu_image=tas-ecosystem-docker-virtual.usw1.packages.broadcom.com:ubuntu
+FROM ${ubuntu_image} AS fetch-cf
+
 RUN  apt-get update \
   && apt-get install -y wget \
   && rm -rf /var/lib/apt/lists/*
@@ -11,7 +13,7 @@ RUN if [ -z "${CF_CLI_VER}" ] ; then \
     fi
 RUN tar xzvf /cf.tgz --directory=/usr/local/bin --exclude=LICENSE --exclude=NOTICE
 
-FROM mirror.gcr.io/ubuntu
+FROM ${ubuntu_image}
 LABEL maintainer="Pivotal Platform Engineering ISV-CI Team <cf-isv-dashboard@pivotal.io>"
 
 COPY --from=fetch-cf /usr/local/bin/cf /usr/local/bin
