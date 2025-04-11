@@ -3,11 +3,21 @@ resource_types:
   - name: pcf-pool
     type: registry-image
     source:
-      repository: mirror.gcr.io/cftoolsmiths/toolsmiths-envs-resource
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: ((artifactory.registry_mirror))/cftoolsmiths/toolsmiths-envs-resource
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
 
 resources:
+  - name: oci-build-task
+    type: registry-image
+    check_every: 4h
+    icon: oci
+    source:
+      repository: ((artifactory.registry_mirror))/concourse/oci-build-task
+      tag: 0.11.1
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
+
   - name: source
     type: git
     source:
@@ -18,29 +28,29 @@ resources:
       private_key: ((github.private_key))
 
   - name: install-uninstall-test-image
-    type: docker-image
-    icon: docker
+    type: registry-image
+    icon: oci
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/install-uninstall-test-image
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/install-uninstall-test-image
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
 
   - name: install-uninstall-test-image-acceptance
-    type: docker-image
+    type: registry-image
     icon: docker
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/install-uninstall-test-image
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/install-uninstall-test-image
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: acceptance
 
   - name: install-uninstall-test-image-production
-    type: docker-image
+    type: registry-image
     icon: docker
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/install-uninstall-test-image
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/install-uninstall-test-image
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: production
 
   - name: runtime-config-only-tile-source
@@ -128,12 +138,68 @@ jobs:
           trigger: true
         - get: version
           params: { pre: rc }
+        - get: oci-build-task
+        - get: base-image-source
+        - get: marman-image
+          params:
+            format: oci
+        - get: om-image
+          params:
+            format: oci
+        - get: pivnet-image
+          params:
+            format: oci
+        - get: tileinspect-image
+          params:
+            format: oci
+        - get: cf-image
+          params:
+            format: oci
+        - get: toolkit-image
+          params:
+            format: oci
+        - get: base-image
+          params:
+            format: oci
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: base-image-source
+            - name: marman-image
+            - name: om-image
+            - name: pivnet-image
+            - name: tileinspect-image
+            - name: cf-image
+            - name: toolkit-image
+            - name: base-image
+          outputs:
+            - name: image
+          params:
+            CONTEXT: source/tests/install-uninstall-pas-tile
+            DOCKERFILE: source/tests/install-uninstall-pas-tile/Dockerfile
+            IMAGE_ARG_marman_image: marman-image/image.tar
+            IMAGE_ARG_om_image: om-image/image.tar
+            IMAGE_ARG_pivnet_image: pivnet-image/image.tar
+            IMAGE_ARG_tileinspect_image: tileinspect-image/image.tar
+            IMAGE_ARG_cf_image: cf-image/image.tar
+            IMAGE_ARG_toolkit_image: toolkit-image/image.tar
+            IMAGE_ARG_base_image: base-image/image.tar
+          run:
+            path: build
+        output_mapping:
+          image: base-image-out
+      - file: version/version
+        load_var: image_version
       - put: install-uninstall-test-image
         inputs: detect
+        attempts: 3
         params:
-          build: source/tests/install-uninstall-pas-tile
-          tag_as_latest: true
-          tag_file: version/version
+          image: base-image-out/image.tar
+          version: ((.:image_version))
+          bump_aliases: true
       - put: version
         inputs: detect
         params: { file: version/version }
