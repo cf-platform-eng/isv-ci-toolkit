@@ -6,14 +6,6 @@ ARG cf_image=us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/cf:
 ARG toolkit_image=us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/isv-ci-toolkit:0.0.30
 ARG base_image=tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/base-image:0.0.62
 
-IMAGE_ARG_marman_image
-IMAGE_ARG_om_image
-IMAGE_ARG_pivnet_image
-IMAGE_ARG_tileinspect_image
-IMAGE_ARG_cf_image
-IMAGE_ARG_toolkit_image
-IMAGE_ARG_base_image
-
 FROM ${marman_image} as marman
 FROM ${om_image} as om
 FROM ${pivnet_image}  as pivnet

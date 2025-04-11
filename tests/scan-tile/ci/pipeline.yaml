@@ -3,10 +3,10 @@ resource_types:
   - name: pivnet
     type: registry-image
     source:
-      repository: mirror.gcr.io/pivotalcf/pivnet-resource
+      repository: ((artifactory.registry_mirror))/pivotalcf/pivnet-resource
       tag: latest-final
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
 
   - name: pull-request
     type: registry-image
@@ -19,17 +19,17 @@ resources:
   - name: python
     type: registry-image
     source:
-      repository: mirror.gcr.io/python
+      repository: ((artifactory.registry_mirror))/python
       tag: 3.9
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
 
   - name: dcind
     type: registry-image
     source:
-      repository: mirror.gcr.io/amidos/dcind
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: ((artifactory.registry_mirror))/amidos/dcind
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
 
   - name: source
     type: git
@@ -42,25 +42,25 @@ resources:
   - name: scan-tile
     type: docker-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/partner-engineering/scan-tile
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/scan-tile
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
 
   - name: scan-tile-acceptance
     type: docker-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/partner-engineering/scan-tile
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/scan-tile
       tag: acceptance
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
 
   - name: scan-tile-production
     type: docker-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/scan-tile
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/scan-tile
       tag: production
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
 
   - name: version
     type: semver
@@ -116,15 +116,40 @@ jobs:
             - test
         - get: version
           params: { pre: rc }
+        - get: python
+          params:
+            format: oci
       - put: version
         inputs: detect
         params: { file: version/version }
-      - put: scan-tile
+      - get: oci-build-task
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: source
+            - name: python
+          outputs:
+            - name: image
+          params:
+            CONTEXT: base-image-source/base-image
+            DOCKERFILE: base-image-source/base-image/Dockerfile
+            IMAGE_ARG_python_image: python/image.tar
+          run:
+            path: build
+        output_mapping:
+          image: scan-tile-out
+      - file: version/version
+        load_var: image_version
+      - put: image
         inputs: detect
+        attempts: 3
         params:
-          build: source/tests/scan-tile
-          tag_as_latest: true
-          tag_file: version/version
+          image: scan-tile-out/image.tar
+          version: ((.:image_version))
+          bump_aliases: true
 
   - name: test-scan-tile
     plan:
