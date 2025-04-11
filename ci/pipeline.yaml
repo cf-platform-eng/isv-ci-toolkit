@@ -192,12 +192,12 @@ resources:
         repository: om
         access_token: ((github.access_token))
 
-  - name: om-docker-image
-    type: docker-image
+  - name: om-image
+    type: resource-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/om
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/om
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: latest
 
   - name: pivnet
@@ -214,12 +214,12 @@ resources:
         repository: uaa-cli
         access_token: ((github.access_token))
 
-  - name: pivnet-docker-image
-    type: docker-image
+  - name: pivnet-image
+    type: resource-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/pivnet
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/pivnet
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: latest
 
   - name: uaa-docker-image
@@ -636,25 +636,42 @@ jobs:
   - name: build-pivnet-image
     plan:
       - in_parallel:
-        - get: alpine
-        - get: ci-source
-        - get: toolkit-source
-        - get: pivnet
-          trigger: true
-      - task: make-build-args-file
-        image: alpine
-        file: ci-source/tasks/build-docker-args.yml
-        input_mapping: { src: pivnet }
-        params: { ENV_VAR: PIVNET_CLI_VER }
-      - put: pivnet-docker-image
+          - get: ubuntu-image
+          - get: marman-image
+          - get: source
+            resource: toolkit-source
+          - get: pivnet
+            trigger: true
+      - file: pivnet/version
+        load_var: pivnet_version
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: source
+            - name: ubuntu-image
+            - name: marman-image
+          outputs:
+            - name: image
+          params:
+            CONTEXT: source/images
+            DOCKERFILE: source/images/Dockerfile.cf
+            IMAGE_ARG_ubuntu_image: ubuntu-image/image.tar
+            IMAGE_ARG_marman_image: marman-image/image.tar
+            IMAGE_ARG_PIVNET_CLI_VER: ((.:pivnet_version))
+          run:
+            path: build
+        output_mapping:
+          image: pivnet-image-out
+      - put: pivnet-image
         inputs: detect
         params:
-          build: toolkit-source/images
-          build_args_file: build-args/args.json
-          dockerfile: toolkit-source/images/Dockerfile.pivnet
-          tag_as_latest: false
-          tag_file: pivnet/version
-          cache: false
+          image: pivnet-image-out/image.tar
+          #! TODO: check that we push the intended images
+          version: ((.:pivnet_version))
+          bump_aliases: true
 
   - name: build-uaa-image
     plan:
