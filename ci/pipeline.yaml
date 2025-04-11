@@ -177,12 +177,12 @@ resources:
         repository: leftovers
         access_token: ((github.access_token))
 
-  - name: leftovers-docker-image
-    type: docker-image
+  - name: leftovers-image
+    type: registry-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/partner-engineering/leftovers
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/leftovers
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: latest
 
   - name: om
@@ -556,25 +556,42 @@ jobs:
   - name: build-leftovers-image
     plan:
       - in_parallel:
-        - get: alpine
-        - get: toolkit-source
-        - get: ci-source
-        - get: leftovers
-          trigger: true
-      - task: make-build-args-file
-        image: alpine
-        file: ci-source/tasks/build-docker-args.yml
-        input_mapping: { src: leftovers }
-        params: { ENV_VAR: LEFTOVERS_VER }
-      - put: leftovers-docker-image
+          - get: ubuntu-image
+          - get: marman-image
+          - get: source
+            resource: toolkit-source
+          - get: leftovers
+            trigger: true
+      - file: leftovers/version
+        load_var: leftovers_version
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: source
+            - name: ubuntu-image
+            - name: marman-image
+          outputs:
+            - name: image
+          params:
+            CONTEXT: source/images
+            DOCKERFILE: source/images/Dockerfile.cf
+            IMAGE_ARG_ubuntu_image: ubuntu-image/image.tar
+            IMAGE_ARG_marman_image: marman-image/image.tar
+            IMAGE_ARG_LEFTOVERS_VER: ((.:leftovers_version))
+          run:
+            path: build
+        output_mapping:
+          image: leftovers-image-out
+      - put: leftovers-image
         inputs: detect
         params:
-          build: toolkit-source/images
-          build_args_file: build-args/args.json
-          dockerfile: toolkit-source/images/Dockerfile.leftovers
-          tag_as_latest: false
-          tag_file: leftovers/version
-          cache: false
+          image: leftovers-image-out/image.tar
+          #! TODO: check that we push the intended images
+          version: ((.:leftovers_version))
+          bump_aliases: true
 
   - name: build-om-image
     plan:
