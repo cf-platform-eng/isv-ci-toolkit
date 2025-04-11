@@ -40,14 +40,14 @@ resources:
       private_key: ((github.private_key))
 
   - name: scan-tile
-    type: docker-image
+    type: registry-image
     source:
       repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/scan-tile
       username: ((artifactory.production_username))
       password: ((artifactory.production_password))
 
   - name: scan-tile-acceptance
-    type: docker-image
+    type: registry-image
     source:
       repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/scan-tile
       tag: acceptance
@@ -55,7 +55,7 @@ resources:
       password: ((artifactory.production_password))
 
   - name: scan-tile-production
-    type: docker-image
+    type: registry-image
     source:
       repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/scan-tile
       tag: production
@@ -157,20 +157,41 @@ jobs:
         - get: test-tile
         - get: scan-tile
           params:
-            save: true
+            format: oci
           passed:
             - build
           trigger: true
         - get: version
           params: { bump: final }
         - get: dcind
+        - get: oci-build-task
+        - file: version/version
+          load_var: image_version
+        - task: build-oci
+          privileged: true
+          image: oci-build-task
+          config:
+            platform: linux
+            inputs:
+              - name: source
+              - name: python
+            outputs:
+              - name: image
+            params:
+              CONTEXT: scan-tile
+              DOCKERFILE: scan-tile/Dockerfile
+              IMAGE_ARG_base_image: python/image.tar
+            run:
+              path: build
+          output_mapping:
+            image: test-scan-out
       - task: run-test
         privileged: true
         image: dcind
         config:
           platform: linux
           inputs:
-            - name: scan-tile
+            - name: test-scan-out
             - name: test-tile
           run:
             path: bash
@@ -181,7 +202,7 @@ jobs:
                 source /docker-lib.sh
                 start_docker
 
-                docker load -i scan-tile/image
+                docker load -i test-scan-out/image.tar
                 IMAGE_TAG="$(cat scan-tile/repository):$(cat scan-tile/tag)"
                 docker tag "$(cat scan-tile/image-id)" "${IMAGE_TAG}"
 
@@ -189,14 +210,13 @@ jobs:
                 if [ ${PIPESTATUS[0]} -ne 0 ] ; then
                   exit ${PIPESTATUS[0]}
                 fi
-
       - put: scan-tile
         inputs: detect
+        attempts: 3
         params:
-          load: scan-tile
-          tag_as_latest: false
-          cache: false  
-          tag_file: version/version
+          image: test-scan-out/image.tar
+          version: ((.:image_version))
+          bump_aliases: true
       - put: version
         inputs: detect
         params: { bump: patch }
@@ -206,29 +226,29 @@ jobs:
       - in_parallel:
         - get: scan-tile
           params:
-            save: true
+            format: oci
           passed:
             - test-scan-tile
           trigger: true
       - put: scan-tile-acceptance
         inputs: detect
         params:
-          load: scan-tile
-          tag_as_latest: false
+          image: scan-tile/image.tar
 
   - name: release-production
     plan:
       - in_parallel:
-        - get: scan-tile
-          params:
-            save: true
-          passed:
-            - release-acceptance
-      - put: scan-tile-production
+          - get: scan-tile
+            params:
+              format: oci
+            passed:
+              - release-acceptance
+            trigger: true
+      - put: scan-tile-acceptance
         inputs: detect
         params:
-          load: scan-tile
-          tag_as_latest: true
+          image: scan-tile/image.tar
+          bump_aliases: true
 
   - name: bump-major-version
     serial_groups: [version]
