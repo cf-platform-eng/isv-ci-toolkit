@@ -1,9 +1,9 @@
-ARG marman_image=us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/marman:0.5.0
-ARG om_image=us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/om:7.8.2
-ARG pivnet_image=us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/pivnet:3.0.1
-ARG tileinspect_image=us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/tileinspect:0.5.15
-ARG cf_image=us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/cf:8.5.0
-ARG toolkit_image=us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/isv-ci-toolkit:0.0.30
+ARG marman_image=tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/marman:0.5.0
+ARG om_image=tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/om:7.8.2
+ARG pivnet_image=tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/pivnet:3.0.1
+ARG tileinspect_image=tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/tileinspect:0.5.15
+ARG cf_image=tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/cf:8.5.0
+ARG toolkit_image=tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/isv-ci-toolkit:0.0.30
 ARG base_image=tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/base-image:0.0.62
 
 FROM ${marman_image} as marman
