@@ -317,6 +317,8 @@ jobs:
         - get: om-image
           params:
             format: oci
+        - get: oci-build-task
+          attempts: 3
       - task: build-oci
         privileged: true
         image: oci-build-task
@@ -355,6 +357,8 @@ jobs:
           - get: om-image
             params:
               format: oci
+          - get: oci-build-task
+            attempts: 3
       - task: build-oci
         privileged: true
         image: oci-build-task
@@ -396,6 +400,8 @@ jobs:
           - get: cf-image
             params:
               format: oci
+          - get: oci-build-task
+            attempts: 3
       - task: build-oci
         privileged: true
         image: oci-build-task
@@ -436,6 +442,8 @@ jobs:
           - get: toolkit-version
             params:
               bump: patch
+          - get: oci-build-task
+            attempts: 3
       - file: toolkit-version/version
         load_var: image_version
       - task: build-oci
@@ -476,6 +484,8 @@ jobs:
             resource: toolkit-source
           - get: bosh
             trigger: true
+          - get: oci-build-task
+            attempts: 3
       - file: bosh/version
         load_var: bosh_version
       - task: build-oci
@@ -515,6 +525,8 @@ jobs:
             resource: toolkit-source
           - get: cf
             trigger: true
+          - get: oci-build-task
+            attempts: 3
       - file: cf/version
         load_var: cf_version
       - task: build-oci
@@ -553,6 +565,8 @@ jobs:
             resource: toolkit-source
           - get: leftovers
             trigger: true
+          - get: oci-build-task
+            attempts: 3
       - file: leftovers/version
         load_var: leftovers_version
       - task: build-oci
@@ -593,6 +607,8 @@ jobs:
             resource: toolkit-source
           - get: om
             trigger: true
+          - get: oci-build-task
+            attempts: 3
       - file: om/version
         load_var: om_version
       - task: build-oci
@@ -633,6 +649,8 @@ jobs:
             resource: toolkit-source
           - get: pivnet
             trigger: true
+          - get: oci-build-task
+            attempts: 3
       - file: pivnet/version
         load_var: pivnet_version
       - task: build-oci
@@ -673,6 +691,8 @@ jobs:
             resource: toolkit-source
           - get: uaa
             trigger: true
+          - get: oci-build-task
+            attempts: 3
       - file: uaa/version
         load_var: uaa_version
       - task: build-oci
