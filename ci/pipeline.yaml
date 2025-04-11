@@ -82,11 +82,11 @@ resources:
       private_key: ((github.private_key))
 
   - name: enable-tcp-routing
-    type: docker-image
+    type: registry-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/enable-tcp-routing
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/enable-tcp-routing
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: latest
 
   - name: toolkit-source
@@ -222,12 +222,12 @@ resources:
       password: ((artifactory.production_password))
       tag: latest
 
-  - name: uaa-docker-image
-    type: docker-image
+  - name: uaa-image
+    type: resource-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/uaa
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/uaa
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: latest
 
   - name: ubuntu-image
@@ -676,25 +676,42 @@ jobs:
   - name: build-uaa-image
     plan:
       - in_parallel:
-        - get: alpine
-        - get: toolkit-source
-        - get: ci-source
-        - get: uaa
-          trigger: true
-      - task: make-build-args-file
-        image: alpine
-        file: ci-source/tasks/build-docker-args.yml
-        input_mapping: { src: uaa }
-        params: { ENV_VAR: UAA_CLI_VER }
-      - put: uaa-docker-image
+          - get: ubuntu-image
+          - get: marman-image
+          - get: source
+            resource: toolkit-source
+          - get: uaa
+            trigger: true
+      - file: uaa/version
+        load_var: uaa_version
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: source
+            - name: ubuntu-image
+            - name: marman-image
+          outputs:
+            - name: image
+          params:
+            CONTEXT: source/images
+            DOCKERFILE: source/images/Dockerfile.cf
+            IMAGE_ARG_ubuntu_image: ubuntu-image/image.tar
+            IMAGE_ARG_marman_image: marman-image/image.tar
+            IMAGE_ARG_UAA_CLI_VER: ((.:uaa_version))
+          run:
+            path: build
+        output_mapping:
+          image: uaa-image-out
+      - put: uaa-image
         inputs: detect
         params:
-          build: toolkit-source/images
-          build_args_file: build-args/args.json
-          dockerfile: toolkit-source/images/Dockerfile.uaa
-          tag_as_latest: false
-          tag_file: uaa/version
-          cache: false
+          image: uaa-image-out/image.tar
+          #! TODO: check that we push the intended images
+          version: ((.:uaa_version))
+          bump_aliases: true
 
   - name: bump-toolkit-major-version
     serial_groups: [toolkit-version]
