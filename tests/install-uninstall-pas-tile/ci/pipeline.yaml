@@ -696,12 +696,15 @@ jobs:
             - test-with-runtime-config-tile
         - get: version
           params: { bump: final }
+      - file: version/version
+        load_var: image_version
       - put: install-uninstall-test-image-acceptance
         inputs: detect
+        attempts: 3
         params:
-          load: install-uninstall-test-image
-          tag_as_latest: false
-          tag_file: version/version
+          image: install-uninstall-test-image/image.tar
+          version: ((.:image_version))
+          bump_aliases: true
       - put: version
         inputs: detect
         params: { bump: patch }
