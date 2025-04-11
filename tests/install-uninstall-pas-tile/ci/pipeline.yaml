@@ -89,9 +89,9 @@ resources:
     type: registry-image
     icon: docker
     source:
-      repository: mirror.gcr.io/cfplatformeng/tile-generator
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: ((artifactory.registry_mirror))/tile-generator
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: latest
 
   - name: version
@@ -108,17 +108,17 @@ resources:
     type: registry-image
     icon: docker
     source:
-      repository: mirror.gcr.io/amidos/dcind
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: ((artifactory.registry_mirror))/amidos/dcind
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
 
   - name: custom-test-image
-    type: docker-image
+    type: registry-image
     icon: docker
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/partner-engineering/z-pe-test-pas-tile-install-test
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/z-pe-test-pas-tile-install-test
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
 
   - name: custom-test-source
     type: git
@@ -731,11 +731,28 @@ jobs:
           trigger: true
           passed:
             - release-acceptance
+        - get: oci-build-task
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: base-image-source
+          outputs:
+            - name: image
+          params:
+            CONTEXT: custom-test-source/app-only/install-test
+            DOCKERFILE: custom-test-source/app-only/install-test/Dockerfile
+          run:
+            path: build
+        output_mapping:
+          image: custom-test-image-out
       - put: custom-test-image
         inputs: detect
         params:
-          build: custom-test-source/app-only/install-test
-          tag_as_latest: true
+          image: custom-test-image-out/image.tar
+          bump_aliases: true
 
   - name: bump-major-version
     serial_groups: [version]
