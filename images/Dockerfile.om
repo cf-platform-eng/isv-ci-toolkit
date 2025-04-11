@@ -1,4 +1,7 @@
-FROM us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/marman AS fetch-om
+ARG marman_image=tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/marman
+ARG ubuntu_image=tas-ecosystem-docker-virtual.usw1.packages.broadcom.com/ubuntu
+
+FROM ${marman_image} AS fetch-om
 ARG OM_CLI_VER
 RUN if [ -z "${OM_CLI_VER}" ] ; then \
         marman github-download-release --owner pivotal-cf --repo om --filter "om-linux-amd64-[.0-9]*$" ; \
@@ -8,7 +11,7 @@ RUN if [ -z "${OM_CLI_VER}" ] ; then \
 RUN mv om-linux-* /usr/local/bin/om
 RUN chmod +x /usr/local/bin/om
 
-FROM mirror.gcr.io/ubuntu
+FROM ${ubuntu_image}
 LABEL maintainer="Pivotal Platform Engineering ISV-CI Team <cf-isv-dashboard@pivotal.io>"
 
 COPY --from=fetch-om /usr/local/bin/om /usr/local/bin

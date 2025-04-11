@@ -596,25 +596,42 @@ jobs:
   - name: build-om-image
     plan:
       - in_parallel:
-        - get: alpine
-        - get: toolkit-source
-        - get: ci-source
-        - get: om
-          trigger: true
-      - task: make-build-args-file
-        image: alpine
-        file: ci-source/tasks/build-docker-args.yml
-        input_mapping: { src: om }
-        params: { ENV_VAR: OM_CLI_VER }
-      - put: om-docker-image
+          - get: ubuntu-image
+          - get: marman-image
+          - get: source
+            resource: toolkit-source
+          - get: om
+            trigger: true
+      - file: om/version
+        load_var: om_version
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: source
+            - name: ubuntu-image
+            - name: marman-image
+          outputs:
+            - name: image
+          params:
+            CONTEXT: source/images
+            DOCKERFILE: source/images/Dockerfile.cf
+            IMAGE_ARG_ubuntu_image: ubuntu-image/image.tar
+            IMAGE_ARG_marman_image: marman-image/image.tar
+            IMAGE_ARG_OM_CLI_VER: ((.:om_version))
+          run:
+            path: build
+        output_mapping:
+          image: om-image-out
+      - put: om-image
         inputs: detect
         params:
-          build: toolkit-source/images
-          build_args_file: build-args/args.json
-          dockerfile: toolkit-source/images/Dockerfile.om
-          tag_as_latest: false
-          tag_file: om/version
-          cache: false
+          image: om-image-out/image.tar
+          #! TODO: check that we push the intended images
+          version: ((.:om_version))
+          bump_aliases: true
 
   - name: build-pivnet-image
     plan:
