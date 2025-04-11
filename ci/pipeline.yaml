@@ -147,12 +147,12 @@ resources:
         repository: bosh-cli
         access_token: ((github.access_token))
 
-  - name: bosh-docker-image
-    type: docker-image
+  - name: bosh-image
+    type: registry-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/bosh
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/bosh
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: latest
 
   - name: cf
@@ -332,6 +332,7 @@ jobs:
         config:
           platform: linux
           inputs:
+            - name: source
             - name: base-image
             - name: om-image
           outputs:
@@ -369,6 +370,7 @@ jobs:
         config:
           platform: linux
           inputs:
+            - name: source
             - name: base-image
             - name: om-image
           outputs:
@@ -409,6 +411,7 @@ jobs:
         config:
           platform: linux
           inputs:
+            - name: source
             - name: base-image
             - name: om-image
             - name: cf-image
@@ -450,6 +453,7 @@ jobs:
         config:
           platform: linux
           inputs:
+            - name: source
             - name: ubuntu-image
           outputs:
             - name: image
@@ -472,51 +476,45 @@ jobs:
         params:
           file: toolkit-version/version
 
-  - name: build-toolkit-image
-    serial_groups: [toolkit-version]
-    plan:
-      - in_parallel:
-        - get: toolkit-tools-source
-          # passed:
-          #   - test-toolkit
-          trigger: true
-        - get: toolkit-version
-          params:
-            bump: patch
-      - put: toolkit-image
-        inputs: detect
-        params:
-          build: toolkit-tools-source/tools
-          cache: false
-          tag_as_latest: false
-          tag_file: toolkit-version/version
-      - put: toolkit-version
-        inputs: detect
-        params:
-          file: toolkit-version/version
-
   - name: build-bosh-image
     plan:
       - in_parallel:
-        - get: alpine
-        - get: toolkit-source
-        - get: ci-source
-        - get: bosh
-          trigger: true
-      - task: make-build-args-file
-        image: alpine
-        file: ci-source/tasks/build-docker-args.yml
-        input_mapping: { src: bosh }
-        params: { ENV_VAR: BOSH_CLI_VER }
-      - put: bosh-docker-image
+          - get: marman-image
+          - get: ubuntu-image
+          - get: source
+            resource: toolkit-source
+          - get: bosh
+            trigger: true
+      - file: bosh/version
+        load_var: bosh_version
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: source
+            - name: ubuntu-image
+            - name: marman-image
+          outputs:
+            - name: image
+          params:
+            CONTEXT: source/images
+            DOCKERFILE: source/images/Dockerfile.bosh
+            IMAGE_ARG_ubuntu_image: ubuntu-image/image.tar
+            IMAGE_ARG_marman_image: marman-image/image.tar
+            IMAGE_ARG_BOSH_CLI_VER: ((.:bosh_version))
+          run:
+            path: build
+        output_mapping:
+          image: bosh-image-out
+      - put: bosh-image
         inputs: detect
         params:
-          build: toolkit-source/images
-          build_args_file: build-args/args.json
-          dockerfile: toolkit-source/images/Dockerfile.bosh
-          tag_as_latest: false
-          tag_file: bosh/version
-          cache: false
+          image: toolkit-tools-image-out/image.tar
+          #! TODO: check that we push the intended images
+          version: ((.:bosh_version))
+          bump_aliases: true
 
   - name: build-cf-image
     plan:
