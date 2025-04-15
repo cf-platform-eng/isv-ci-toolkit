@@ -1,4 +1,4 @@
-ARG ubuntu_image=tas-ecosystem-docker-virtual.usw1.packages.broadcom.com:ubuntu
+ARG ubuntu_image=tas-ecosystem-docker-virtual.usw1.packages.broadcom.com/ubuntu
 FROM ${ubuntu_image} AS fetch-cf
 
 RUN  apt-get update \
