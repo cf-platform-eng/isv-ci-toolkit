@@ -3,11 +3,21 @@ resource_types:
   - name: pcf-pool
     type: registry-image
     source:
-      repository: mirror.gcr.io/cftoolsmiths/toolsmiths-envs-resource
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: ((artifactory.registry_mirror))/cftoolsmiths/toolsmiths-envs-resource
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
 
 resources:
+  - name: oci-build-task
+    type: registry-image
+    check_every: 4h
+    icon: oci
+    source:
+      repository: ((artifactory.registry_mirror))/concourse/oci-build-task
+      tag: 0.11.1
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
+
   - name: source
     type: git
     source:
@@ -18,29 +28,29 @@ resources:
       private_key: ((github.private_key))
 
   - name: install-uninstall-test-image
-    type: docker-image
-    icon: docker
+    type: registry-image
+    icon: oci
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/install-uninstall-test-image
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/install-uninstall-test-image
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
 
   - name: install-uninstall-test-image-acceptance
-    type: docker-image
+    type: registry-image
     icon: docker
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/install-uninstall-test-image
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/install-uninstall-test-image
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: acceptance
 
   - name: install-uninstall-test-image-production
-    type: docker-image
+    type: registry-image
     icon: docker
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/install-uninstall-test-image
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/install-uninstall-test-image
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: production
 
   - name: runtime-config-only-tile-source
@@ -79,9 +89,9 @@ resources:
     type: registry-image
     icon: docker
     source:
-      repository: mirror.gcr.io/cfplatformeng/tile-generator
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: ((artifactory.registry_mirror))/tile-generator
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: latest
 
   - name: version
@@ -98,17 +108,17 @@ resources:
     type: registry-image
     icon: docker
     source:
-      repository: mirror.gcr.io/amidos/dcind
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: ((artifactory.registry_mirror))/amidos/dcind
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
 
   - name: custom-test-image
-    type: docker-image
+    type: registry-image
     icon: docker
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/partner-engineering/z-pe-test-pas-tile-install-test
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/z-pe-test-pas-tile-install-test
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
 
   - name: custom-test-source
     type: git
@@ -128,12 +138,68 @@ jobs:
           trigger: true
         - get: version
           params: { pre: rc }
+        - get: oci-build-task
+        - get: base-image-source
+        - get: marman-image
+          params:
+            format: oci
+        - get: om-image
+          params:
+            format: oci
+        - get: pivnet-image
+          params:
+            format: oci
+        - get: tileinspect-image
+          params:
+            format: oci
+        - get: cf-image
+          params:
+            format: oci
+        - get: toolkit-image
+          params:
+            format: oci
+        - get: base-image
+          params:
+            format: oci
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: base-image-source
+            - name: marman-image
+            - name: om-image
+            - name: pivnet-image
+            - name: tileinspect-image
+            - name: cf-image
+            - name: toolkit-image
+            - name: base-image
+          outputs:
+            - name: image
+          params:
+            CONTEXT: source/tests/install-uninstall-pas-tile
+            DOCKERFILE: source/tests/install-uninstall-pas-tile/Dockerfile
+            IMAGE_ARG_marman_image: marman-image/image.tar
+            IMAGE_ARG_om_image: om-image/image.tar
+            IMAGE_ARG_pivnet_image: pivnet-image/image.tar
+            IMAGE_ARG_tileinspect_image: tileinspect-image/image.tar
+            IMAGE_ARG_cf_image: cf-image/image.tar
+            IMAGE_ARG_toolkit_image: toolkit-image/image.tar
+            IMAGE_ARG_base_image: base-image/image.tar
+          run:
+            path: build
+        output_mapping:
+          image: base-image-out
+      - file: version/version
+        load_var: image_version
       - put: install-uninstall-test-image
         inputs: detect
+        attempts: 3
         params:
-          build: source/tests/install-uninstall-pas-tile
-          tag_as_latest: true
-          tag_file: version/version
+          image: base-image-out/image.tar
+          version: ((.:image_version))
+          bump_aliases: true
       - put: version
         inputs: detect
         params: { file: version/version }
@@ -630,12 +696,15 @@ jobs:
             - test-with-runtime-config-tile
         - get: version
           params: { bump: final }
+      - file: version/version
+        load_var: image_version
       - put: install-uninstall-test-image-acceptance
         inputs: detect
+        attempts: 3
         params:
-          load: install-uninstall-test-image
-          tag_as_latest: false
-          tag_file: version/version
+          image: install-uninstall-test-image/image.tar
+          version: ((.:image_version))
+          bump_aliases: true
       - put: version
         inputs: detect
         params: { bump: patch }
@@ -645,14 +714,13 @@ jobs:
       - in_parallel:
         - get: install-uninstall-test-image
           params:
-            save: true
+            format: oci
           passed:
             - release-acceptance
       - put: install-uninstall-test-image-production
         inputs: detect
         params:
-          load: install-uninstall-test-image
-          tag_as_latest: false
+          image: install-uninstall-test-image/image.tar
 
   - name: make-custom-test-image
     plan:
@@ -663,11 +731,28 @@ jobs:
           trigger: true
           passed:
             - release-acceptance
+        - get: oci-build-task
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: base-image-source
+          outputs:
+            - name: image
+          params:
+            CONTEXT: custom-test-source/app-only/install-test
+            DOCKERFILE: custom-test-source/app-only/install-test/Dockerfile
+          run:
+            path: build
+        output_mapping:
+          image: custom-test-image-out
       - put: custom-test-image
         inputs: detect
         params:
-          build: custom-test-source/app-only/install-test
-          tag_as_latest: true
+          image: custom-test-image-out/image.tar
+          bump_aliases: true
 
   - name: bump-major-version
     serial_groups: [version]

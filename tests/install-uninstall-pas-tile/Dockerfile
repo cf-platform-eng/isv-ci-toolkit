@@ -1,11 +1,20 @@
-FROM us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/marman:0.5.0 as marman
-FROM us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/om:7.8.2 as om
-FROM us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/pivnet:3.0.1 as pivnet
-FROM us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/tileinspect:0.5.15 as tileinspect
-FROM us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/cf:8.5.0 as cf
-FROM us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/isv-ci-toolkit:0.0.30 as toolkit
+ARG marman_image=tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/marman:0.5.0
+ARG om_image=tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/om:7.8.2
+ARG pivnet_image=tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/pivnet:3.0.1
+ARG tileinspect_image=tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/tileinspect:0.5.15
+ARG cf_image=tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/cf:8.5.0
+ARG toolkit_image=tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/isv-ci-toolkit:0.0.30
+ARG base_image=tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/base-image:0.0.62
 
-FROM us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/base-image:0.0.62
+FROM ${marman_image} as marman
+FROM ${om_image} as om
+FROM ${pivnet_image}  as pivnet
+FROM ${tileinspect_image}  as tileinspect
+FROM ${cf_image} as cf
+FROM ${toolkit_image} as toolkit
+
+FROM ${base_image}
+
 ARG DEPENDENCIES_FILE=/root/dependencies.log
 
 # Copy binaries from dependent images

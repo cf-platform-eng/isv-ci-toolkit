@@ -1,4 +1,7 @@
-FROM us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/marman AS fetch-leftovers
+ARG marman_image=tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/marman
+ARG ubuntu_image=tas-ecosystem-docker-virtual.usw1.packages.broadcom.com/ubuntu
+
+FROM ${marman_image} AS fetch-leftovers
 ARG LEFTOVERS_VER
 RUN if [ -z "${LEFTOVERS_VER}" ] ; then \
         marman github-download-release --owner genevieve --repo leftovers --filter "leftovers-v[.0-9]*-linux-amd64$" ; \
@@ -8,7 +11,7 @@ RUN if [ -z "${LEFTOVERS_VER}" ] ; then \
 RUN mv leftovers-* /usr/local/bin/leftovers
 RUN chmod +x /usr/local/bin/leftovers
 
-FROM mirror.gcr.io/ubuntu
+FROM ${ubuntu_image}
 LABEL maintainer="Pivotal Platform Engineering ISV-CI Team <cf-isv-dashboard@pivotal.io>"
 RUN apt-get -y update --fix-missing && \
     apt-get -y install ca-certificates && \

@@ -1,10 +1,13 @@
-FROM mirror.gcr.io/python:3.9.1-alpine AS pipfile
+ARG python_image=tas-ecosystem-docker-virtual.usw1.packages.broadcom.com/python:3.9.1-alpine
+
+FROM ${python_image} AS pipfile
+
 RUN pip install pipenv
 
 COPY [ "Pipfile", "Pipfile.lock", "/tmp/" ]
 RUN cd /tmp && pipenv requirements > requirements.txt
 
-FROM mirror.gcr.io/python:3.9.1-alpine
+FROM ${python_image}
 
 WORKDIR /test
 

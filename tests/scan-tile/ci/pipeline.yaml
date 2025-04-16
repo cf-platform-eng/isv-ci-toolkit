@@ -3,33 +3,33 @@ resource_types:
   - name: pivnet
     type: registry-image
     source:
-      repository: mirror.gcr.io/pivotalcf/pivnet-resource
+      repository: ((artifactory.registry_mirror))/pivotalcf/pivnet-resource
       tag: latest-final
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
 
   - name: pull-request
     type: registry-image
     source:
-      repository: mirror.gcr.io/teliaoss/github-pr-resource
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: ((artifactory.registry_mirror))/teliaoss/github-pr-resource
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
 
 resources:
   - name: python
     type: registry-image
     source:
-      repository: mirror.gcr.io/python
+      repository: ((artifactory.registry_mirror))/python
       tag: 3.9
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
 
   - name: dcind
     type: registry-image
     source:
-      repository: mirror.gcr.io/amidos/dcind
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: ((artifactory.registry_mirror))/amidos/dcind
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
 
   - name: source
     type: git
@@ -40,27 +40,27 @@ resources:
       private_key: ((github.private_key))
 
   - name: scan-tile
-    type: docker-image
+    type: registry-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/partner-engineering/scan-tile
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/scan-tile
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
 
   - name: scan-tile-acceptance
-    type: docker-image
+    type: registry-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/partner-engineering/scan-tile
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/scan-tile
       tag: acceptance
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
 
   - name: scan-tile-production
-    type: docker-image
+    type: registry-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/scan-tile
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/scan-tile
       tag: production
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
 
   - name: version
     type: semver
@@ -116,15 +116,40 @@ jobs:
             - test
         - get: version
           params: { pre: rc }
+        - get: python
+          params:
+            format: oci
       - put: version
         inputs: detect
         params: { file: version/version }
-      - put: scan-tile
+      - get: oci-build-task
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: source
+            - name: python
+          outputs:
+            - name: image
+          params:
+            CONTEXT: base-image-source/base-image
+            DOCKERFILE: base-image-source/base-image/Dockerfile
+            IMAGE_ARG_python_image: python/image.tar
+          run:
+            path: build
+        output_mapping:
+          image: scan-tile-out
+      - file: version/version
+        load_var: image_version
+      - put: image
         inputs: detect
+        attempts: 3
         params:
-          build: source/tests/scan-tile
-          tag_as_latest: true
-          tag_file: version/version
+          image: scan-tile-out/image.tar
+          version: ((.:image_version))
+          bump_aliases: true
 
   - name: test-scan-tile
     plan:
@@ -132,20 +157,41 @@ jobs:
         - get: test-tile
         - get: scan-tile
           params:
-            save: true
+            format: oci
           passed:
             - build
           trigger: true
         - get: version
           params: { bump: final }
         - get: dcind
+        - get: oci-build-task
+        - file: version/version
+          load_var: image_version
+        - task: build-oci
+          privileged: true
+          image: oci-build-task
+          config:
+            platform: linux
+            inputs:
+              - name: source
+              - name: python
+            outputs:
+              - name: image
+            params:
+              CONTEXT: scan-tile
+              DOCKERFILE: scan-tile/Dockerfile
+              IMAGE_ARG_base_image: python/image.tar
+            run:
+              path: build
+          output_mapping:
+            image: test-scan-out
       - task: run-test
         privileged: true
         image: dcind
         config:
           platform: linux
           inputs:
-            - name: scan-tile
+            - name: test-scan-out
             - name: test-tile
           run:
             path: bash
@@ -156,7 +202,7 @@ jobs:
                 source /docker-lib.sh
                 start_docker
 
-                docker load -i scan-tile/image
+                docker load -i test-scan-out/image.tar
                 IMAGE_TAG="$(cat scan-tile/repository):$(cat scan-tile/tag)"
                 docker tag "$(cat scan-tile/image-id)" "${IMAGE_TAG}"
 
@@ -164,14 +210,13 @@ jobs:
                 if [ ${PIPESTATUS[0]} -ne 0 ] ; then
                   exit ${PIPESTATUS[0]}
                 fi
-
       - put: scan-tile
         inputs: detect
+        attempts: 3
         params:
-          load: scan-tile
-          tag_as_latest: false
-          cache: false  
-          tag_file: version/version
+          image: test-scan-out/image.tar
+          version: ((.:image_version))
+          bump_aliases: true
       - put: version
         inputs: detect
         params: { bump: patch }
@@ -181,29 +226,29 @@ jobs:
       - in_parallel:
         - get: scan-tile
           params:
-            save: true
+            format: oci
           passed:
             - test-scan-tile
           trigger: true
       - put: scan-tile-acceptance
         inputs: detect
         params:
-          load: scan-tile
-          tag_as_latest: false
+          image: scan-tile/image.tar
 
   - name: release-production
     plan:
       - in_parallel:
-        - get: scan-tile
-          params:
-            save: true
-          passed:
-            - release-acceptance
-      - put: scan-tile-production
+          - get: scan-tile
+            params:
+              format: oci
+            passed:
+              - release-acceptance
+            trigger: true
+      - put: scan-tile-acceptance
         inputs: detect
         params:
-          load: scan-tile
-          tag_as_latest: true
+          image: scan-tile/image.tar
+          bump_aliases: true
 
   - name: bump-major-version
     serial_groups: [version]

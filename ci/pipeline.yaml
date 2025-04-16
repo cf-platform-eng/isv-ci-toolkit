@@ -6,6 +6,16 @@ resources:
       username: ((github.username))
       password: ((github.broadcom_github_personal_access_token))
 
+  - name: oci-build-task
+    type: registry-image
+    check_every: 4h
+    icon: oci
+    source:
+      repository: ((artifactory.registry_mirror))/concourse/oci-build-task
+      tag: 0.11.1
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
+
   - name: base-image-source
     type: git
     source:
@@ -16,12 +26,20 @@ resources:
       private_key: ((github.private_key))
 
   - name: base-image
-    type: docker-image
+    type: registry-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/base-image
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
-      tag: latest
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/base-image
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
+      tag: 0.0.53
+
+  - name: om-image
+    type: registry-image
+    source:
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/om-image
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
+      tag: 7.7.0
 
   - name: enable-apps-manager-source
     type: git
@@ -32,11 +50,11 @@ resources:
       private_key: ((github.private_key))
 
   - name: enable-apps-manager
-    type: docker-image
+    type: registry-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/enable-apps-manager
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/enable-apps-manager
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: latest
 
   - name: enable-bosh-post-deploy-scripts-source
@@ -48,11 +66,11 @@ resources:
       private_key: ((github.private_key))
 
   - name: enable-bosh-post-deploy-scripts
-    type: docker-image
+    type: registry-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/enable-bosh-post-deploy-scripts
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/enable-bosh-post-deploy-scripts
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: latest
 
   - name: enable-tcp-routing-source
@@ -64,11 +82,11 @@ resources:
       private_key: ((github.private_key))
 
   - name: enable-tcp-routing
-    type: docker-image
+    type: registry-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/enable-tcp-routing
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/enable-tcp-routing
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: latest
 
   - name: toolkit-source
@@ -86,11 +104,11 @@ resources:
       private_key: ((github.private_key))
 
   - name: toolkit-image
-    type: docker-image
+    type: registry-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/isv-ci-toolkit
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/isv-ci-toolkit
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: latest
 
   - name: toolkit-version
@@ -113,15 +131,6 @@ resources:
       username: ((github.username))
       password: ((github.broadcom_github_personal_access_token))
 
-  - name: alpine
-    type: registry-image
-    icon: docker
-    source:
-      repository: mirror.gcr.io/alpine
-      tag: 3
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
-
   - name: bosh
     type: github-release
     source:
@@ -129,12 +138,12 @@ resources:
         repository: bosh-cli
         access_token: ((github.access_token))
 
-  - name: bosh-docker-image
-    type: docker-image
+  - name: bosh-image
+    type: registry-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/bosh
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/bosh
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: latest
 
   - name: cf
@@ -144,12 +153,12 @@ resources:
         repository: cli
         access_token: ((github.access_token))
 
-  - name: cf-docker-image
-    type: docker-image
+  - name: cf-image
+    type: registry-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/cf
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/cf
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: latest
 
   - name: leftovers
@@ -159,12 +168,12 @@ resources:
         repository: leftovers
         access_token: ((github.access_token))
 
-  - name: leftovers-docker-image
-    type: docker-image
+  - name: leftovers-image
+    type: registry-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/partner-engineering/leftovers
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/leftovers
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: latest
 
   - name: om
@@ -174,12 +183,12 @@ resources:
         repository: om
         access_token: ((github.access_token))
 
-  - name: om-docker-image
-    type: docker-image
+  - name: om-image
+    type: resource-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/om
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/om
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: latest
 
   - name: pivnet
@@ -196,21 +205,48 @@ resources:
         repository: uaa-cli
         access_token: ((github.access_token))
 
-  - name: pivnet-docker-image
-    type: docker-image
+  - name: pivnet-image
+    type: resource-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/pivnet
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/pivnet
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: latest
 
-  - name: uaa-docker-image
-    type: docker-image
+  - name: uaa-image
+    type: resource-image
     source:
-      repository: us-west1-docker.pkg.dev/isv-tile-partners/tanzu-isv-engineering/uaa
-      username: _json_key
-      password: ((gcp_artifact_registry.service_account_key))
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/uaa
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
       tag: latest
+
+  - name: ubuntu-image
+    type: registry-image
+    icon: oci
+    source:
+      repository: ((artifactory.registry_mirror))/ubuntu
+      tag: 20.04
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
+
+  - name: mrlog-image
+    type: registry-image
+    icon: oci
+    source:
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/mrlog
+      tag: 0.2.9
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
+
+  - name: needs-image
+    type: registry-image
+    icon: oci
+    source:
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/needs
+      tag: 0.12.12
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
 
 jobs:
   - name: build-base-image
@@ -219,17 +255,51 @@ jobs:
       - in_parallel:
         - get: base-image-source
           trigger: true
+        - get: ubuntu-image
+          params:
+            format: oci
+        - get: mrlog-image
+          params:
+            format: oci
+        - get: needs-image
+          params:
+            format: oci
+      - get: oci-build-task
+        attempts: 3
       - get: base-image-version
         params:
           bump: patch
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: base-image-source
+            - name: ubuntu-image
+            - name: mrlog-image
+            - name: needs-image
+          outputs:
+            - name: image
+          params:
+            CONTEXT: base-image-source/base-image
+            DOCKERFILE: base-image-source/base-image/Dockerfile
+            IMAGE_ARG_ubuntu_image: ubuntu-image/image.tar
+            IMAGE_ARG_mrlog_image: mrlog-image/image.tar
+            IMAGE_ARG_needs_image: needs-image/image.tar
+          run:
+            path: build
+        output_mapping:
+          image: base-image-out
+      - file: base-image-version/version
+        load_var: image_version
       - put: base-image
         inputs: detect
+        attempts: 3
         params:
-          build: base-image-source/base-image
-          cache: false
-          dockerfile: base-image-source/base-image/Dockerfile
-          tag_file: base-image-version/version
-          tag_as_latest: true
+          image: base-image-out/image.tar
+          version: ((.:image_version))
+          bump_aliases: true
       - put: base-image-version
         inputs: detect
         params:
@@ -237,56 +307,169 @@ jobs:
 
   - name: build-enable-apps-manager
     plan:
-      - get: source
-        resource: enable-apps-manager-source
-        trigger: true
+      - in_parallel:
+        - get: source
+          resource: enable-apps-manager-source
+          trigger: true
+        - get: base-image
+          params:
+            format: oci
+        - get: om-image
+          params:
+            format: oci
+        - get: oci-build-task
+          attempts: 3
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: source
+            - name: base-image
+            - name: om-image
+          outputs:
+            - name: image
+          params:
+            CONTEXT: source/tasks/enable-apps-manager
+            DOCKERFILE: source/tasks/enable-apps-manager/Dockerfile
+            IMAGE_ARG_base_image: base-image/image.tar
+            IMAGE_ARG_om_image: om-image/image.tar
+          run:
+            path: build
+        output_mapping:
+          image: enable-apps-manager-image-out
       - put: enable-apps-manager
         inputs: detect
         params:
-          build: source/tasks/enable-apps-manager
-          tag_as_latest: false
+          image: enable-apps-manager-image-out/image.tar
+          bump_aliases: true
 
   - name: build-enable-bosh-post-deploy-scripts
     plan:
-      - get: source
-        resource: enable-bosh-post-deploy-scripts-source
-        trigger: true
+      - in_parallel:
+          - get: source
+            resource: enable-bosh-post-deploy-scripts-source
+            trigger: true
+          - get: base-image
+            params:
+              format: oci
+          - get: om-image
+            params:
+              format: oci
+          - get: oci-build-task
+            attempts: 3
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: source
+            - name: base-image
+            - name: om-image
+          outputs:
+            - name: image
+          params:
+            CONTEXT: source/tasks/enable-bosh-post-deploy-scripts
+            DOCKERFILE: source/tasks/enable-bosh-post-deploy-scripts/Dockerfile
+            IMAGE_ARG_base_image: base-image/image.tar
+            IMAGE_ARG_om_image: om-image/image.tar
+          run:
+            path: build
+        output_mapping:
+          image: enable-bosh-post-deploy-scripts-image-out
       - put: enable-bosh-post-deploy-scripts
         inputs: detect
         params:
-          build: source/tasks/enable-bosh-post-deploy-scripts
-          tag_as_latest: false
+          image: enable-bosh-post-deploy-scripts-image-out/image.tar
+          bump_aliases: true
 
   - name: build-enable-tcp-routing
     plan:
-      - get: source
-        resource: enable-tcp-routing-source
-        trigger: true
+      - in_parallel:
+          - get: source
+            resource: enable-tcp-routing-source
+            trigger: true
+          - get: base-image
+            params:
+              format: oci
+          - get: om-image
+            params:
+              format: oci
+          - get: cf-image
+            params:
+              format: oci
+          - get: oci-build-task
+            attempts: 3
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: source
+            - name: base-image
+            - name: om-image
+            - name: cf-image
+          outputs:
+            - name: image
+          params:
+            CONTEXT: source/tasks/enable-tcp-routing
+            DOCKERFILE: source/tasks/enable-tcp-routing/Dockerfile
+            IMAGE_ARG_base_image: base-image/image.tar
+            IMAGE_ARG_om_image: om-image/image.tar
+            IMAGE_ARG_cf_image: cf-image/image.tar
+          run:
+            path: build
+        output_mapping:
+          image: enable-tcp-routing-image-out
       - put: enable-tcp-routing
         inputs: detect
         params:
-          build: source/tasks/enable-tcp-routing
-          cache: false # Ensure we pick up the config.yml file
-          tag_as_latest: false
+          image: enable-tcp-routing-image-out/image.tar
+          bump_aliases: true
 
   - name: build-toolkit-image
-    serial_groups: [toolkit-version]
     plan:
       - in_parallel:
-        - get: toolkit-tools-source
-          # passed:
-          #   - test-toolkit
-          trigger: true
-        - get: toolkit-version
+          - get: source
+            resource: toolkit-tools-source
+            trigger: true
+          - get: ubuntu-image
+            params:
+              format: oci
+          - get: toolkit-version
+            params:
+              bump: patch
+          - get: oci-build-task
+            attempts: 3
+      - file: toolkit-version/version
+        load_var: image_version
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: source
+            - name: ubuntu-image
+          outputs:
+            - name: image
           params:
-            bump: patch
-      - put: toolkit-image
+            CONTEXT: source/tools
+            DOCKERFILE: source/tools/Dockerfile
+            IMAGE_ARG_ubuntu_image: ubuntu-image/image.tar
+          run:
+            path: build
+        output_mapping:
+          image: toolkit-tools-image-out
+      - put: toolkit-tools-image
         inputs: detect
         params:
-          build: toolkit-tools-source/tools
-          cache: false
-          tag_as_latest: false
-          tag_file: toolkit-version/version
+          image: toolkit-tools-image-out/image.tar
+          version: ((.:image_version))
+          bump_aliases: true
       - put: toolkit-version
         inputs: detect
         params:
@@ -295,140 +478,251 @@ jobs:
   - name: build-bosh-image
     plan:
       - in_parallel:
-        - get: alpine
-        - get: toolkit-source
-        - get: ci-source
-        - get: bosh
-          trigger: true
-      - task: make-build-args-file
-        image: alpine
-        file: ci-source/tasks/build-docker-args.yml
-        input_mapping: { src: bosh }
-        params: { ENV_VAR: BOSH_CLI_VER }
-      - put: bosh-docker-image
+          - get: marman-image
+          - get: ubuntu-image
+          - get: source
+            resource: toolkit-source
+          - get: bosh
+            trigger: true
+          - get: oci-build-task
+            attempts: 3
+      - file: bosh/version
+        load_var: bosh_version
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: source
+            - name: ubuntu-image
+            - name: marman-image
+          outputs:
+            - name: image
+          params:
+            CONTEXT: source/images
+            DOCKERFILE: source/images/Dockerfile.bosh
+            IMAGE_ARG_ubuntu_image: ubuntu-image/image.tar
+            IMAGE_ARG_marman_image: marman-image/image.tar
+            IMAGE_ARG_BOSH_CLI_VER: ((.:bosh_version))
+          run:
+            path: build
+        output_mapping:
+          image: bosh-image-out
+      - put: bosh-image
         inputs: detect
         params:
-          build: toolkit-source/images
-          build_args_file: build-args/args.json
-          dockerfile: toolkit-source/images/Dockerfile.bosh
-          tag_as_latest: false
-          tag_file: bosh/version
-          cache: false
+          image: toolkit-tools-image-out/image.tar
+          #! TODO: check that we push the intended images
+          version: ((.:bosh_version))
+          bump_aliases: true
 
   - name: build-cf-image
     plan:
       - in_parallel:
-        - get: alpine
-        - get: toolkit-source
-        - get: ci-source        
-        - get: cf
-          trigger: true
-      - task: make-build-args-file
-        image: alpine
-        file: ci-source/tasks/build-docker-args.yml
-        input_mapping: { src: cf }
-        params: { ENV_VAR: CF_CLI_VER }
-      - put: cf-docker-image
+          - get: ubuntu-image
+          - get: source
+            resource: toolkit-source
+          - get: cf
+            trigger: true
+          - get: oci-build-task
+            attempts: 3
+      - file: cf/version
+        load_var: cf_version
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: source
+            - name: ubuntu-image
+          outputs:
+            - name: image
+          params:
+            CONTEXT: source/images
+            DOCKERFILE: source/images/Dockerfile.cf
+            IMAGE_ARG_ubuntu_image: ubuntu-image/image.tar
+            IMAGE_ARG_CF_CLI_VER: ((.:cf_version))
+          run:
+            path: build
+        output_mapping:
+          image: cf-image-out
+      - put: cf-image
         inputs: detect
         params:
-          build: toolkit-source/images
-          build_args_file: build-args/args.json
-          dockerfile: toolkit-source/images/Dockerfile.cf
-          tag_as_latest: false
-          tag_file: cf/version
-          cache: false
+          image: cf-image-out/image.tar
+          #! TODO: check that we push the intended images
+          version: ((.:cf_version))
+          bump_aliases: true
 
   - name: build-leftovers-image
     plan:
       - in_parallel:
-        - get: alpine
-        - get: toolkit-source
-        - get: ci-source
-        - get: leftovers
-          trigger: true
-      - task: make-build-args-file
-        image: alpine
-        file: ci-source/tasks/build-docker-args.yml
-        input_mapping: { src: leftovers }
-        params: { ENV_VAR: LEFTOVERS_VER }
-      - put: leftovers-docker-image
+          - get: ubuntu-image
+          - get: marman-image
+          - get: source
+            resource: toolkit-source
+          - get: leftovers
+            trigger: true
+          - get: oci-build-task
+            attempts: 3
+      - file: leftovers/version
+        load_var: leftovers_version
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: source
+            - name: ubuntu-image
+            - name: marman-image
+          outputs:
+            - name: image
+          params:
+            CONTEXT: source/images
+            DOCKERFILE: source/images/Dockerfile.cf
+            IMAGE_ARG_ubuntu_image: ubuntu-image/image.tar
+            IMAGE_ARG_marman_image: marman-image/image.tar
+            IMAGE_ARG_LEFTOVERS_VER: ((.:leftovers_version))
+          run:
+            path: build
+        output_mapping:
+          image: leftovers-image-out
+      - put: leftovers-image
         inputs: detect
         params:
-          build: toolkit-source/images
-          build_args_file: build-args/args.json
-          dockerfile: toolkit-source/images/Dockerfile.leftovers
-          tag_as_latest: false
-          tag_file: leftovers/version
-          cache: false
+          image: leftovers-image-out/image.tar
+          #! TODO: check that we push the intended images
+          version: ((.:leftovers_version))
+          bump_aliases: true
 
   - name: build-om-image
     plan:
       - in_parallel:
-        - get: alpine
-        - get: toolkit-source
-        - get: ci-source
-        - get: om
-          trigger: true
-      - task: make-build-args-file
-        image: alpine
-        file: ci-source/tasks/build-docker-args.yml
-        input_mapping: { src: om }
-        params: { ENV_VAR: OM_CLI_VER }
-      - put: om-docker-image
+          - get: ubuntu-image
+          - get: marman-image
+          - get: source
+            resource: toolkit-source
+          - get: om
+            trigger: true
+          - get: oci-build-task
+            attempts: 3
+      - file: om/version
+        load_var: om_version
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: source
+            - name: ubuntu-image
+            - name: marman-image
+          outputs:
+            - name: image
+          params:
+            CONTEXT: source/images
+            DOCKERFILE: source/images/Dockerfile.cf
+            IMAGE_ARG_ubuntu_image: ubuntu-image/image.tar
+            IMAGE_ARG_marman_image: marman-image/image.tar
+            IMAGE_ARG_OM_CLI_VER: ((.:om_version))
+          run:
+            path: build
+        output_mapping:
+          image: om-image-out
+      - put: om-image
         inputs: detect
         params:
-          build: toolkit-source/images
-          build_args_file: build-args/args.json
-          dockerfile: toolkit-source/images/Dockerfile.om
-          tag_as_latest: false
-          tag_file: om/version
-          cache: false
+          image: om-image-out/image.tar
+          #! TODO: check that we push the intended images
+          version: ((.:om_version))
+          bump_aliases: true
 
   - name: build-pivnet-image
     plan:
       - in_parallel:
-        - get: alpine
-        - get: ci-source
-        - get: toolkit-source
-        - get: pivnet
-          trigger: true
-      - task: make-build-args-file
-        image: alpine
-        file: ci-source/tasks/build-docker-args.yml
-        input_mapping: { src: pivnet }
-        params: { ENV_VAR: PIVNET_CLI_VER }
-      - put: pivnet-docker-image
+          - get: ubuntu-image
+          - get: marman-image
+          - get: source
+            resource: toolkit-source
+          - get: pivnet
+            trigger: true
+          - get: oci-build-task
+            attempts: 3
+      - file: pivnet/version
+        load_var: pivnet_version
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: source
+            - name: ubuntu-image
+            - name: marman-image
+          outputs:
+            - name: image
+          params:
+            CONTEXT: source/images
+            DOCKERFILE: source/images/Dockerfile.cf
+            IMAGE_ARG_ubuntu_image: ubuntu-image/image.tar
+            IMAGE_ARG_marman_image: marman-image/image.tar
+            IMAGE_ARG_PIVNET_CLI_VER: ((.:pivnet_version))
+          run:
+            path: build
+        output_mapping:
+          image: pivnet-image-out
+      - put: pivnet-image
         inputs: detect
         params:
-          build: toolkit-source/images
-          build_args_file: build-args/args.json
-          dockerfile: toolkit-source/images/Dockerfile.pivnet
-          tag_as_latest: false
-          tag_file: pivnet/version
-          cache: false
+          image: pivnet-image-out/image.tar
+          #! TODO: check that we push the intended images
+          version: ((.:pivnet_version))
+          bump_aliases: true
 
   - name: build-uaa-image
     plan:
       - in_parallel:
-        - get: alpine
-        - get: toolkit-source
-        - get: ci-source
-        - get: uaa
-          trigger: true
-      - task: make-build-args-file
-        image: alpine
-        file: ci-source/tasks/build-docker-args.yml
-        input_mapping: { src: uaa }
-        params: { ENV_VAR: UAA_CLI_VER }
-      - put: uaa-docker-image
+          - get: ubuntu-image
+          - get: marman-image
+          - get: source
+            resource: toolkit-source
+          - get: uaa
+            trigger: true
+          - get: oci-build-task
+            attempts: 3
+      - file: uaa/version
+        load_var: uaa_version
+      - task: build-oci
+        privileged: true
+        image: oci-build-task
+        config:
+          platform: linux
+          inputs:
+            - name: source
+            - name: ubuntu-image
+            - name: marman-image
+          outputs:
+            - name: image
+          params:
+            CONTEXT: source/images
+            DOCKERFILE: source/images/Dockerfile.cf
+            IMAGE_ARG_ubuntu_image: ubuntu-image/image.tar
+            IMAGE_ARG_marman_image: marman-image/image.tar
+            IMAGE_ARG_UAA_CLI_VER: ((.:uaa_version))
+          run:
+            path: build
+        output_mapping:
+          image: uaa-image-out
+      - put: uaa-image
         inputs: detect
         params:
-          build: toolkit-source/images
-          build_args_file: build-args/args.json
-          dockerfile: toolkit-source/images/Dockerfile.uaa
-          tag_as_latest: false
-          tag_file: uaa/version
-          cache: false
+          image: uaa-image-out/image.tar
+          #! TODO: check that we push the intended images
+          version: ((.:uaa_version))
+          bump_aliases: true
 
   - name: bump-toolkit-major-version
     serial_groups: [toolkit-version]
