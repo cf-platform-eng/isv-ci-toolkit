@@ -41,6 +41,14 @@ resources:
       password: ((artifactory.production_password))
       tag: 7.7.0
 
+  - name: marman-image
+    type: registry-image
+    source:
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/marman
+      username: ((artifactory.production_username))
+      password: ((artifactory.production_password))
+      tag: 0.5.0
+
   - name: enable-apps-manager-source
     type: git
     source:
