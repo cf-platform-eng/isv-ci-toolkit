@@ -22,7 +22,7 @@ resources:
     check_every: 4h
     icon: oci
     source:
-      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/marman
+      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/marman
       tag: 0.5.0
       username: ((artifactory.production_username))
       password: ((artifactory.production_password))

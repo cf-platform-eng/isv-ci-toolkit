@@ -29,6 +29,15 @@ function gen_tile_config {
         echo "OpsManager cloud config has no networks" >&2
         return 1
     fi
+    
+    if [ -z "$NETWORK" ]; then
+        # If no services network found, try to use the first available network
+        if ! NETWORK=$(echo "${CLOUD_CONFIG}" | jq -r '.cloud_config.networks[0].name') ; then
+            echo "OpsManager cloud config has no networks" >&2
+            return 1
+        fi
+        echo "Warning: No network with 'services' in name found, using first available network: ${NETWORK}" >&2
+    fi
 
     if ! AZS=$(echo "${CLOUD_CONFIG}" | jq -c '[.cloud_config.azs[] | {name}]') ; then
         echo "OpsManager cloud config has no availability zones" >&2
