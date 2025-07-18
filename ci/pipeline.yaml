@@ -1,11 +1,4 @@
 resources:
-  - name: ci-source
-    type: git
-    source:
-      uri: ((github.org_url))/isv-dashboard-ci.git
-      username: ((github.username))
-      password: ((github.broadcom_github_personal_access_token))
-
   - name: oci-build-task
     type: registry-image
     check_every: 4h
@@ -190,14 +183,6 @@ resources:
         owner: pivotal-cf
         repository: om
         access_token: ((github.access_token))
-
-  - name: om-image
-    type: resource-image
-    source:
-      repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/tanzu-isv-engineering/om
-      username: ((artifactory.production_username))
-      password: ((artifactory.production_password))
-      tag: latest
 
   - name: pivnet
     type: github-release
@@ -471,11 +456,11 @@ jobs:
           run:
             path: build
         output_mapping:
-          image: toolkit-tools-image-out
-      - put: toolkit-tools-image
+          image: toolkit-image-out
+      - put: toolkit-image
         inputs: detect
         params:
-          image: toolkit-tools-image-out/image.tar
+          image: toolkit-image-out/image.tar
           version: ((.:image_version))
           bump_aliases: true
       - put: toolkit-version

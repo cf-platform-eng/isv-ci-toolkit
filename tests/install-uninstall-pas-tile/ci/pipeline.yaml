@@ -71,7 +71,7 @@ resources:
     icon: oci
     source:
       repository: tas-ecosystem-docker-prod-local.usw1.packages.broadcom.com/partner-engineering/isv-ci-toolkit
-      tag: 0.0.30
+      tag: 0.0.33
       username: ((artifactory.production_username))
       password: ((artifactory.production_password))
 
@@ -244,6 +244,7 @@ jobs:
         config:
           platform: linux
           inputs:
+            - name: source
             - name: base-image-source
             - name: marman-image
             - name: om-image

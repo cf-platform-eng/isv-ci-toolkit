@@ -25,18 +25,23 @@ function gen_tile_config {
         return 1
     fi
 
-    if ! NETWORK=$(echo "${CLOUD_CONFIG}" | jq -r '.cloud_config.networks[] | select(.name | contains("services")) | .name') ; then
-        echo "OpsManager cloud config has no networks" >&2
-        return 1
-    fi
+    # Debug: Show available networks
+    echo "Available networks:" >&2
+    echo "${CLOUD_CONFIG}" | jq -r '.cloud_config.networks[].name' >&2
+    
+    # First try to find a network with "services" in the name
+    NETWORK=$(echo "${CLOUD_CONFIG}" | jq -r '.cloud_config.networks[] | select(.name | contains("services")) | .name' | head -1)
     
     if [ -z "$NETWORK" ]; then
         # If no services network found, try to use the first available network
-        if ! NETWORK=$(echo "${CLOUD_CONFIG}" | jq -r '.cloud_config.networks[0].name') ; then
+        NETWORK=$(echo "${CLOUD_CONFIG}" | jq -r '.cloud_config.networks[0].name' 2>/dev/null)
+        if [ -z "$NETWORK" ] || [ "$NETWORK" = "null" ]; then
             echo "OpsManager cloud config has no networks" >&2
             return 1
         fi
         echo "Warning: No network with 'services' in name found, using first available network: ${NETWORK}" >&2
+    else
+        echo "Found services network: ${NETWORK}" >&2
     fi
 
     if ! AZS=$(echo "${CLOUD_CONFIG}" | jq -c '[.cloud_config.azs[] | {name}]') ; then
