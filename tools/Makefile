@@ -9,10 +9,11 @@ endif
     $(NOOP)
 
 temp/make-tags/deps:
-	unset PYTHONPATH && pipenv sync --dev
+	$(eval PIP_INDEX_URL:=https://packages.vcfd.broadcom.net/artifactory/api/pypi/pypi-virtual/simple)
+	unset PYTHONPATH && PIP_INDEX_URL=${PIP_INDEX_URL} pipenv sync --dev
 	mkdir -p temp/make-tags
 	touch temp/make-tags/deps
-	pipenv run -- pipenv install
+	PIP_INDEX_URL=${PIP_INDEX_URL} pipenv run -- pipenv install
 	curl https://raw.githubusercontent.com/cf-platform-eng/bats-mock/main/src/bats-mock.bash > temp/bats-mock.bash
 
 clean:
