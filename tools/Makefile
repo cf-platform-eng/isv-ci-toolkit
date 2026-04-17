@@ -1,6 +1,8 @@
 .PHONY: lint test
 
 MRLOG := $(shell command -v mrlog 2> /dev/null)
+PIP_INDEX_URL := https://packages.vcfd.broadcom.net/artifactory/api/pypi/pypi-virtual/simple
+export PIP_INDEX_URL
 
 mrlog:
 ifndef MRLOG
@@ -9,11 +11,10 @@ endif
     $(NOOP)
 
 temp/make-tags/deps:
-	$(eval PIP_INDEX_URL:=https://packages.vcfd.broadcom.net/artifactory/api/pypi/pypi-virtual/simple)
-	unset PYTHONPATH && PIP_INDEX_URL=${PIP_INDEX_URL} pipenv sync --dev
+	unset PYTHONPATH && pipenv sync --dev
 	mkdir -p temp/make-tags
 	touch temp/make-tags/deps
-	PIP_INDEX_URL=${PIP_INDEX_URL} pipenv run -- pipenv install
+	pipenv run -- pipenv install
 	curl https://raw.githubusercontent.com/cf-platform-eng/bats-mock/main/src/bats-mock.bash > temp/bats-mock.bash
 
 clean:

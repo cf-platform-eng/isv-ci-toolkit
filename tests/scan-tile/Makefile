@@ -1,6 +1,6 @@
 PIPENV := $(shell command -v pipenv 2> /dev/null)
-$(eval PIP_INDEX_URL:=https://packages.vcfd.broadcom.net/artifactory/api/pypi/pypi-virtual/simple)
-ENV PIP_INDEX_URL="${PIP_INDEX_URL}"
+PIP_INDEX_URL := https://packages.vcfd.broadcom.net/artifactory/api/pypi/pypi-virtual/simple
+export PIP_INDEX_URL
 
 pipenv:
 ifndef PIPENV
@@ -9,7 +9,7 @@ endif
     $(NOOP)
 
 temp/make-tags/scan-tile: Pipfile.lock pipenv
-	unset PYTHONPATH &&	pipenv sync --dev
+	unset PYTHONPATH && pipenv sync --dev
 	mkdir -p temp/make-tags
 	touch temp/make-tags/scan-tile
 
