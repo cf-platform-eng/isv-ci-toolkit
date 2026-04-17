@@ -1,4 +1,6 @@
 ARG python_image=tas-ecosystem-docker-virtual.usw1.packages.broadcom.com/python:3.9.1-alpine
+ARG PIP_INDEX_URL="https://packages.vcfd.broadcom.net/artifactory/api/pypi/pypi-virtual/simple"
+ENV PIP_INDEX_URL="${PIP_INDEX_URL}"
 
 FROM ${python_image} AS pipfile
 

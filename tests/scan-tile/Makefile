@@ -2,7 +2,8 @@ PIPENV := $(shell command -v pipenv 2> /dev/null)
 
 pipenv:
 ifndef PIPENV
-	pip install pipenv
+	$(eval PIP_INDEX_URL:=https://packages.vcfd.broadcom.net/artifactory/api/pypi/pypi-virtual/simple)
+	PIP_INDEX_URL=${PIP_INDEX_URL} pip install pipenv --break-system-packages
 endif
     $(NOOP)
 
