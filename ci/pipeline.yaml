@@ -275,6 +275,7 @@ jobs:
           outputs:
             - name: image
           params:
+            BUILD_ARG_PIP_INDEX_URL: ((pip_index.url))
             CONTEXT: base-image-source/base-image
             DOCKERFILE: base-image-source/base-image/Dockerfile
             IMAGE_ARG_ubuntu_image: ubuntu-image/image.tar

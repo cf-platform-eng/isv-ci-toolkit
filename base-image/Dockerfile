@@ -13,7 +13,8 @@ COPY --from=needs /usr/local/bin/needs /usr/local/bin/
 LABEL maintainer="VMware Tanzu ISV-CI Team <cf-isv-dashboard@pivotal.io>"
 VOLUME /input /output /job
 
-ARG PIP_INDEX_URL=https://packages.vcfd.broadcom.net/artifactory/api/pypi/pypi-virtual/simple
+# Use Broadcom internal VCFD Artifactory for security compliance
+ARG PIP_INDEX_URL
 ENV PIP_INDEX_URL="${PIP_INDEX_URL}"
 ENV INPUT_DIR=/input
 ENV OUTPUT_DIR=/output

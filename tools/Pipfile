@@ -1,6 +1,6 @@
 [[source]]
 name = "pypi"
-url = "https://packages.vcfd.broadcom.net/artifactory/api/pypi/pypi-virtual/simple"
+url = "${PIP_INDEX_URL}"
 verify_ssl = true
 
 [dev-packages]

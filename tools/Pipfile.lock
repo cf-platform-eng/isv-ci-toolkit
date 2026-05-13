@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "f1a02efdf562fa6522cc424069c0a0a2be4ae56ff7d6dc167dde401eeb7cacf8"
+            "sha256": "d74e0ecb3bc8b161a2c0cf31a60204d906e42aa301b4416f4a6e6fd3676165c4"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -10,7 +10,7 @@
         "sources": [
             {
                 "name": "pypi",
-                "url": "https://packages.vcfd.broadcom.net/artifactory/api/pypi/pypi-virtual/simple",
+                "url": "${PIP_INDEX_URL}",
                 "verify_ssl": true
             }
         ]
