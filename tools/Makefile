@@ -1,6 +1,8 @@
 .PHONY: lint test
 
 MRLOG := $(shell command -v mrlog 2> /dev/null)
+PIP_INDEX_URL := https://packages.vcfd.broadcom.net/artifactory/api/pypi/pypi-virtual/simple
+export PIP_INDEX_URL
 
 mrlog:
 ifndef MRLOG

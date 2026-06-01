@@ -2,12 +2,18 @@ ARG python_image=tas-ecosystem-docker-virtual.usw1.packages.broadcom.com/python:
 
 FROM ${python_image} AS pipfile
 
+ARG PIP_INDEX_URL=https://packages.vcfd.broadcom.net/artifactory/api/pypi/pypi-virtual/simple
+ENV PIP_INDEX_URL="${PIP_INDEX_URL}"
+
 RUN pip install pipenv
 
 COPY [ "Pipfile", "Pipfile.lock", "/tmp/" ]
 RUN cd /tmp && pipenv requirements > requirements.txt
 
 FROM ${python_image}
+
+ARG PIP_INDEX_URL=https://packages.vcfd.broadcom.net/artifactory/api/pypi/pypi-virtual/simple
+ENV PIP_INDEX_URL="${PIP_INDEX_URL}"
 
 WORKDIR /test
 

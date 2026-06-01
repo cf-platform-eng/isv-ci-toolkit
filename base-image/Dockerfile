@@ -13,6 +13,9 @@ COPY --from=needs /usr/local/bin/needs /usr/local/bin/
 LABEL maintainer="VMware Tanzu ISV-CI Team <cf-isv-dashboard@pivotal.io>"
 VOLUME /input /output /job
 
+# Use Broadcom internal VCFD Artifactory for security compliance
+ARG PIP_INDEX_URL
+ENV PIP_INDEX_URL="${PIP_INDEX_URL}"
 ENV INPUT_DIR=/input
 ENV OUTPUT_DIR=/output
 ENV JOB_DIR=/job
@@ -29,7 +32,7 @@ RUN apt-get update --fix-missing && \
         vim.tiny \
         wget && \
     rm -rf /var/lib/apt/lists/* && \
-    python3 -m pip install yq
+    python3 -m pip install yq --break-system-packages
 
 WORKDIR /job
 
